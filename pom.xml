@@ -1,8 +1,45 @@
-<project>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.nthalk</groupId>
     <artifactId>fn</artifactId>
     <version>1.0.0-SNAPSHOT</version>
+    <scm>
+        <connection>scm:git:git@github.com:Nthalk/fn.git</connection>
+        <developerConnection>scm:git:git@github.com:Nthalk/fn.git</developerConnection>
+        <url>http://nthalk.github.io/fn/</url>
+        <tag>HEAD</tag>
+    </scm>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.3</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <attach>true</attach>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -11,4 +48,29 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
+    <repositories>
+        <repository>
+            <id>iodesystems</id>
+            <url>http://nexus.iodesystems.com/nexus/content/groups/public</url>
+        </repository>
+    </repositories>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>iodesystems-snapshots</id>
+            <url>http://nexus.iodesystems.com/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>iodesystems-releases</id>
+            <url>http://nexus.iodesystems.com/nexus/content/repositories/releases</url>
+        </repository>
+    </distributionManagement>
 </project>

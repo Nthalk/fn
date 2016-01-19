@@ -77,7 +77,7 @@ public abstract class Iterators {
             if (initial == null) {
                 initial = a;
             } else {
-                initial = merger.merge(a, initial);
+                initial = merger.from(a, initial);
             }
         }
         return Option.of(initial);
@@ -85,7 +85,7 @@ public abstract class Iterators {
 
     public static <A> A combine(final Iterable<A> source, A initial, Merge<A, A, A> merger) {
         for (A a : source) {
-            initial = merger.merge(a, initial);
+            initial = merger.from(a, initial);
         }
         return initial;
     }
