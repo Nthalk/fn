@@ -70,7 +70,7 @@ public class Fn {
         return Iterators.join(a, b);
     }
 
-    public static <A, B> B reduce(final Iterator<A> source, From<Iterator<A>, B> reducer) {
+    public static <A, B> B reduce(final Iterator<A> source, From<A, B> reducer) {
         return Iterators.reduce(source, reducer);
     }
 

@@ -71,8 +71,23 @@ public abstract class Iterators {
         };
     }
 
-    public static <A, B> B reduce(final Iterator<A> source, From<Iterator<A>, B> reducer) {
-        return reducer.from(source);
+    public static <A> Option<A> combine(final Iterable<A> source, Merge<A, A, A> merger) {
+        A initial = null;
+        for (A a : source) {
+            if (initial == null) {
+                initial = a;
+            } else {
+                initial = merger.merge(a, initial);
+            }
+        }
+        return Option.of(initial);
+    }
+
+    public static <A> A combine(final Iterable<A> source, A initial, Merge<A, A, A> merger) {
+        for (A a : source) {
+            initial = merger.merge(a, initial);
+        }
+        return initial;
     }
 
     public static <A, B> Iterable<B> multiply(A source, final From<A, Iterable<B>> multiplier) {

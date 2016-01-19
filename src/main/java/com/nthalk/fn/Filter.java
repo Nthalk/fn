@@ -18,4 +18,5 @@ public abstract class Filter<V> implements Where<V> {
     public List<V> filter(Iterable<V> source) {
         return filter(source, this);
     }
+
 }
