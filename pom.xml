@@ -2,12 +2,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.nthalk</groupId>
     <artifactId>fn</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <scm>
         <connection>scm:git:git@github.com:Nthalk/fn.git</connection>
         <developerConnection>scm:git:git@github.com:Nthalk/fn.git</developerConnection>
         <url>http://nthalk.github.io/fn/</url>
-        <tag>HEAD</tag>
+        <tag>fn-1.0.0</tag>
     </scm>
     <build>
         <plugins>
