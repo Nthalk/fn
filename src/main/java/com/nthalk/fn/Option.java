@@ -78,8 +78,25 @@ public abstract class Option<T> implements Iterable<T> {
     public abstract boolean isPresent();
 
     public static class Empty<T> extends Option<T> {
+        private static final Iterator<?> EMPTY_ITERATOR = new Iterator<Object>() {
+            @Override
+            public boolean hasNext() {
+                return false;
+            }
+
+            @Override
+            public Object next() {
+                return null;
+            }
+        };
 
         private Empty() {
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public Iterator<T> iterator() {
+            return (Iterator<T>) EMPTY_ITERATOR;
         }
 
         @Override
