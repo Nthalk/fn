@@ -3,6 +3,9 @@
     <groupId>com.nthalk</groupId>
     <artifactId>fn</artifactId>
     <version>1.0.1-SNAPSHOT</version>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
     <scm>
         <connection>scm:git:git@github.com:Nthalk/fn.git</connection>
         <developerConnection>scm:git:git@github.com:Nthalk/fn.git</developerConnection>
