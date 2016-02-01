@@ -46,14 +46,14 @@ public abstract class Option<T> implements Iterable<T> {
 
     public Iterator<T> iterator() {
         return new Iterator<T>() {
-            boolean hasNext = isPresent();
+            boolean hasNext = true;
 
             public boolean hasNext() {
                 if (hasNext) {
                     hasNext = false;
                     return true;
                 } else {
-                    return true;
+                    return false;
                 }
             }
 

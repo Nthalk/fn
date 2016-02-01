@@ -1,9 +1,10 @@
 package com.nthalk.fn;
 
-import org.junit.Assert;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import java.util.Iterator;
+
+import static org.junit.Assert.*;
 
 public class OptionTest {
 
@@ -11,7 +12,12 @@ public class OptionTest {
     public void testOptions() {
         assertEquals(Option.empty(), Option.of(null));
         for (Object ignore : Option.of(null)) {
-            Assert.assertTrue(false);
+            assertTrue(false);
         }
+
+        Option<String> some = Option.of("asdf");
+        Iterator<String> iterator = some.iterator();
+        assertTrue(iterator.hasNext());
+        assertFalse(iterator.hasNext());
     }
 }
