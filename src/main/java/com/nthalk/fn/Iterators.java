@@ -1,5 +1,6 @@
 package com.nthalk.fn;
 
+
 import java.util.Iterator;
 
 public abstract class Iterators {
@@ -17,6 +18,11 @@ public abstract class Iterators {
                     public A next() {
                         return as[i++];
                     }
+
+                    @Override
+                    public void remove() {
+                        throw new IllegalStateException();
+                    }
                 };
             }
         };
@@ -32,6 +38,11 @@ public abstract class Iterators {
 
             public A next() {
                 return source.next();
+            }
+
+            @Override
+            public void remove() {
+                throw new IllegalStateException();
             }
         };
     }
@@ -65,6 +76,11 @@ public abstract class Iterators {
 
                     public A next() {
                         return current.next();
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new IllegalStateException();
                     }
                 };
             }
@@ -129,6 +145,11 @@ public abstract class Iterators {
                     public B next() {
                         return currentSourceItems.next();
                     }
+
+                    @Override
+                    public void remove() {
+                        throw new IllegalStateException();
+                    }
                 };
             }
         };
@@ -151,6 +172,11 @@ public abstract class Iterators {
 
                     public B next() {
                         return from.from(sourceItems.next());
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new IllegalStateException();
                     }
                 };
             }

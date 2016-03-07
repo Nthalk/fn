@@ -26,6 +26,11 @@ public abstract class Option<T> implements Iterable<T> {
                     public T next() {
                         return next.get();
                     }
+
+                    @Override
+                    public void remove() {
+                        throw new IllegalStateException();
+                    }
                 };
             }
         };
@@ -60,6 +65,11 @@ public abstract class Option<T> implements Iterable<T> {
             public T next() {
                 return get();
             }
+
+            @Override
+            public void remove() {
+                throw new IllegalStateException();
+            }
         };
     }
 
@@ -87,6 +97,11 @@ public abstract class Option<T> implements Iterable<T> {
             @Override
             public Object next() {
                 return null;
+            }
+
+            @Override
+            public void remove() {
+                throw new IllegalStateException();
             }
         };
 

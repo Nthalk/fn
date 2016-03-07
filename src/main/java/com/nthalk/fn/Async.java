@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class Async<A> {
 
@@ -22,6 +24,14 @@ public abstract class Async<A> {
         this.executor = executor;
     }
 
+    protected synchronized void then(Exception exception) {
+        this.exception = exception;
+        for (Next<A, ?> next : nexts) {
+            next.onParentException(exception);
+        }
+        nexts.clear();
+    }
+
     public static <A> Async<A> async(Callable<A> initial) {
         return async(EXISTING_THREAD, initial);
     }
@@ -30,7 +40,45 @@ public abstract class Async<A> {
         return new Initial<A>(executor, initial);
     }
 
-    private <B> Next<A, B> then(Next<A, B> next) {
+    public static <A> Async<List<A>> await(Executor executor, Async<A>... asyncs) {
+        final List<A> results = new ArrayList<A>(asyncs.length);
+        final AtomicInteger countdown = new AtomicInteger(asyncs.length);
+        final AtomicBoolean hasException = new AtomicBoolean(false);
+        int index = 0;
+
+        final Next<List<A>, List<A>> next = new Next<List<A>, List<A>>(executor, new Result<List<A>>() {
+        });
+
+        for (Async<A> async : asyncs) {
+            final int asyncIndex = index++;
+            results.add(null);
+            async.then(executor, new Result<A>() {
+                @Override
+                public A onResult(A a) throws Exception {
+                    results.set(asyncIndex, a);
+                    if (countdown.decrementAndGet() == 0) {
+                        next.onParentResult(results);
+                    }
+                    return super.onResult(a);
+                }
+
+                @Override
+                public Option<A> onException(Exception e) {
+                    if (!hasException.compareAndSet(false, true)) {
+                        next.onParentException(e);
+                    }
+                    return Option.empty();
+                }
+            });
+        }
+        return next;
+    }
+
+    public static <A> Async<List<A>> await(Async<A>... asyncs) {
+        return await(EXISTING_THREAD, asyncs);
+    }
+
+    private synchronized <B> Next<A, B> then(Next<A, B> next) {
         if (result != null) {
             next.onParentResult(result.get(null));
         } else if (exception != null) {
@@ -49,15 +97,7 @@ public abstract class Async<A> {
         return then(executor, from);
     }
 
-    protected void then(Exception exception) {
-        this.exception = exception;
-        for (Next<A, ?> next : nexts) {
-            next.onParentException(exception);
-        }
-        nexts.clear();
-    }
-
-    protected void then(A result) {
+    protected synchronized void then(A result) {
         this.result = Option.of(result);
         for (Next<A, ?> next : nexts) {
             next.onParentResult(result);

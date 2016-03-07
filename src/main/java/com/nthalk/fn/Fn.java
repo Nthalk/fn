@@ -16,6 +16,14 @@ public class Fn {
         return Async.async(executor, initial);
     }
 
+    public static <A> Async<List<A>> await(Executor executor, Async<A>... asyncs) {
+        return Async.await(executor, asyncs);
+    }
+
+    public static <A> Async<List<A>> await(Async<A>... asyncs) {
+        return Async.await(asyncs);
+    }
+
     public static <A, B> Partial<A, B> partial(final From<A, Option<B>> from) {
         return Partial.of(from);
     }
