@@ -3,11 +3,21 @@ package com.nthalk.fn;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
 
 public class Fn {
 
-    public static <A, B, C extends Option<B>> Thunk<A, B, C> thunk(final From<A, C> from) {
-        return Thunk.of(from);
+    public static <A> Async<A> async(Callable<A> initial) {
+        return Async.async(initial);
+    }
+
+    public static <A> Async<A> async(Executor executor, Callable<A> initial) {
+        return Async.async(executor, initial);
+    }
+
+    public static <A, B> Partial<A, B> partial(final From<A, Option<B>> from) {
+        return Partial.of(from);
     }
 
     public static <T> Iterable<T> unwrap(Iterable<Option<T>> options) {

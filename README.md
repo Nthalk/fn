@@ -59,7 +59,7 @@ Creating an index:
 
 Composable router functions:
 
-    Thunk<String, Integer, Option<Integer>> fiveOrSix = Fn.thunk(new From<String, Option<Integer>>() {
+    Thunk<String, Integer, Option<Integer>> fiveOrSix = Fn.partial(new From<String, Option<Integer>>() {
         @Override
         public Option<Integer> from(String s) {
             if ("five".equalsIgnoreCase(s)) {
@@ -68,7 +68,7 @@ Composable router functions:
                 return Option.empty();
             }
         }
-    }).or(Fn.thunk(new From<String, Option<Integer>>() {
+    }).or(Fn.partial(new From<String, Option<Integer>>() {
         @Override
         public Option<Integer> from(String s) {
             if ("six".equalsIgnoreCase(s)) {

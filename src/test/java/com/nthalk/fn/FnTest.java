@@ -9,7 +9,7 @@ public class FnTest {
     @Test
     public void kitchenSink() {
 
-        From<String, Option<Integer>> of = Fn.thunk(new From<String, Option<Integer>>() {
+        From<String, Option<Integer>> of = Fn.partial(new From<String, Option<Integer>>() {
             public Option<Integer> from(String s) {
                 if (s.length() > 10) {
                     return Option.empty();
@@ -17,7 +17,7 @@ public class FnTest {
                     return Option.of(s.length());
                 }
             }
-        }).or(Fn.thunk(new From<String, Option<Integer>>() {
+        }).or(Fn.partial(new From<String, Option<Integer>>() {
             public Option<Integer> from(String s) {
                 if (s.contains("bad")) {
                     return Option.empty();
