@@ -1,7 +1,5 @@
 package com.nthalk.fn;
 
-import com.nthalk.fn.async.AsyncFrom;
-import com.nthalk.fn.async.AsyncResult;
 import org.junit.Test;
 
 import java.util.concurrent.Callable;
@@ -19,19 +17,21 @@ public class AsyncTest {
                 return "5";
             }
         });
-        async.then(new AsyncFrom<String, Integer>() {
+
+        async.then(new Async.From<String, Integer>() {
             @Override
             public Integer onResult(String a) throws Exception {
+                Thread.sleep(100);
                 throw new Exception("lame");
             }
-        }).then(new AsyncResult<Integer>() {
+        }).then(new Async.Result<Integer>() {
             @Override
-            public Option<Void> onException(Exception e) {
-                return super.onException(e);
+            public Option<Integer> onException(Exception e) {
+                return Option.of(4);
             }
         });
 
-        async.then(new AsyncFrom<String, Integer>() {
+        async.then(new Async.From<String, Integer>() {
             @Override
             public Integer onResult(String a) {
                 return a == null ? 0 : a.length();

@@ -1,7 +1,5 @@
 package com.nthalk.fn;
 
-import com.nthalk.fn.async.AsyncFrom;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -15,7 +13,6 @@ public abstract class Async<A> {
             command.run();
         }
     };
-
     protected final Executor executor;
     private final List<Next<A, ?>> nexts = new ArrayList<Next<A, ?>>();
     private Option<A> result = null;
@@ -44,11 +41,11 @@ public abstract class Async<A> {
         return next;
     }
 
-    public <B> Async<B> then(Executor executor, AsyncFrom<A, B> from) {
+    public <B> Async<B> then(Executor executor, From<A, B> from) {
         return then(new Next<A, B>(executor, from));
     }
 
-    public <B> Async<B> then(AsyncFrom<A, B> from) {
+    public <B> Async<B> then(From<A, B> from) {
         return then(executor, from);
     }
 
@@ -94,9 +91,9 @@ public abstract class Async<A> {
 
     public static class Next<A, B> extends Async<B> {
 
-        private final AsyncFrom<A, B> from;
+        private final From<A, B> from;
 
-        public Next(Executor executor, AsyncFrom<A, B> from) {
+        public Next(Executor executor, From<A, B> from) {
             super(executor);
             this.from = from;
         }
@@ -147,6 +144,27 @@ public abstract class Async<A> {
             } catch (Exception e) {
                 then(e);
             }
+        }
+    }
+
+    public static abstract class From<A, B> {
+
+        public B onResult(A a) throws Exception {
+            return null;
+        }
+
+        public Option<B> onException(Exception e) {
+            return Option.empty();
+        }
+    }
+
+    public static abstract class Result<A> extends From<A, A> {
+        public A onResult(A a) throws Exception {
+            return a;
+        }
+
+        public Option<A> onException(Exception e) {
+            return Option.empty();
         }
     }
 }
