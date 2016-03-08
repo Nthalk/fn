@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public abstract class Option<T> implements Iterable<T> {
+
     private static final Empty<?> EMPTY = new Empty<Object>();
 
     public static <T> Iterable<T> unwrap(Iterable<Option<T>> options) {

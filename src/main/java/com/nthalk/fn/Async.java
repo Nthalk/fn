@@ -15,13 +15,13 @@ public abstract class Async<A> {
             command.run();
         }
     };
-    protected final Executor executor;
+    final Executor executor;
     private final List<Next<A, ?>> nexts = new ArrayList<Next<A, ?>>();
     private Option<A> result = null;
     private Exception exception = null;
     private int progress = -1;
 
-    public Async(Executor executor) {
+    Async(Executor executor) {
         this.executor = executor;
     }
 
@@ -79,7 +79,7 @@ public abstract class Async<A> {
         return await(INLINE, asyncs);
     }
 
-    protected synchronized void exceptionInternal(Exception exception) {
+    synchronized void exceptionInternal(Exception exception) {
         this.exception = exception;
         for (Next<A, ?> next : nexts) {
             next.onParentException(exception);
@@ -160,14 +160,14 @@ public abstract class Async<A> {
         return then(new Next<A, B>(executor, from));
     }
 
-    protected synchronized void progressInternal(int progress) {
+    synchronized void progressInternal(int progress) {
         this.progress = progress;
         for (Next<A, ?> next : nexts) {
             next.onParentProgress(progress);
         }
     }
 
-    protected synchronized void resultInternal(A result) {
+    synchronized void resultInternal(A result) {
         this.result = Option.of(result);
         for (Next<A, ?> next : nexts) {
             next.onParentResult(result);
@@ -269,7 +269,7 @@ public abstract class Async<A> {
             }
         }
 
-        protected void onParentProgress(final int progress) {
+        void onParentProgress(final int progress) {
             if (executor == INLINE) {
                 onParentProgressInternal(progress);
             } else {
@@ -282,7 +282,7 @@ public abstract class Async<A> {
             }
         }
 
-        protected void onParentResult(final A result) {
+        void onParentResult(final A result) {
             if (executor == INLINE) {
                 onParentResultInternal(result);
             } else {
@@ -296,7 +296,7 @@ public abstract class Async<A> {
 
         }
 
-        protected void onParentException(final Exception exception) {
+        void onParentException(final Exception exception) {
             if (executor == INLINE) {
                 onParentExceptionInternal(exception);
             } else {

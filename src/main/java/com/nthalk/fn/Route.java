@@ -34,4 +34,31 @@ public abstract class Route<A, B> implements From<A, Option<B>> {
             }
         };
     }
+
+    public <C> Route<A, C> from(final From<B, Option<C>> from) {
+        return new Route<A, C>() {
+            @Override
+            public Option<C> from(A a) {
+                Option<B> b = Route.this.from(a);
+                if (b.isPresent()) {
+                    return from.from(b.get());
+                }
+                return Option.empty();
+            }
+        };
+    }
+
+    public From<A, B> orElse(final From<A, B> orElse) {
+        return new From<A, B>() {
+            @Override
+            public B from(A a) {
+                Option<B> from = Route.this.from(a);
+                if (from.isPresent()) {
+                    return from.get();
+                } else {
+                    return orElse.from(a);
+                }
+            }
+        };
+    }
 }

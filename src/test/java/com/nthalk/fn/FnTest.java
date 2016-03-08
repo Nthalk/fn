@@ -13,7 +13,7 @@ public class FnTest {
     @Test
     public void kitchenSink() {
 
-        From<String, Option<Integer>> of = Fn.partial(new From<String, Option<Integer>>() {
+        From<String, Option<Integer>> of = Fn.route(new From<String, Option<Integer>>() {
             public Option<Integer> from(String s) {
                 if (s.length() > 10) {
                     return Option.empty();
@@ -21,7 +21,7 @@ public class FnTest {
                     return Option.of(s.length());
                 }
             }
-        }).or(Fn.partial(new From<String, Option<Integer>>() {
+        }).or(Fn.route(new From<String, Option<Integer>>() {
             public Option<Integer> from(String s) {
                 if (s.contains("bad")) {
                     return Option.empty();
@@ -52,7 +52,7 @@ public class FnTest {
             }
         });
 
-        Map<Integer, Map.Entry<String, List<Integer>>> index = Fn.index(group.entrySet(), new From<Map.Entry<String, List<Integer>>, Integer>() {
+        Fn.index(group.entrySet(), new From<Map.Entry<String, List<Integer>>, Integer>() {
             public Integer from(Map.Entry<String, List<Integer>> stringListEntry) {
                 return stringListEntry.getValue().size();
             }
@@ -100,6 +100,28 @@ public class FnTest {
     }
 
     @Test
+    public void indexTest() {
+        Map<String, Integer> index = Fn.of(1, 2, 3, 4).index(new From<Integer, String>() {
+            @Override
+            public String from(Integer integer) {
+                return integer.toString();
+            }
+        });
+        assertEquals(new Integer(1), index.get("1"));
+    }
+
+    @Test
+    public void testCombine() {
+        Integer combine = Fn.of(1, 2, 3).combine(0, new Combine<Integer, Integer>() {
+            @Override
+            public Integer from(Integer integer, Integer integer2) {
+                return integer + integer2;
+            }
+        });
+        assertEquals(new Integer(6), combine);
+    }
+
+    @Test
     public void testFn() throws Exception {
         Map<Integer, List<Integer>> group = Fn
             .of(1, 2, 3)
@@ -127,6 +149,7 @@ public class FnTest {
                     return integer % 4;
                 }
             });
+
 
         assertEquals(2, group.size());
         assertEquals(Arrays.asList(4, 8), group.get(0));

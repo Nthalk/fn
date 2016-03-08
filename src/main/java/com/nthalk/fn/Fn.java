@@ -1,6 +1,7 @@
 package com.nthalk.fn;
 
-import java.util.ArrayList;
+import com.nthalk.fn.tuples.Tuple2;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -38,20 +39,12 @@ public class Fn<A> implements Iterable<A> {
         return Async.await(asyncs);
     }
 
-    public static <A, B> Route<A, B> partial(final From<A, Option<B>> from) {
+    public static <A, B> Route<A, B> route(final From<A, Option<B>> from) {
         return Route.of(from);
     }
 
     public static <T> Iterable<T> unwrap(Iterable<Option<T>> options) {
         return Option.unwrap(options);
-    }
-
-    public static <T> Option<T> option(T item) {
-        return Option.of(item);
-    }
-
-    public static <T> Option<T> empty() {
-        return Option.empty();
     }
 
     public static <V> List<V> filter(Iterable<V> source, Where<V> filter) {
@@ -83,63 +76,67 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public static <A> Fn<A> of(final A... as) {
-        return new Fn<A>(Iterators.of(as));
+        return new Fn<A>(Iterables.of(as));
     }
 
-    public static <A> Iterator<A> take(final int count, final Iterator<A> source) {
-        return Iterators.take(count, source);
+    public static <A> Iterable<A> take(final int count, final Iterable<A> source) {
+        return Iterables.take(count, source);
     }
 
-    public static <A> Iterator<A> drop(int count, final Iterator<A> source) {
-        return Iterators.drop(count, source);
+    public static <A> Iterable<A> drop(int count, final Iterable<A> source) {
+        return Iterables.drop(count, source);
     }
 
     public static <A> Iterable<A> join(final Iterable<A> a, final Iterable<A> b) {
-        return Iterators.join(a, b);
-    }
-
-    public static <A, B> Iterable<B> multiply(A source, final From<A, Iterable<B>> multiplier) {
-        return Iterators.multiply(source, multiplier);
+        return Iterables.join(a, b);
     }
 
     public static <A, B> Iterable<B> multiply(final Iterable<A> source, final From<A, Iterable<B>> multiplier) {
-        return Iterators.multiply(source, multiplier);
+        return Iterables.multiply(source, multiplier);
     }
 
     public static <A, B> Iterable<B> from(final Iterable<A> source, final From<A, B> from) {
-        return Iterators.from(source, from);
+        return Iterables.from(source, from);
     }
 
     private static <A> Iterable<A> unique(Iterable<A> as) {
-        return Iterators.unique(as);
+        return Iterables.unique(as);
     }
 
     public <K> Map<K, List<A>> group(From<A, K> extractor) {
-        return Fn.group(this, extractor);
+        return Fn.group(contents, extractor);
     }
 
     public <B> Map<B, A> index(From<A, B> from) {
-        return Fn.index(this, from);
+        return Fn.index(contents, from);
     }
 
     public Fn<A> join(A... next) {
-        return new Fn<A>(Fn.join(this, Fn.of(next)));
+        return new Fn<A>(Fn.join(contents, Fn.of(next)));
     }
 
     public Fn<A> join(Iterable<A> next) {
-        return new Fn<A>(Fn.join(this, next));
+        return new Fn<A>(Fn.join(contents, next));
     }
 
     public <B> Fn<B> multiply(From<A, Iterable<B>> multiplier) {
-        return new Fn<B>(Fn.multiply(this, multiplier));
+        return new Fn<B>(Fn.multiply(contents, multiplier));
     }
 
     public <B> Fn<B> from(From<A, B> from) {
-        return new Fn<B>(Fn.from(this, from));
+        return new Fn<B>(Fn.from(contents, from));
     }
 
     public Fn<A> filter(Where<A> where) {
-        return new Fn<A>(Fn.filter(this, where));
+        return new Fn<A>(Fn.filter(contents, where));
+    }
+
+    public <B> B combine(B initial, Combine<A, B> condenser) {
+        B condensate = initial;
+        for (A content : contents) {
+            condensate = condenser.from(content, condensate);
+        }
+        return condensate;
     }
 
     @Override
@@ -148,7 +145,7 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public Fn<A> unique() {
-        return new Fn<A>(Fn.unique(this));
+        return new Fn<A>(Fn.unique(contents));
     }
 
     public Fn<A> repeat(int times) {
@@ -160,14 +157,34 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public int size() {
-        return Iterators.size(this);
+        return Iterables.size(contents);
     }
 
     public List<A> toList() {
-        List<A> list = new ArrayList<A>();
-        for (A content : contents) {
-            list.add(content);
-        }
-        return list;
+        return Iterables.toList(contents);
+    }
+
+    public Fn<Tuple2<Integer, A>> withIndex() {
+        return from(new From<A, Tuple2<Integer, A>>() {
+            int i = 0;
+
+            @Override
+            public Tuple2<Integer, A> from(A a) {
+                return new Tuple2<Integer, A>(i++, a);
+            }
+        });
+    }
+
+    public Fn<A> drop(int i) {
+        return new Fn<A>(Fn.drop(i, contents));
+    }
+
+    public Fn<A> take(int i) {
+        return new Fn<A>(Fn.take(i, contents));
+    }
+
+    @Override
+    public String toString() {
+        return "Fn" + toList();
     }
 }

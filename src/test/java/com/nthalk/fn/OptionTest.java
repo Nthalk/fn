@@ -11,6 +11,7 @@ public class OptionTest {
     @Test
     public void testOptions() {
         assertEquals(Option.empty(), Option.of(null));
+
         for (Object ignore : Option.of(null)) {
             assertTrue(false);
         }
@@ -18,6 +19,7 @@ public class OptionTest {
         Option<String> some = Option.of("asdf");
         Iterator<String> iterator = some.iterator();
         assertTrue(iterator.hasNext());
+        assertEquals("asdf", iterator.next());
         assertFalse(iterator.hasNext());
     }
 }
