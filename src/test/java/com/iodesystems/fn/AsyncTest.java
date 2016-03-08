@@ -22,24 +22,24 @@ public class AsyncTest {
      */
     @Test
     public void testSimpleSyncResult() {
-        final int[] result = new int[]{0};
+        final String[] result = new String[]{null};
 
         // Async's without an executor run inline.
-        Fn.async(new Callable<Integer>() {
+        Fn.async(new Callable<String>() {
             @Override
-            public Integer call() throws Exception {
-                return 1;
+            public String call() throws Exception {
+                return "Hello World!";
             }
-        }).then(new Async.Result<Integer>() {
+        }).then(new Async.Result<String>() {
             @Override
-            public Integer onResult(Integer integer) throws Exception {
+            public String onResult(String message) throws Exception {
                 // It did it
-                result[0] = integer;
-                return super.onResult(integer);
+                result[0] = message;
+                return null;
             }
         });
 
-        assertEquals(1, result[0]);
+        assertEquals("Hello World!", result[0]);
     }
 
     /**
@@ -115,28 +115,29 @@ public class AsyncTest {
      */
     @Test
     public void testSimpleDeferred() throws TimeoutException {
-        final Waiter waiter = new Waiter();
-        Async.Deferred<Object> defer = Fn.defer(executor);
-
-        defer.then(new Async.Result<Object>() {
+        final String[] result = new String[]{null};
+        final Integer[] progress = new Integer[]{null, null};
+        Async.Deferred<String> defer = Fn.defer();
+        defer.then(new Async.Result<String>() {
             @Override
-            public Object onResult(Object o) throws Exception {
-                waiter.resume();
-                return super.onResult(o);
+            public String onResult(String o) throws Exception {
+                result[0] = o;
+                return null;
             }
 
             @Override
-            public int onProgress(int progress) {
-                waiter.resume();
-                return super.onProgress(progress);
+            public int onProgress(int deferredProgress) {
+                progress[deferredProgress - 1] = deferredProgress;
+                return deferredProgress;
             }
         });
 
         defer.progress(1);
         defer.progress(2);
-        defer.result(null);
-
-        waiter.await(100L, 3);
+        defer.result("Hello World!");
+        assertEquals(result[0], "Hello World!");
+        assertEquals(progress[0], new Integer(1));
+        assertEquals(progress[1], new Integer(2));
     }
 
     /**
@@ -155,13 +156,10 @@ public class AsyncTest {
                 return null;
             }
         });
-
         defer.result(2);
         defer.result(3);
-
         waiter.await(300L, 3);
     }
-
 
     /**
      * It is useful to have the ability to recover from an exception, when an onException method returns
@@ -192,6 +190,70 @@ public class AsyncTest {
         });
 
         waiter.await(300L);
+    }
+
+    @Test
+    public void testExecutorAsyncAffinity() {
+        CountingExecutor countingExecutor = new CountingExecutor();
+        CountingExecutor secondCountingExecutor = new CountingExecutor();
+        Async<String> root = Async.async(countingExecutor, new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return "heyo";
+            }
+        });
+        root.then(new Async.Result<String>() {
+            // Since the this branch starts off of the same countingExcutor, it will be executed inline
+        }).then(secondCountingExecutor, new Async.Result<String>() {
+            // However, this branch swiches executors, so this will be submitted as a runnable
+        }).then(secondCountingExecutor, new Async.Result<String>() {
+            // Again, branched from same executor as parent, so no re-submit
+        });
+
+        root.then(new Async.Result<String>() {
+            // Since the this branch starts off of the same countingExcutor, it will be executed inline
+        }).then(secondCountingExecutor, new Async.Result<String>() {
+            // However, this branch swiches executors, so this will be submitted as a runnable
+        }).then(Async.INLINE, new Async.Result<String>() {
+            // Because we specify INLINE, we will just run inline on the existing thread.
+        });
+
+        assertEquals(1, countingExecutor.getCount());
+        assertEquals(2, secondCountingExecutor.getCount());
+    }
+
+    @Test
+    public void testExecutorDeferAffinity() {
+        CountingExecutor countingExecutor = new CountingExecutor();
+        CountingExecutor secondCountingExecutor = new CountingExecutor();
+        Async.Deferred<String> root = Async.defer(countingExecutor);
+
+        root.then(countingExecutor, new Async.Result<String>() {
+            // Since the this branch starts off of the same countingExcutor, it will be executed inline
+        }).then(secondCountingExecutor, new Async.Result<String>() {
+            // However, this branch swiches executors, so this will be submitted as a runnable
+        }).then(secondCountingExecutor, new Async.Result<String>() {
+            // Again, branched from same executor as parent, so no re-submit
+        });
+
+        // Calling this here should not matter
+        root.result("heyo");
+
+        root.then(countingExecutor, new Async.Result<String>() {
+            // Since the this branch starts off of the same countingExcutor, it will be executed inline
+        }).then(secondCountingExecutor, new Async.Result<String>() {
+            // However, this branch swiches executors, so this will be submitted as a runnable
+        }).then(Async.INLINE, new Async.Result<String>() {
+            // Because we specify INLINE, we will just run inline on the existing thread.
+        });
+
+        assertEquals(2, countingExecutor.getCount());
+        assertEquals(2, secondCountingExecutor.getCount());
+
+        // Again, these chained branches are repeatable
+        root.result("heyo2");
+        assertEquals(4, countingExecutor.getCount());
+        assertEquals(4, secondCountingExecutor.getCount());
     }
 
     @Test
@@ -336,5 +398,19 @@ public class AsyncTest {
             }
         });
         waiter.await(100L, 1);
+    }
+
+    public static class CountingExecutor implements Executor {
+        int count = 0;
+
+        @Override
+        public void execute(Runnable runnable) {
+            count++;
+            runnable.run();
+        }
+
+        public int getCount() {
+            return count;
+        }
     }
 }

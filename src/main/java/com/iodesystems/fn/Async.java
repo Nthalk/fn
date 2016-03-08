@@ -16,10 +16,10 @@ public abstract class Async<A> {
         }
     };
     final Executor executor;
-    private final List<Next<A, ?>> nexts = new ArrayList<Next<A, ?>>();
-    private Option<A> result = null;
-    private Exception exception = null;
-    private int progress = -1;
+    protected final List<Next<A, ?>> nexts = new ArrayList<Next<A, ?>>();
+    protected Option<A> result = null;
+    protected Exception exception = null;
+    protected int progress = -1;
 
     Async(Executor executor) {
         this.executor = executor;
@@ -41,7 +41,7 @@ public abstract class Async<A> {
         return new Initial<A>(executor, initial);
     }
 
-    public static <A> Async<List<A>> await(Executor executor, Async<A>... asyncs) {
+    public static <A> Async<List<A>> await(final Executor executor, Async<A>... asyncs) {
         final List<A> results = new ArrayList<A>(asyncs.length);
         final AtomicInteger countdown = new AtomicInteger(asyncs.length);
         final AtomicBoolean hasException = new AtomicBoolean(false);
@@ -58,7 +58,7 @@ public abstract class Async<A> {
                 public A onResult(A a) throws Exception {
                     results.set(asyncIndex, a);
                     if (countdown.decrementAndGet() == 0) {
-                        next.onParentResult(results);
+                        next.onParentResult(executor, results);
                     }
                     return super.onResult(a);
                 }
@@ -66,7 +66,7 @@ public abstract class Async<A> {
                 @Override
                 public Option<A> onException(Exception e) {
                     if (hasException.compareAndSet(false, true)) {
-                        next.onParentException(e);
+                        next.onParentException(executor, e);
                     }
                     return Option.empty();
                 }
@@ -79,21 +79,21 @@ public abstract class Async<A> {
         return await(INLINE, asyncs);
     }
 
-    synchronized void exceptionInternal(Exception exception) {
+    synchronized void exceptionInternal(Executor executor, Exception exception) {
         this.exception = exception;
         for (Next<A, ?> next : nexts) {
-            next.onParentException(exception);
+            next.onParentException(executor, exception);
         }
     }
 
-    private synchronized <B> Next<A, B> then(Next<A, B> next) {
+    protected synchronized <B> Next<A, B> then(Next<A, B> next) {
         if (progress >= 0) {
-            next.onParentProgress(progress);
+            next.onParentProgress(executor, progress);
         }
         if (result != null) {
-            next.onParentResult(result.get(null));
+            next.onParentResult(executor, result.get(null));
         } else if (exception != null) {
-            next.onParentException(exception);
+            next.onParentException(executor, exception);
         }
         nexts.add(next);
         return next;
@@ -160,17 +160,17 @@ public abstract class Async<A> {
         return then(new Next<A, B>(executor, from));
     }
 
-    synchronized void progressInternal(int progress) {
+    synchronized void progressInternal(Executor executor, int progress) {
         this.progress = progress;
         for (Next<A, ?> next : nexts) {
-            next.onParentProgress(progress);
+            next.onParentProgress(executor, progress);
         }
     }
 
-    synchronized void resultInternal(A result) {
+    synchronized void resultInternal(Executor executor, A result) {
         this.result = Option.of(result);
         for (Next<A, ?> next : nexts) {
-            next.onParentResult(result);
+            next.onParentResult(executor, result);
         }
     }
 
@@ -209,38 +209,53 @@ public abstract class Async<A> {
             super(executor);
         }
 
+        @Override
+        protected synchronized <B> Next<A, B> then(Next<A, B> next) {
+            if (progress >= 0) {
+                next.onParentProgress(null, progress);
+            }
+            if (result != null) {
+                next.onParentResult(null, result.get(null));
+            } else if (exception != null) {
+                next.onParentException(null, exception);
+            }
+            nexts.add(next);
+            return next;
+        }
+
         public void progress(int progress) {
             if (progress > -1) {
-                progressInternal(progress);
+                progressInternal(null, progress);
             }
         }
 
         public void result(A result) {
-            resultInternal(result);
+            resultInternal(null, result);
         }
 
         public void exception(Exception exception) {
-            exceptionInternal(exception);
+            exceptionInternal(null, exception);
         }
+
     }
 
     public static class Initial<A> extends Async<A> {
-        private Initial(Executor executor, final Callable<A> callable) {
+        private Initial(final Executor executor, final Callable<A> callable) {
             super(executor);
             if (executor == INLINE) {
                 try {
-                    resultInternal(callable.call());
+                    resultInternal(executor, callable.call());
                 } catch (Exception e) {
-                    exceptionInternal(e);
+                    exceptionInternal(executor, e);
                 }
             } else {
                 executor.execute(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            resultInternal(callable.call());
+                            resultInternal(executor, callable.call());
                         } catch (Exception e) {
-                            exceptionInternal(e);
+                            exceptionInternal(executor, e);
                         }
                     }
                 });
@@ -258,22 +273,22 @@ public abstract class Async<A> {
         }
 
         private void onParentProgressInternal(int progress) {
-            progressInternal(from.onProgress(progress));
+            progressInternal(executor, from.onProgress(progress));
         }
 
         private void onParentResultInternal(final A result) {
             try {
-                resultInternal(from.onResult(result));
+                resultInternal(executor, from.onResult(result));
             } catch (Exception e) {
-                exceptionInternal(e);
+                exceptionInternal(executor, e);
             }
         }
 
-        void onParentProgress(final int progress) {
-            if (executor == INLINE) {
+        void onParentProgress(Executor parentExecutor, final int progress) {
+            if (isCurrentExecutor(parentExecutor)) {
                 onParentProgressInternal(progress);
             } else {
-                executor.execute(new Runnable() {
+                this.executor.execute(new Runnable() {
                     @Override
                     public void run() {
                         onParentProgressInternal(progress);
@@ -282,11 +297,15 @@ public abstract class Async<A> {
             }
         }
 
-        void onParentResult(final A result) {
-            if (executor == INLINE) {
+        private boolean isCurrentExecutor(Executor executor) {
+            return this.executor == INLINE || executor == this.executor;
+        }
+
+        void onParentResult(Executor parentExecutor, final A result) {
+            if (isCurrentExecutor(parentExecutor)) {
                 onParentResultInternal(result);
             } else {
-                executor.execute(new Runnable() {
+                this.executor.execute(new Runnable() {
                     @Override
                     public void run() {
                         onParentResultInternal(result);
@@ -296,11 +315,11 @@ public abstract class Async<A> {
 
         }
 
-        void onParentException(final Exception exception) {
-            if (executor == INLINE) {
+        void onParentException(Executor parentExecutor, final Exception exception) {
+            if (isCurrentExecutor(parentExecutor)) {
                 onParentExceptionInternal(exception);
             } else {
-                executor.execute(new Runnable() {
+                this.executor.execute(new Runnable() {
                     @Override
                     public void run() {
                         onParentExceptionInternal(exception);
@@ -313,12 +332,12 @@ public abstract class Async<A> {
             try {
                 Option<B> recovery = from.onException(exception);
                 if (recovery.isPresent()) {
-                    resultInternal(recovery.get());
+                    resultInternal(executor, recovery.get());
                 } else {
-                    exceptionInternal(exception);
+                    exceptionInternal(executor, exception);
                 }
             } catch (Exception e) {
-                exceptionInternal(e);
+                exceptionInternal(executor, e);
             }
         }
     }

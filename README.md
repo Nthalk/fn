@@ -61,4 +61,56 @@ However, this will yield a `Map` of size 3. If you want to preserve your groups
            return integer.toString();
        }
     });
+    
+### Async
 
+Async code on Java has historically been a pain, however, Fn offers `Async<A>` and `Deferred<A>` objects.
+
+    final String[] result = new String[]{null};
+    Fn.async(new Callable<String>() {
+        @Override
+        public String call() throws Exception {
+            return "Hello world!";
+        }
+    }).then(new Async.Result<String>() {
+        @Override
+        public String onResult(String message) throws Exception {
+            // It did it
+            result[0] = message;
+            return null;
+        }
+    });
+    assertEquals("Hello World!", result[0]);
+
+The deferred example is just as simple (this example also shows progress tracking):
+
+    final String[] result = new String[]{null};
+    final Integer[] progress = new Integer[]{null, null};
+    Async.Deferred<String> defer = Fn.defer();
+    defer.then(new Async.Result<String>() {
+        @Override
+        public String onResult(String o) throws Exception {
+            result[0] = o;
+            return null;
+        }
+
+        @Override
+        public int onProgress(int deferredProgress) {
+            progress[deferredProgress - 1] = deferredProgress;
+            return deferredProgress;
+        }
+    });
+
+    defer.progress(1);
+    defer.progress(2);
+    defer.result("Hello World!");
+    assertEquals(result[0], "Hello World!");
+    assertEquals(progress[0], new Integer(1));
+    assertEquals(progress[1], new Integer(2));
+
+Each async is branchable and repeatable, and any segment can run on any `Executor`.
+ 
+When a handler uses the same `Executor` as it's parent, or the `INLINE` executor, the handler will run 
+inline, on the same thread, except if the parent is a `Deferred`.
+
+When not specifying an `Executor` for a down stream handler, the parent's executor will be used.
