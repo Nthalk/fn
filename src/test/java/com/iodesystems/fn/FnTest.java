@@ -1,5 +1,6 @@
-package com.nthalk.fn;
+package com.iodesystems.fn;
 
+import com.iodesystems.fn.tuples.Tuple2;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -10,54 +11,6 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 
 public class FnTest {
-    @Test
-    public void kitchenSink() {
-
-        From<String, Option<Integer>> of = Fn.route(new From<String, Option<Integer>>() {
-            public Option<Integer> from(String s) {
-                if (s.length() > 10) {
-                    return Option.empty();
-                } else {
-                    return Option.of(s.length());
-                }
-            }
-        }).or(Fn.route(new From<String, Option<Integer>>() {
-            public Option<Integer> from(String s) {
-                if (s.contains("bad")) {
-                    return Option.empty();
-                }
-                return Option.of(10);
-            }
-        })).before(new From<String, Option<Integer>>() {
-            public Option<Integer> from(String s) {
-                if ("five".equals(s)) {
-                    return Option.of(5);
-                }
-                return Option.empty();
-            }
-        });
-
-        Iterable<Integer> converted = Fn.unwrap(
-            Fn.from(
-                Fn.filter(
-                    Fn.join(Fn.of("a", "ab", "abc", "abcd", "five", "abcde", "abcdefhghghghg", "abcdefhghghghgbad"),
-                            Fn.of("asdfasdfasdf")),
-                    Fn.not("ab")),
-                of));
-
-
-        Map<String, List<Integer>> group = Fn.group(converted, new From<Integer, String>() {
-            public String from(Integer integer) {
-                return integer.toString();
-            }
-        });
-
-        Fn.index(group.entrySet(), new From<Map.Entry<String, List<Integer>>, Integer>() {
-            public Integer from(Map.Entry<String, List<Integer>> stringListEntry) {
-                return stringListEntry.getValue().size();
-            }
-        });
-    }
 
     @Test
     public void testRepeat() {
@@ -68,7 +21,7 @@ public class FnTest {
     public void testFrom() {
         int size = Fn
             .of(1, 2, 3, 4)
-            .from(new From<Integer, Integer>() {
+            .convert(new From<Integer, Integer>() {
                 @Override
                 public Integer from(Integer integer) {
                     return integer;
@@ -79,11 +32,63 @@ public class FnTest {
     }
 
     @Test
+    public void testJoin() {
+        assertEquals(Arrays.asList(1, 2, 3, 4, 5, 6),
+                     Fn.of(1, 2, 3).join(Fn.of(4, 5, 6)).toList());
+    }
+
+    @Test
+    public void testAndOr() {
+        assertEquals(Arrays.asList(2, 4), Fn.of(1, 2, 3, 4).filter(Fn.where(Fn.is(2)).or(Fn.is(4))).toList());
+        assertEquals(Collections.singletonList(4), Fn.of(1, 2, 3, 4).filter(Fn.where(Fn.is(1)).or(Fn.is(4)).and(new Where<Integer>() {
+            @Override
+            public boolean is(Integer integer) {
+                return integer % 2 == 0;
+            }
+        })).toList());
+    }
+
+    @Test
+    public void testWithIndex() {
+        Map<String, List<Tuple2<Integer, Integer>>> group = Fn
+            .of(1, 2, 3, 4)
+            .multiply(new From<Integer, Iterable<Integer>>() {
+                @Override
+                public Iterable<Integer> from(Integer integer) {
+                    return Fn.repeat(integer, integer);
+                }
+            })
+            .withIndex()
+            .group(new From<Tuple2<Integer, Integer>, String>() {
+                @Override
+                public String from(Tuple2<Integer, Integer> integerIntegerTuple2) {
+                    return integerIntegerTuple2.getB().toString();
+                }
+            });
+        assertEquals(4, group.size());
+        for (List<Tuple2<Integer, Integer>> tuple2s : group.values()) {
+            assertEquals(tuple2s.get(0).getB().intValue(), tuple2s.size());
+        }
+    }
+
+    @Test
+    public void testUnwrap() {
+        assertEquals(Arrays.asList(2, 4), Fn.of(Fn.unwrap(
+            Fn.of(1, 2, 3, 4)
+                .convert(new From<Integer, Option<Integer>>() {
+                    @Override
+                    public Option<Integer> from(Integer integer) {
+                        return integer % 2 == 0 ? Option.of(integer) : Option.<Integer>empty();
+                    }
+                }))).toList());
+    }
+
+    @Test
     public void testOptionIntegration() {
         int size = Fn
             .of(1, 2, 3, 4)
             // Expensive filter
-            .from(new From<Integer, Option<Integer>>() {
+            .convert(new From<Integer, Option<Integer>>() {
                 @Override
                 public Option<Integer> from(Integer integer) {
                     return integer % 2 == 0 ? Option.of(integer) : Option.<Integer>empty();
@@ -100,7 +105,7 @@ public class FnTest {
     }
 
     @Test
-    public void indexTest() {
+    public void testIndex() {
         Map<String, Integer> index = Fn.of(1, 2, 3, 4).index(new From<Integer, String>() {
             @Override
             public String from(Integer integer) {
@@ -108,6 +113,25 @@ public class FnTest {
             }
         });
         assertEquals(new Integer(1), index.get("1"));
+    }
+
+    @Test
+    public void testSplit() {
+        Fn<Iterable<Integer>> split = Fn.of(1, 2, 3, 4, 5, 6)
+            .split(new Where<Integer>() {
+                @Override
+                public boolean is(Integer integer) {
+                    return integer % 2 == 0;
+                }
+            });
+
+        Fn<Integer> joined = Fn.of(Fn.join(split));
+        assertEquals(3, joined.size());
+        assertEquals(Option.empty(), joined.first(Fn.is(2)));
+
+        Fn<Integer> joinedWithGlue = Fn.of(Fn.join(split, 2));
+        assertEquals(6, joinedWithGlue.size());
+        assertEquals(3, joinedWithGlue.filter(Fn.is(2)).size());
     }
 
     @Test

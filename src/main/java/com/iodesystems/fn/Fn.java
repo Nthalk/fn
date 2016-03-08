@@ -1,7 +1,8 @@
-package com.nthalk.fn;
+package com.iodesystems.fn;
 
-import com.nthalk.fn.tuples.Tuple2;
+import com.iodesystems.fn.tuples.Tuple2;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -11,8 +12,20 @@ import java.util.concurrent.Executor;
 public class Fn<A> implements Iterable<A> {
     private final Iterable<A> contents;
 
-    public Fn(Iterable<A> contents) {
+    private Fn(Iterable<A> contents) {
         this.contents = contents;
+    }
+
+    public static <V> Where<Option<V>> isEmpty() {
+        return Option.whereEmpty();
+    }
+
+    public static <V> Where<Option<V>> isPresent() {
+        return Option.wherePresent();
+    }
+
+    public static <A> WhereCondition<A> where(Where<A> where) {
+        return WhereCondition.of(where);
     }
 
     public static <A> Async<A> async(Callable<A> initial) {
@@ -37,10 +50,6 @@ public class Fn<A> implements Iterable<A> {
 
     public static <A> Async<List<A>> await(Async<A>... asyncs) {
         return Async.await(asyncs);
-    }
-
-    public static <A, B> Route<A, B> route(final From<A, Option<B>> from) {
-        return Route.of(from);
     }
 
     public static <T> Iterable<T> unwrap(Iterable<Option<T>> options) {
@@ -75,8 +84,12 @@ public class Fn<A> implements Iterable<A> {
         return Indexer.index(source, extractor);
     }
 
+    public static <A> Fn<A> of(Iterable<A> contents) {
+        return new Fn<A>(contents);
+    }
+
     public static <A> Fn<A> of(final A... as) {
-        return new Fn<A>(Iterables.of(as));
+        return of(Iterables.of(as));
     }
 
     public static <A> Iterable<A> take(final int count, final Iterable<A> source) {
@@ -95,7 +108,7 @@ public class Fn<A> implements Iterable<A> {
         return Iterables.multiply(source, multiplier);
     }
 
-    public static <A, B> Iterable<B> from(final Iterable<A> source, final From<A, B> from) {
+    public static <A, B> Iterable<B> convert(final Iterable<A> source, final From<A, B> from) {
         return Iterables.from(source, from);
     }
 
@@ -103,32 +116,87 @@ public class Fn<A> implements Iterable<A> {
         return Iterables.unique(as);
     }
 
+    public static <A> Iterable<A> repeat(Iterable<A> as, int times) {
+        return Iterables.repeat(as, times);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <A> Iterable<A> repeat(A a, int times) {
+        return repeat(of(a), times);
+    }
+
+    public static <A> Option<A> first(Iterable<A> as, Where<A> is) {
+        return Iterables.first(as, is);
+    }
+
+    public static <A> Option<A> last(Iterable<A> as, Where<A> is) {
+        return Iterables.last(as, is);
+    }
+
+    public static <A> Iterable<A> join(Iterable<Iterable<A>> nexts) {
+        Iterable<A> current = Iterables.empty();
+        for (Iterable<A> next : nexts) {
+            current = Iterables.join(current, next);
+        }
+        return of(current);
+    }
+
+    public static <A> Iterable<A> join(Iterable<Iterable<A>> nexts, A joiner) {
+        Iterable<A> current = Iterables.empty();
+        for (Iterable<A> next : nexts) {
+            current = Iterables.join(current, joiner, next);
+        }
+        return of(current);
+    }
+
     public <K> Map<K, List<A>> group(From<A, K> extractor) {
-        return Fn.group(contents, extractor);
+        return group(contents, extractor);
     }
 
     public <B> Map<B, A> index(From<A, B> from) {
-        return Fn.index(contents, from);
+        return index(contents, from);
+    }
+
+    public Fn<Iterable<A>> split(Where<A> splitter) {
+        List<A> segment = new ArrayList<A>();
+        List<Iterable<A>> segments = new ArrayList<Iterable<A>>();
+        for (A content : contents) {
+            if (splitter.is(content)) {
+                segments.add(segment);
+                segment = new ArrayList<A>();
+            } else {
+                segment.add(content);
+            }
+        }
+        return of(segments);
+    }
+
+    public Option<A> first(Where<A> where) {
+        return first(contents, where);
+    }
+
+    public Option<A> last(Where<A> where) {
+        return last(contents, where);
     }
 
     public Fn<A> join(A... next) {
-        return new Fn<A>(Fn.join(contents, Fn.of(next)));
+        return of(join(contents, of(next)));
     }
 
     public Fn<A> join(Iterable<A> next) {
-        return new Fn<A>(Fn.join(contents, next));
+        return of(join(contents, next));
     }
 
     public <B> Fn<B> multiply(From<A, Iterable<B>> multiplier) {
-        return new Fn<B>(Fn.multiply(contents, multiplier));
+        return of(multiply(contents, multiplier));
     }
 
-    public <B> Fn<B> from(From<A, B> from) {
-        return new Fn<B>(Fn.from(contents, from));
+    public <B> Fn<B> convert(From<A, B> from) {
+        return of(convert(contents, from));
     }
 
     public Fn<A> filter(Where<A> where) {
-        return new Fn<A>(Fn.filter(contents, where));
+        return of(filter(contents, where));
     }
 
     public <B> B combine(B initial, Combine<A, B> condenser) {
@@ -145,15 +213,11 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public Fn<A> unique() {
-        return new Fn<A>(Fn.unique(contents));
+        return of(unique(contents));
     }
 
     public Fn<A> repeat(int times) {
-        Fn<A> target = this;
-        for (int i = 1; i < times; i++) {
-            target = target.join(contents);
-        }
-        return target;
+        return of(Iterables.repeat(contents, times));
     }
 
     public int size() {
@@ -165,7 +229,7 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public Fn<Tuple2<Integer, A>> withIndex() {
-        return from(new From<A, Tuple2<Integer, A>>() {
+        return convert(new From<A, Tuple2<Integer, A>>() {
             int i = 0;
 
             @Override
@@ -176,11 +240,11 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public Fn<A> drop(int i) {
-        return new Fn<A>(Fn.drop(i, contents));
+        return of(drop(i, contents));
     }
 
     public Fn<A> take(int i) {
-        return new Fn<A>(Fn.take(i, contents));
+        return of(take(i, contents));
     }
 
     @Override

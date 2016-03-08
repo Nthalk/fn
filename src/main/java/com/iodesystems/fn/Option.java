@@ -1,4 +1,4 @@
-package com.nthalk.fn;
+package com.iodesystems.fn;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -6,6 +6,29 @@ import java.util.NoSuchElementException;
 public abstract class Option<T> implements Iterable<T> {
 
     private static final Empty<?> EMPTY = new Empty<Object>();
+    private static final Where<Option<?>> IS_PRESENT = new Where<Option<?>>() {
+        @Override
+        public boolean is(Option<?> objects) {
+            return objects.isPresent();
+        }
+    };
+
+    private static final Where<Option<?>> IS_EMPTY = new Where<Option<?>>() {
+        @Override
+        public boolean is(Option<?> objects) {
+            return objects.isEmpty();
+        }
+    };
+
+    @SuppressWarnings("unchecked")
+    public static <V> Where<Option<V>> wherePresent() {
+        return (Where) IS_PRESENT;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <V> Where<Option<V>> whereEmpty() {
+        return (Where) IS_EMPTY;
+    }
 
     public static <T> Iterable<T> unwrap(Iterable<Option<T>> options) {
         final Iterator<Option<T>> iterator = options.iterator();
@@ -76,6 +99,7 @@ public abstract class Option<T> implements Iterable<T> {
 
     public abstract T get();
 
+    @SuppressWarnings("SameParameterValue")
     public T get(T ifEmpty) {
         if (isEmpty()) {
             return ifEmpty;
@@ -115,6 +139,7 @@ public abstract class Option<T> implements Iterable<T> {
             return (Iterator<T>) EMPTY_ITERATOR;
         }
 
+        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
         @Override
         public boolean equals(Object obj) {
             return obj == EMPTY;

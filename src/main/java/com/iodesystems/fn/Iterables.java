@@ -1,9 +1,31 @@
-package com.nthalk.fn;
+package com.iodesystems.fn;
 
 
 import java.util.*;
 
 public abstract class Iterables {
+
+    private static final Iterable<?> EMPTY = new Iterable<Object>() {
+        @Override
+        public Iterator<Object> iterator() {
+            return new Iterator<Object>() {
+                @Override
+                public boolean hasNext() {
+                    return false;
+                }
+
+                @Override
+                public Object next() {
+                    return null;
+                }
+
+                @Override
+                public void remove() {
+                    throw new IllegalStateException();
+                }
+            };
+        }
+    };
 
     public static <A> Iterable<A> take(final int count, final Iterable<A> source) {
         return new Iterable<A>() {
@@ -67,9 +89,9 @@ public abstract class Iterables {
         return new Iterable<A>() {
             public Iterator<A> iterator() {
                 return new Iterator<A>() {
+                    final Iterator<A> next = b.iterator();
                     Iterator<A> current = a.iterator();
                     final Iterator<A> first = current;
-                    final Iterator<A> next = b.iterator();
 
                     public boolean hasNext() {
                         if (current.hasNext()) {
@@ -211,7 +233,47 @@ public abstract class Iterables {
         return list;
     }
 
+    public static <A> Iterable<A> of(A source) {
+        return Collections.singletonList(source);
+    }
+
     public static <A> Iterable<A> of(A... source) {
         return Arrays.asList(source);
+    }
+
+    public static <A> Iterable<A> repeat(Iterable<A> as, int times) {
+        Iterable<A> target = as;
+        for (int i = 1; i < times; i++) {
+            target = Iterables.join(target, as);
+        }
+        return target;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <A> Iterable<A> empty() {
+        return (Iterable<A>) EMPTY;
+    }
+
+    public static <A> Option<A> first(Iterable<A> as, Where<A> where) {
+        for (A a : as) {
+            if (where.is(a)) {
+                return Option.of(a);
+            }
+        }
+        return Option.empty();
+    }
+
+    public static <A> Option<A> last(Iterable<A> as, Where<A> where) {
+        Option<A> last = Option.empty();
+        for (A a : as) {
+            if (where.is(a)) {
+                last = Option.of(a);
+            }
+        }
+        return last;
+    }
+
+    public static <A> Iterable<A> join(Iterable<A> current, A joiner, Iterable<A> next) {
+        return join(join(current, of(joiner)), next);
     }
 }
