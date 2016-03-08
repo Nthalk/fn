@@ -1,12 +1,18 @@
 package com.nthalk.fn;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 
-public class Fn {
+public class Fn<A> implements Iterable<A> {
+    private final Iterable<A> contents;
+
+    public Fn(Iterable<A> contents) {
+        this.contents = contents;
+    }
 
     public static <A> Async<A> async(Callable<A> initial) {
         return Async.async(initial);
@@ -20,12 +26,20 @@ public class Fn {
         return Async.await(executor, asyncs);
     }
 
+    public static <A> Async.Deferred<A> defer() {
+        return Async.defer();
+    }
+
+    public static <A> Async.Deferred<A> defer(Executor executor) {
+        return Async.defer(executor);
+    }
+
     public static <A> Async<List<A>> await(Async<A>... asyncs) {
         return Async.await(asyncs);
     }
 
-    public static <A, B> Partial<A, B> partial(final From<A, Option<B>> from) {
-        return Partial.of(from);
+    public static <A, B> Route<A, B> partial(final From<A, Option<B>> from) {
+        return Route.of(from);
     }
 
     public static <T> Iterable<T> unwrap(Iterable<Option<T>> options) {
@@ -68,8 +82,8 @@ public class Fn {
         return Indexer.index(source, extractor);
     }
 
-    public static <A> Iterable<A> of(final A... as) {
-        return Iterators.of(as);
+    public static <A> Fn<A> of(final A... as) {
+        return new Fn<A>(Iterators.of(as));
     }
 
     public static <A> Iterator<A> take(final int count, final Iterator<A> source) {
@@ -84,16 +98,8 @@ public class Fn {
         return Iterators.join(a, b);
     }
 
-    public static <A> Iterable<A> join(final Iterator<A> a, final Iterator<A> b) {
-        return Iterators.join(a, b);
-    }
-
     public static <A, B> Iterable<B> multiply(A source, final From<A, Iterable<B>> multiplier) {
         return Iterators.multiply(source, multiplier);
-    }
-
-    public static <A, B> Iterable<B> multiply(final Iterator<A> sources, final From<A, Iterable<B>> multiplier) {
-        return Iterators.multiply(sources, multiplier);
     }
 
     public static <A, B> Iterable<B> multiply(final Iterable<A> source, final From<A, Iterable<B>> multiplier) {
@@ -102,5 +108,66 @@ public class Fn {
 
     public static <A, B> Iterable<B> from(final Iterable<A> source, final From<A, B> from) {
         return Iterators.from(source, from);
+    }
+
+    private static <A> Iterable<A> unique(Iterable<A> as) {
+        return Iterators.unique(as);
+    }
+
+    public <K> Map<K, List<A>> group(From<A, K> extractor) {
+        return Fn.group(this, extractor);
+    }
+
+    public <B> Map<B, A> index(From<A, B> from) {
+        return Fn.index(this, from);
+    }
+
+    public Fn<A> join(A... next) {
+        return new Fn<A>(Fn.join(this, Fn.of(next)));
+    }
+
+    public Fn<A> join(Iterable<A> next) {
+        return new Fn<A>(Fn.join(this, next));
+    }
+
+    public <B> Fn<B> multiply(From<A, Iterable<B>> multiplier) {
+        return new Fn<B>(Fn.multiply(this, multiplier));
+    }
+
+    public <B> Fn<B> from(From<A, B> from) {
+        return new Fn<B>(Fn.from(this, from));
+    }
+
+    public Fn<A> filter(Where<A> where) {
+        return new Fn<A>(Fn.filter(this, where));
+    }
+
+    @Override
+    public Iterator<A> iterator() {
+        return contents.iterator();
+    }
+
+    public Fn<A> unique() {
+        return new Fn<A>(Fn.unique(this));
+    }
+
+    public Fn<A> repeat(int times) {
+        Fn<A> target = this;
+        for (int i = 1; i < times; i++) {
+            target = target.join(contents);
+        }
+        return target;
+    }
+
+    public int size() {
+        return Iterators.size(this);
+    }
+
+    public List<A> toList() {
+        List<A> list = new ArrayList<A>();
+        for (A content : contents) {
+            list.add(content);
+        }
+        return list;
     }
 }

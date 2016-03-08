@@ -1,7 +1,9 @@
 package com.nthalk.fn;
 
 
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 public abstract class Iterators {
 
@@ -67,7 +69,7 @@ public abstract class Iterators {
                     public boolean hasNext() {
                         if (current.hasNext()) {
                             return true;
-                        } else if (current != a) {
+                        } else if (current == a) {
                             current = b;
                             return current.hasNext();
                         }
@@ -117,7 +119,7 @@ public abstract class Iterators {
                     Iterator<B> currentSourceItems = null;
 
                     public boolean hasNext() {
-                        if (currentSourceItems == null) {
+                        if (currentSourceItems == null || !currentSourceItems.hasNext()) {
                             if (!sources.hasNext()) {
                                 return false;
                             }
@@ -128,18 +130,7 @@ public abstract class Iterators {
                                 }
                             } while (sources.hasNext());
                         }
-
-                        if (currentSourceItems.hasNext()) {
-                            return true;
-                        } else {
-                            do {
-                                currentSourceItems = multiplier.from(sources.next()).iterator();
-                                if (currentSourceItems.hasNext()) {
-                                    return true;
-                                }
-                            } while (sources.hasNext());
-                        }
-                        return false;
+                        return currentSourceItems.hasNext();
                     }
 
                     public B next() {
@@ -156,8 +147,7 @@ public abstract class Iterators {
     }
 
     public static <A, B> Iterable<B> multiply(final Iterable<A> source, final From<A, Iterable<B>> multiplier) {
-        final Iterator<A> sources = source.iterator();
-        return multiply(sources, multiplier);
+        return multiply(source.iterator(), multiplier);
     }
 
     public static <A, B> Iterable<B> from(final Iterable<A> source, final From<A, B> from) {
@@ -181,5 +171,23 @@ public abstract class Iterators {
                 };
             }
         };
+    }
+
+    public static <A> Iterable<A> unique(Iterable<A> as) {
+        final Set<A> uniques = new HashSet<A>();
+        return Filter.filter(as, new Where<A>() {
+            @Override
+            public boolean is(A a) {
+                return uniques.add(a);
+            }
+        });
+    }
+
+    public static <A> int size(Iterable<A> as) {
+        int i = 0;
+        for (A a : as) {
+            i += 1;
+        }
+        return i;
     }
 }

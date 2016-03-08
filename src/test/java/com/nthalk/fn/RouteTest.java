@@ -4,10 +4,10 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class PartialTest {
+public class RouteTest {
     @Test
-    public void testThunk() {
-        Partial<String, Integer> five = Fn.partial(new From<String, Option<Integer>>() {
+    public void testRoute() {
+        Route<String, Integer> five = Fn.partial(new From<String, Option<Integer>>() {
             @Override
             public Option<Integer> from(String s) {
                 if ("five".equalsIgnoreCase(s)) {
@@ -18,7 +18,7 @@ public class PartialTest {
             }
         });
 
-        Partial<String, Integer> six = Fn.partial(new From<String, Option<Integer>>() {
+        Route<String, Integer> six = Fn.partial(new From<String, Option<Integer>>() {
             @Override
             public Option<Integer> from(String s) {
                 if ("six".equalsIgnoreCase(s)) {
@@ -29,7 +29,7 @@ public class PartialTest {
             }
         });
 
-        Partial<String, Integer> fiveOrSix = five.or(six);
+        Route<String, Integer> fiveOrSix = five.or(six);
         assertEquals(fiveOrSix.from("five"), Option.of(5));
         assertEquals(fiveOrSix.from("six"), Option.of(6));
         assertEquals(fiveOrSix.from("seven"), Option.<Integer>empty());
