@@ -133,7 +133,7 @@ public class Fn<A> implements Iterable<A> {
         return Iterables.last(as, is);
     }
 
-    public static <A> Iterable<A> join(Iterable<Iterable<A>> nexts) {
+    public static <A> Iterable<A> flatten(Iterable<Iterable<A>> nexts) {
         Iterable<A> current = Iterables.empty();
         for (Iterable<A> next : nexts) {
             current = Iterables.join(current, next);

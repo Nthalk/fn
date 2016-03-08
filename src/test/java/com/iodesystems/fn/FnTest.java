@@ -125,7 +125,7 @@ public class FnTest {
                 }
             });
 
-        Fn<Integer> joined = Fn.of(Fn.join(split));
+        Fn<Integer> joined = Fn.of(Fn.flatten(split));
         assertEquals(3, joined.size());
         assertEquals(Option.empty(), joined.first(Fn.is(2)));
 
