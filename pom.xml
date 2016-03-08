@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.nthalk</groupId>
     <artifactId>fn</artifactId>
-    <version>1.0.5</version>
+    <version>1.0.6-SNAPSHOT</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -10,7 +10,7 @@
         <connection>scm:git:git@github.com:Nthalk/fn.git</connection>
         <developerConnection>scm:git:git@github.com:Nthalk/fn.git</developerConnection>
         <url>http://nthalk.github.io/fn/</url>
-        <tag>fn-1.0.5</tag>
+        <tag>HEAD</tag>
     </scm>
     <build>
         <plugins>
