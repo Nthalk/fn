@@ -117,13 +117,15 @@ public class FnTest {
 
     @Test
     public void testSplit() {
-        Fn<Iterable<Integer>> split = Fn.of(1, 2, 3, 4, 5, 6)
+        Fn<Iterable<Integer>> split = Fn.of(1, 2, 3, 4, 5)
             .split(new Where<Integer>() {
                 @Override
                 public boolean is(Integer integer) {
                     return integer % 2 == 0;
                 }
             });
+
+        assertEquals(3, split.size());
 
         Fn<Integer> joined = Fn.of(Fn.flatten(split));
         assertEquals(3, joined.size());
@@ -132,6 +134,21 @@ public class FnTest {
         Fn<Integer> joinedWithGlue = Fn.of(Fn.join(split, 2));
         assertEquals(6, joinedWithGlue.size());
         assertEquals(3, joinedWithGlue.filter(Fn.is(2)).size());
+
+
+        split = Fn.of(1, 2, 3, 4, 5, 6)
+            .split(new Where<Integer>() {
+                @Override
+                public boolean is(Integer integer) {
+                    return integer % 2 == 0;
+                }
+            });
+
+        assertEquals(4, split.size());
+        assertEquals(Option.empty(), joined.first(Fn.is(2)));
+        joined = Fn.of(Fn.flatten(split));
+        assertEquals(3, joined.size());
+        assertEquals(Option.empty(), joined.first(Fn.is(2)));
     }
 
     @Test

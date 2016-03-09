@@ -2,7 +2,6 @@ package com.iodesystems.fn;
 
 import com.iodesystems.fn.tuples.Tuple2;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -134,19 +133,21 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public static <A> Iterable<A> flatten(Iterable<Iterable<A>> nexts) {
-        Iterable<A> current = Iterables.empty();
-        for (Iterable<A> next : nexts) {
-            current = Iterables.join(current, next);
-        }
-        return of(current);
+        return of(Iterables.multiply(nexts, new From<Iterable<A>, Iterable<A>>() {
+            @Override
+            public Iterable<A> from(Iterable<A> as) {
+                return as;
+            }
+        }));
     }
 
-    public static <A> Iterable<A> join(Iterable<Iterable<A>> nexts, A joiner) {
-        Iterable<A> current = Iterables.empty();
-        for (Iterable<A> next : nexts) {
-            current = Iterables.join(current, joiner, next);
-        }
-        return of(current);
+    public static <A> Iterable<A> join(Iterable<Iterable<A>> nexts, final A joiner) {
+        return of(Iterables.multiply(nexts, new From<Iterable<A>, Iterable<A>>() {
+            @Override
+            public Iterable<A> from(Iterable<A> as) {
+                return Iterables.join(as, of(joiner));
+            }
+        }));
     }
 
     public <K> Map<K, List<A>> group(From<A, K> extractor) {
@@ -158,17 +159,7 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public Fn<Iterable<A>> split(Where<A> splitter) {
-        List<A> segment = new ArrayList<A>();
-        List<Iterable<A>> segments = new ArrayList<Iterable<A>>();
-        for (A content : contents) {
-            if (splitter.is(content)) {
-                segments.add(segment);
-                segment = new ArrayList<A>();
-            } else {
-                segment.add(content);
-            }
-        }
-        return of(segments);
+        return of(Iterables.split(contents, splitter));
     }
 
     public Option<A> first(Where<A> where) {
@@ -200,11 +191,7 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public <B> B combine(B initial, Combine<A, B> condenser) {
-        B condensate = initial;
-        for (A content : contents) {
-            condensate = condenser.from(content, condensate);
-        }
-        return condensate;
+        return Iterables.combine(contents, initial, condenser);
     }
 
     @Override

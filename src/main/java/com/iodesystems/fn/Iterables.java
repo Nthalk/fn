@@ -276,4 +276,57 @@ public abstract class Iterables {
     public static <A> Iterable<A> join(Iterable<A> current, A joiner, Iterable<A> next) {
         return join(join(current, of(joiner)), next);
     }
+
+    public static <A> Iterable<Iterable<A>> split(final Iterable<A> contents, final Where<A> splitter) {
+        return new Iterable<Iterable<A>>() {
+            @Override
+            public Iterator<Iterable<A>> iterator() {
+                return new Iterator<Iterable<A>>() {
+                    Iterator<A> source = contents.iterator();
+                    List<A> segment;
+                    boolean isTrailingEnd;
+
+                    @Override
+                    public boolean hasNext() {
+                        segment = new ArrayList<A>();
+                        while (source.hasNext()) {
+                            A next = source.next();
+                            if (splitter.is(next)) {
+                                isTrailingEnd = true;
+                                return true;
+                            } else {
+                                segment.add(next);
+                            }
+                        }
+
+                        if (isTrailingEnd) {
+                            isTrailingEnd = false;
+                            return true;
+                        } else {
+                            return !segment.isEmpty();
+                        }
+                    }
+
+                    @Override
+                    public Iterable<A> next() {
+                        return segment;
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new IllegalStateException();
+                    }
+                };
+            }
+        };
+
+    }
+
+    public static <B, A> B combine(Iterable<A> contents, B initial, Combine<A, B> condenser) {
+        B condensate = initial;
+        for (A content : contents) {
+            condensate = condenser.from(content, condensate);
+        }
+        return condensate;
+    }
 }
