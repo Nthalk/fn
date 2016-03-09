@@ -3,6 +3,7 @@
 
     <name>Fn</name>
     <description>Fn is a lazy Java Library that helps utilize some rudimentary functional concepts with more nounular objects</description>
+    <url>http://nthalk.github.io/fn/</url>
     <developers>
         <developer>
             <id>nthalk</id>
