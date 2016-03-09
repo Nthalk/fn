@@ -1,11 +1,29 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <name>Fn</name>
+    <description>Fn is a lazy Java Library that helps utilize some rudimentary functional concepts with more nounular objects</description>
+    <developers>
+        <developer>
+            <id>nthalk</id>
+            <name>Carl Taylor</name>
+            <email>carl@etaylor.me</email>
+            <roles>
+                <role>owner</role>
+                <role>developer</role>
+            </roles>
+            <timezone>-8</timezone>
+        </developer>
+    </developers>
+
     <groupId>com.iodesystems</groupId>
     <artifactId>fn</artifactId>
     <version>1.0.8-SNAPSHOT</version>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
     <scm>
         <connection>scm:git:git@github.com:Nthalk/fn.git</connection>
         <developerConnection>scm:git:git@github.com:Nthalk/fn.git</developerConnection>

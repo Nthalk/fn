@@ -1,6 +1,6 @@
-# fn
+# Fn
 
-fn is a lazy Java Library that helps utilize some rudimentary functional concepts with more nounular objects.
+Fn is a lazy Java Library that helps utilize some rudimentary functional concepts with more nounular objects.
 
 The target audience is for developers who spend most of their time getting things done instead of learning 
 complicated systems and intricate implementations of extractors and shying away from magical proxies and
