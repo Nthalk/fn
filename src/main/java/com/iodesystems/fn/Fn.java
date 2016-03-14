@@ -150,6 +150,25 @@ public class Fn<A> implements Iterable<A> {
         }));
     }
 
+    public static Fn<Integer> range(final int start, final int end) {
+        return Fn.of(Iterables.generate(new Generator<Integer>() {
+            int count = 0;
+
+            @Override
+            public Integer next() {
+                int next = start + count++;
+                if (next > end) {
+                    return null;
+                }
+                return next;
+            }
+        }));
+    }
+
+    public static <T> Fn<T> generate(Generator<T> generator) {
+        return Fn.of(Iterables.generate(generator));
+    }
+
     public <K> Map<K, List<A>> group(From<A, K> extractor) {
         return group(contents, extractor);
     }
@@ -236,6 +255,21 @@ public class Fn<A> implements Iterable<A> {
 
     @Override
     public String toString() {
-        return "Fn" + toList();
+        List<A> as = take(5).toList();
+        if (as.size() == 5) {
+            String s = as.toString();
+            return "Fn" + s.substring(0, s.length() - 1) + ", ...]";
+        } else {
+            return "Fn" + as.toString();
+        }
+
+    }
+
+    public Fn<A> takeWhile(Where<A> where) {
+        return Fn.of(Iterables.takeWhile(contents, where));
+    }
+
+    public Fn<A> dropWhile(Where<A> where){
+        return Fn.of(Iterables.dropWhile(contents, where));
     }
 }

@@ -329,4 +329,103 @@ public abstract class Iterables {
         }
         return condensate;
     }
+
+    public static <T> Iterable<T> generate(final Generator<T> generator) {
+        return new Iterable<T>() {
+            @Override
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    T next;
+
+                    @Override
+                    public boolean hasNext() {
+                        next = generator.next();
+                        return next != null;
+                    }
+
+                    @Override
+                    public T next() {
+                        return next;
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new IllegalStateException();
+                    }
+                };
+            }
+        };
+    }
+
+    public static <A> Iterable<A> takeWhile(final Iterable<A> contents, final Where<A> where) {
+        return new Iterable<A>() {
+            @Override
+            public Iterator<A> iterator() {
+                return new Iterator<A>() {
+                    Iterator<A> source = contents.iterator();
+                    A next = null;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (source.hasNext()) {
+                            next = source.next();
+                            return where.is(next);
+                        }
+                        return false;
+                    }
+
+                    @Override
+                    public A next() {
+                        return next;
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new IllegalStateException();
+                    }
+                };
+            }
+        };
+    }
+
+    public static <A> Iterable<A> dropWhile(final Iterable<A> contents, final Where<A> where) {
+        return new Iterable<A>() {
+            @Override
+            public Iterator<A> iterator() {
+                final Iterator<A> source = contents.iterator();
+
+                return new Iterator<A>() {
+                    A first = null;
+                    boolean yieldedFirst = false;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (first == null) {
+                            while (source.hasNext()) {
+                                first = source.next();
+                                if (!where.is(first)) {
+                                    return true;
+                                }
+                            }
+                        }
+                        return source.hasNext();
+                    }
+
+                    @Override
+                    public A next() {
+                        if (!yieldedFirst) {
+                            yieldedFirst = true;
+                            return first;
+                        }
+                        return source.next();
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new IllegalStateException();
+                    }
+                };
+            }
+        };
+    }
 }

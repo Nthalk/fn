@@ -196,4 +196,47 @@ public class FnTest {
         assertEquals(Arrays.asList(4, 8), group.get(0));
         assertEquals(Collections.singletonList(2), group.get(2));
     }
+
+    @Test
+    public void testTakeWhile() {
+        assertEquals(100, Fn.range(-100, 1000).takeWhile(new Where<Integer>() {
+            @Override
+            public boolean is(Integer integer) {
+                return integer <= 300;
+            }
+        }).dropWhile(new Where<Integer>() {
+            @Override
+            public boolean is(Integer integer) {
+                return integer <= 0;
+            }
+        }).filter(new Where<Integer>() {
+            @Override
+            public boolean is(Integer integer) {
+                return integer % 3 == 0;
+            }
+        }).size());
+    }
+
+    @Test
+    public void testGenerate() {
+        assertEquals(1000, Fn.generate(new Generator<String>() {
+            int i = 0;
+
+            @Override
+            public String next() {
+                return ((Integer) (i++)).toString();
+            }
+        }).take(1000).size());
+    }
+
+    @Test
+    public void testRange() {
+        assertEquals(Fn.range(0, 99).size(), 100);
+    }
+
+    @Test
+    public void testToString() throws Exception {
+        Fn<Integer> range = Fn.range(0, 10);
+        assertEquals("Fn[0, 1, 2, 3, 4, ...]", range.toString());
+    }
 }
