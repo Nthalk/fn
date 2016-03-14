@@ -2,9 +2,7 @@ package com.iodesystems.fn;
 
 import com.iodesystems.fn.tuples.Tuple2;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 
@@ -84,6 +82,9 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public static <A> Fn<A> of(Iterable<A> contents) {
+        if (contents instanceof Fn) {
+            return (Fn<A>) contents;
+        }
         return new Fn<A>(contents);
     }
 
@@ -262,7 +263,50 @@ public class Fn<A> implements Iterable<A> {
         } else {
             return "Fn" + as.toString();
         }
+    }
 
+    public Fn<A> sort(Comparator<A> comparator) {
+        List<A> as = toList();
+        Collections.sort(as, comparator);
+        return Fn.of(as);
+    }
+
+    public Fn<A> union(Iterable<A> other) {
+        return Fn.of(Iterables.unique(Iterables.join(contents, other)));
+    }
+
+    public Fn<A> intersection(Iterable<A> other) {
+        final Set<A> set = toSet();
+        return Fn.of(other).filter(new Where<A>() {
+            @Override
+            public boolean is(A a) {
+                return set.contains(a);
+            }
+        });
+    }
+
+    public Set<A> toSet() {
+        Set<A> set = new HashSet<A>();
+        for (A content : contents) {
+            set.add(content);
+        }
+        return set;
+    }
+
+    public Fn<A> difference(Iterable<A> other) {
+        final Set<A> set = toSet();
+        final Set<A> setOther = Fn.of(other).toSet();
+        return filter(new Where<A>() {
+            @Override
+            public boolean is(A a) {
+                return !setOther.contains(a);
+            }
+        }).join(Filter.filter(other, new Where<A>() {
+            @Override
+            public boolean is(A a) {
+                return !set.contains(a);
+            }
+        }));
     }
 
     public Fn<A> takeWhile(Where<A> where) {

@@ -239,4 +239,19 @@ public class FnTest {
         Fn<Integer> range = Fn.range(0, 10);
         assertEquals("Fn[0, 1, 2, 3, 4, ...]", range.toString());
     }
+
+    @Test
+    public void testUnion() {
+        assertEquals(Arrays.asList(1, 2, 3, 4, 5, 6, 7), Fn.of(1, 2, 3, 4, 5).union(Fn.of(4, 5, 6, 7)).toList());
+    }
+
+    @Test
+    public void testDifference() {
+        assertEquals(Arrays.asList(1, 2, 3, 6, 7), Fn.of(1, 2, 3, 4, 5).difference(Fn.of(4, 5, 6, 7)).toList());
+    }
+
+    @Test
+    public void testIntersection() {
+        assertEquals(Arrays.asList(4, 5), Fn.of(1, 2, 3, 4, 5).intersection(Fn.of(4, 5, 6, 7)).toList());
+    }
 }
