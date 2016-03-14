@@ -269,7 +269,7 @@ public class Fn<A> implements Iterable<A> {
         return Fn.of(Iterables.takeWhile(contents, where));
     }
 
-    public Fn<A> dropWhile(Where<A> where){
+    public Fn<A> dropWhile(Where<A> where) {
         return Fn.of(Iterables.dropWhile(contents, where));
     }
 }

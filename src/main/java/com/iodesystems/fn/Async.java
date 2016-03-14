@@ -15,8 +15,8 @@ public abstract class Async<A> {
             command.run();
         }
     };
-    final Executor executor;
     protected final List<Next<A, ?>> nexts = new ArrayList<Next<A, ?>>();
+    final Executor executor;
     protected Option<A> result = null;
     protected Exception exception = null;
     protected int progress = -1;
