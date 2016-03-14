@@ -23,8 +23,8 @@ public class Fn<A> implements Iterable<A> {
         return Option.wherePresent();
     }
 
-    public static <A> WhereCondition<A> where(Where<A> where) {
-        return WhereCondition.of(where);
+    public static <A> Condition<A> where(Where<A> where) {
+        return Condition.of(where);
     }
 
     public static <A> Async<A> async(Callable<A> initial) {
