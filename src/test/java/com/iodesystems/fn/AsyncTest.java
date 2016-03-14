@@ -343,7 +343,7 @@ public class AsyncTest {
 
     @Test
     public void testAwait() {
-        Fn.await(Fn.async(new Callable<Object>() {
+        Fn.when(Fn.async(new Callable<Object>() {
             @Override
             public Object call() throws Exception {
                 return 1;
@@ -371,7 +371,7 @@ public class AsyncTest {
     public void testThreadedAwait() throws Exception {
         final Random random = new Random();
         final Waiter waiter = new Waiter();
-        Fn.await(executor, Fn.async(executor, new Callable<Object>() {
+        Fn.when(executor, Fn.async(executor, new Callable<Object>() {
             @Override
             public Object call() throws Exception {
                 Thread.sleep(random.nextInt(20));

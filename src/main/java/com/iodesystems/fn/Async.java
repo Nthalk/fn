@@ -41,7 +41,7 @@ public abstract class Async<A> {
         return new Initial<A>(executor, initial);
     }
 
-    public static <A> Async<List<A>> await(final Executor executor, Async<A>... asyncs) {
+    public static <A> Async<List<A>> when(final Executor executor, Async<A>... asyncs) {
         final List<A> results = new ArrayList<A>(asyncs.length);
         final AtomicInteger countdown = new AtomicInteger(asyncs.length);
         final AtomicBoolean hasException = new AtomicBoolean(false);
@@ -75,8 +75,8 @@ public abstract class Async<A> {
         return next;
     }
 
-    public static <A> Async<List<A>> await(Async<A>... asyncs) {
-        return await(INLINE, asyncs);
+    public static <A> Async<List<A>> when(Async<A>... asyncs) {
+        return when(INLINE, asyncs);
     }
 
     synchronized void exceptionInternal(Executor executor, Exception exception) {

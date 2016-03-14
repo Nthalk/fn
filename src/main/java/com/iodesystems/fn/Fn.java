@@ -35,8 +35,8 @@ public class Fn<A> implements Iterable<A> {
         return Async.async(executor, initial);
     }
 
-    public static <A> Async<List<A>> await(Executor executor, Async<A>... asyncs) {
-        return Async.await(executor, asyncs);
+    public static <A> Async<List<A>> when(Executor executor, Async<A>... asyncs) {
+        return Async.when(executor, asyncs);
     }
 
     public static <A> Async.Deferred<A> defer() {
@@ -47,8 +47,8 @@ public class Fn<A> implements Iterable<A> {
         return Async.defer(executor);
     }
 
-    public static <A> Async<List<A>> await(Async<A>... asyncs) {
-        return Async.await(asyncs);
+    public static <A> Async<List<A>> when(Async<A>... asyncs) {
+        return Async.when(asyncs);
     }
 
     public static <T> Iterable<T> unwrap(Iterable<Option<T>> options) {
