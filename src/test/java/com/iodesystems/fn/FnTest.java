@@ -15,6 +15,7 @@ public class FnTest {
     @Test
     public void testRepeat() {
         assertEquals(9, Fn.of(1, 2, 3).repeat(3).size());
+        assertEquals(3, Fn.of(1).repeat(3).size());
     }
 
     @Test
@@ -85,7 +86,7 @@ public class FnTest {
 
     @Test
     public void testOptionIntegration() {
-        int size = Fn
+        Fn<Integer> multiply = Fn
             .of(1, 2, 3, 4)
             // Expensive filter
             .convert(new From<Integer, Option<Integer>>() {
@@ -99,9 +100,8 @@ public class FnTest {
                 public Iterable<Integer> from(Option<Integer> integers) {
                     return integers;
                 }
-            })
-            .size();
-        assertEquals(2, size);
+            });
+        assertEquals(2, multiply.size());
     }
 
     @Test
@@ -163,6 +163,22 @@ public class FnTest {
     }
 
     @Test
+    public void testFlatten() {
+        Fn<Integer> multiply = Fn.flatten(Fn.of(1).multiply(10));
+        assertEquals(10, multiply.size());
+    }
+
+    @Test
+    public void testMultiply() {
+        Fn<Integer> repeat = Fn.of(2).repeat(4);
+        assertEquals(4, repeat.size());
+        Fn<Iterable<Integer>> multiply = Fn.of(2, 3, 4).multiply(4);
+        assertEquals(3, multiply.size());
+        Fn<Integer> flatten = Fn.of(Fn.flatten(multiply));
+        assertEquals(12, flatten.size());
+    }
+
+    @Test
     public void testFn() throws Exception {
         Map<Integer, List<Integer>> group = Fn
             .of(1, 2, 3)
@@ -219,7 +235,7 @@ public class FnTest {
 
     @Test
     public void testGenerate() {
-        assertEquals(1000, Fn.generate(new Generator<String>() {
+        assertEquals(1000, Fn.of(new Generator<String>() {
             int i = 0;
 
             @Override

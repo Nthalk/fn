@@ -13,6 +13,15 @@ public class Fn<A> implements Iterable<A> {
         this.contents = contents;
     }
 
+    public static <K, V extends Iterable<K>> From<V, List<K>> asList() {
+        return new From<V, List<K>>() {
+            @Override
+            public List<K> from(V v) {
+                return of(v).toList();
+            }
+        };
+    }
+
     public static <V> Where<Option<V>> isEmpty() {
         return Option.whereEmpty();
     }
@@ -81,11 +90,19 @@ public class Fn<A> implements Iterable<A> {
         return Indexer.index(source, extractor);
     }
 
+    public static <A> Fn<A> of(Generator<A> generator) {
+        return Fn.of(Iterables.of(generator));
+    }
+
     public static <A> Fn<A> of(Iterable<A> contents) {
         if (contents instanceof Fn) {
             return (Fn<A>) contents;
         }
         return new Fn<A>(contents);
+    }
+
+    public static <A> Fn<A> of(final A as) {
+        return of(Iterables.of(as));
     }
 
     public static <A> Fn<A> of(final A... as) {
@@ -133,13 +150,8 @@ public class Fn<A> implements Iterable<A> {
         return Iterables.last(as, is);
     }
 
-    public static <A> Iterable<A> flatten(Iterable<Iterable<A>> nexts) {
-        return of(Iterables.multiply(nexts, new From<Iterable<A>, Iterable<A>>() {
-            @Override
-            public Iterable<A> from(Iterable<A> as) {
-                return as;
-            }
-        }));
+    public static <A> Fn<A> flatten(Iterable<Iterable<A>> nexts) {
+        return of(Iterables.flatten(nexts));
     }
 
     public static <A> Iterable<A> join(Iterable<Iterable<A>> nexts, final A joiner) {
@@ -152,7 +164,7 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public static Fn<Integer> range(final int start, final int end) {
-        return Fn.of(Iterables.generate(new Generator<Integer>() {
+        return Fn.of(Iterables.of(new Generator<Integer>() {
             int count = 0;
 
             @Override
@@ -164,10 +176,6 @@ public class Fn<A> implements Iterable<A> {
                 return next;
             }
         }));
-    }
-
-    public static <T> Fn<T> generate(Generator<T> generator) {
-        return Fn.of(Iterables.generate(generator));
     }
 
     public <K> Map<K, List<A>> group(From<A, K> extractor) {
@@ -235,6 +243,10 @@ public class Fn<A> implements Iterable<A> {
         return Iterables.toList(contents);
     }
 
+    public <T> Fn<Tuple2<T, A>> withIndex(Iterable<T> index) {
+        return Fn.of(Iterables.parallel(index, contents));
+    }
+
     public Fn<Tuple2<Integer, A>> withIndex() {
         return convert(new From<A, Tuple2<Integer, A>>() {
             int i = 0;
@@ -286,11 +298,7 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public Set<A> toSet() {
-        Set<A> set = new HashSet<A>();
-        for (A content : contents) {
-            set.add(content);
-        }
-        return set;
+        return Iterables.toSet(contents);
     }
 
     public Fn<A> difference(Iterable<A> other) {
@@ -315,5 +323,19 @@ public class Fn<A> implements Iterable<A> {
 
     public Fn<A> dropWhile(Where<A> where) {
         return Fn.of(Iterables.dropWhile(contents, where));
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> From<T, T> identity() {
+        return (From<T, T>) From.IDENTITY;
+    }
+
+    public Fn<Iterable<A>> multiply(final Integer times) {
+        return convert(new From<A, Iterable<A>>() {
+            @Override
+            public Iterable<A> from(A a) {
+                return Iterables.repeat(a, times);
+            }
+        });
     }
 }

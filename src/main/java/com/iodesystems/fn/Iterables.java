@@ -1,6 +1,8 @@
 package com.iodesystems.fn;
 
 
+import com.iodesystems.fn.tuples.Tuple2;
+
 import java.util.*;
 
 public abstract class Iterables {
@@ -118,28 +120,26 @@ public abstract class Iterables {
 
     public static <A, B> Iterable<B> multiply(final Iterable<A> sources, final From<A, Iterable<B>> multiplier) {
         return new Iterable<B>() {
+            @Override
             public Iterator<B> iterator() {
                 return new Iterator<B>() {
-                    final Iterator<A> parentSources = sources.iterator();
-                    Iterator<B> currentSourceItems = null;
+                    Iterator<A> sourceA = sources.iterator();
+                    Iterator<B> sourceB = null;
 
+                    @Override
                     public boolean hasNext() {
-                        if (currentSourceItems == null || !currentSourceItems.hasNext()) {
-                            if (!parentSources.hasNext()) {
-                                return false;
+                        while ((sourceB == null || !sourceB.hasNext()) && sourceA.hasNext()) {
+                            sourceB = multiplier.from(sourceA.next()).iterator();
+                            if (sourceB.hasNext()) {
+                                return true;
                             }
-                            do {
-                                currentSourceItems = multiplier.from(parentSources.next()).iterator();
-                                if (currentSourceItems.hasNext()) {
-                                    return true;
-                                }
-                            } while (parentSources.hasNext());
                         }
-                        return currentSourceItems.hasNext();
+                        return sourceB.hasNext();
                     }
 
+                    @Override
                     public B next() {
-                        return currentSourceItems.next();
+                        return sourceB.next();
                     }
 
                     @Override
@@ -226,11 +226,41 @@ public abstract class Iterables {
     }
 
     public static <A> List<A> toList(Iterable<A> contents) {
+        if (contents instanceof List) {
+            return (List<A>) contents;
+        }
         List<A> list = new ArrayList<A>();
         for (A content : contents) {
             list.add(content);
         }
         return list;
+    }
+
+    public static <A> Iterable<A> of(final Generator<A> generator) {
+        return new Iterable<A>() {
+            @Override
+            public Iterator<A> iterator() {
+                return new Iterator<A>() {
+                    A next;
+
+                    @Override
+                    public boolean hasNext() {
+                        next = generator.next();
+                        return next != null;
+                    }
+
+                    @Override
+                    public A next() {
+                        return next;
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new IllegalStateException();
+                    }
+                };
+            }
+        };
     }
 
     public static <A> Iterable<A> of(A source) {
@@ -241,12 +271,95 @@ public abstract class Iterables {
         return Arrays.asList(source);
     }
 
-    public static <A> Iterable<A> repeat(Iterable<A> as, int times) {
-        Iterable<A> target = as;
-        for (int i = 1; i < times; i++) {
-            target = Iterables.join(target, as);
-        }
-        return target;
+    public static <A, B> Iterable<Tuple2<A, B>> parallel(final Iterable<A> as, final Iterable<B> bs) {
+        return new Iterable<Tuple2<A, B>>() {
+            @Override
+            public Iterator<Tuple2<A, B>> iterator() {
+                return new Iterator<Tuple2<A, B>>() {
+                    Iterator<A> sourceA = as.iterator();
+                    Iterator<B> sourceB = bs.iterator();
+
+                    @Override
+                    public boolean hasNext() {
+                        if (sourceA.hasNext() && sourceB.hasNext()) {
+                            return true;
+                        } else {
+                            // Should we drain the other?
+                            return false;
+                        }
+                    }
+
+                    @Override
+                    public Tuple2<A, B> next() {
+                        return new Tuple2<A, B>(sourceA.next(), sourceB.next());
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new IllegalStateException();
+                    }
+                };
+            }
+        };
+    }
+
+    public static <A> Iterable<A> repeat(final A a, final int times) {
+        return new Iterable<A>() {
+            @Override
+            public Iterator<A> iterator() {
+                return new Iterator<A>() {
+                    int count = 0;
+
+                    @Override
+                    public boolean hasNext() {
+                        return times == -1 || ++count <= times;
+                    }
+
+                    @Override
+                    public A next() {
+                        return a;
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new IllegalStateException();
+                    }
+                };
+            }
+        };
+    }
+
+    public static <A> Iterable<A> repeat(final Iterable<A> as, final int times) {
+        return new Iterable<A>() {
+            @Override
+            public Iterator<A> iterator() {
+                return new Iterator<A>() {
+                    int count = 0;
+                    Iterator<A> source = as.iterator();
+
+                    @Override
+                    public boolean hasNext() {
+                        if (source.hasNext()) {
+                            return true;
+                        } else if (times == -1 || ++count < times) {
+                            source = as.iterator();
+                            return source.hasNext();
+                        }
+                        return false;
+                    }
+
+                    @Override
+                    public A next() {
+                        return source.next();
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new IllegalStateException();
+                    }
+                };
+            }
+        };
     }
 
     @SuppressWarnings("unchecked")
@@ -330,33 +443,6 @@ public abstract class Iterables {
         return condensate;
     }
 
-    public static <T> Iterable<T> generate(final Generator<T> generator) {
-        return new Iterable<T>() {
-            @Override
-            public Iterator<T> iterator() {
-                return new Iterator<T>() {
-                    T next;
-
-                    @Override
-                    public boolean hasNext() {
-                        next = generator.next();
-                        return next != null;
-                    }
-
-                    @Override
-                    public T next() {
-                        return next;
-                    }
-
-                    @Override
-                    public void remove() {
-                        throw new IllegalStateException();
-                    }
-                };
-            }
-        };
-    }
-
     public static <A> Iterable<A> takeWhile(final Iterable<A> contents, final Where<A> where) {
         return new Iterable<A>() {
             @Override
@@ -418,6 +504,53 @@ public abstract class Iterables {
                             return first;
                         }
                         return source.next();
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new IllegalStateException();
+                    }
+                };
+            }
+        };
+    }
+
+    public static <A> Set<A> toSet(Iterable<A> contents) {
+        if (contents instanceof Set) {
+            return (Set<A>) contents;
+        }
+        Set<A> set = new HashSet<A>();
+        for (A content : contents) {
+            set.add(content);
+        }
+        return set;
+    }
+
+    public static <A> Iterable<A> flatten(final Iterable<Iterable<A>> nexts) {
+        return new Iterable<A>() {
+            @Override
+            public Iterator<A> iterator() {
+                return new Iterator<A>() {
+                    Iterator<Iterable<A>> sources = nexts.iterator();
+                    Iterator<A> current = null;
+
+                    @Override
+                    public boolean hasNext() {
+                        while ((current == null || !current.hasNext())) {
+                            if (!sources.hasNext()) {
+                                return false;
+                            }
+                            current = sources.next().iterator();
+                            if (current.hasNext()) {
+                                return true;
+                            }
+                        }
+                        return true;
+                    }
+
+                    @Override
+                    public A next() {
+                        return current.next();
                     }
 
                     @Override
