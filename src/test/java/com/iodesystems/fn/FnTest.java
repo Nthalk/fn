@@ -74,15 +74,16 @@ public class FnTest {
 
     @Test
     public void testUnwrap() {
-        assertEquals(Arrays.asList(2, 4), Fn.of(Fn.unwrap(
-            Fn.of(1, 2, 3, 4)
-                .convert(new From<Integer, Option<Integer>>() {
-                    @Override
-                    public Option<Integer> from(Integer integer) {
-                        return integer % 2 == 0 ? Option.of(integer) : Option.<Integer>empty();
-                    }
-                }))).toList());
+        assertEquals(Arrays.asList(2, 4),
+                     Fn.ofUnwrap((Fn.of(1, 2, 3, 4)
+                         .optionally(new Where<Integer>() {
+                             @Override
+                             public boolean is(Integer integer) {
+                                 return integer % 2 == 0;
+                             }
+                         }))).toList());
     }
+
 
     @Test
     public void testOptionIntegration() {
@@ -127,11 +128,11 @@ public class FnTest {
 
         assertEquals(3, split.size());
 
-        Fn<Integer> joined = Fn.of(Fn.flatten(split));
+        Fn<Integer> joined = Fn.ofFlatten(split);
         assertEquals(3, joined.size());
         assertEquals(Option.empty(), joined.first(Fn.is(2)));
 
-        Fn<Integer> joinedWithGlue = Fn.of(Fn.join(split, 2));
+        Fn<Integer> joinedWithGlue = Fn.ofJoin(split, 2);
         assertEquals(6, joinedWithGlue.size());
         assertEquals(3, joinedWithGlue.filter(Fn.is(2)).size());
 
@@ -146,7 +147,7 @@ public class FnTest {
 
         assertEquals(4, split.size());
         assertEquals(Option.empty(), joined.first(Fn.is(2)));
-        joined = Fn.of(Fn.flatten(split));
+        joined = Fn.ofFlatten(split);
         assertEquals(3, joined.size());
         assertEquals(Option.empty(), joined.first(Fn.is(2)));
     }
@@ -164,7 +165,7 @@ public class FnTest {
 
     @Test
     public void testFlatten() {
-        Fn<Integer> multiply = Fn.flatten(Fn.of(1).multiply(10));
+        Fn<Integer> multiply = Fn.ofFlatten(Fn.of(1).multiply(10));
         assertEquals(10, multiply.size());
     }
 
@@ -174,7 +175,7 @@ public class FnTest {
         assertEquals(4, repeat.size());
         Fn<Iterable<Integer>> multiply = Fn.of(2, 3, 4).multiply(4);
         assertEquals(3, multiply.size());
-        Fn<Integer> flatten = Fn.of(Fn.flatten(multiply));
+        Fn<Integer> flatten = Fn.ofFlatten(multiply);
         assertEquals(12, flatten.size());
     }
 
@@ -215,7 +216,7 @@ public class FnTest {
 
     @Test
     public void testTakeWhile() {
-        assertEquals(100, Fn.range(-100, 1000).takeWhile(new Where<Integer>() {
+        assertEquals(100, Fn.ofRange(-100, 1000).takeWhile(new Where<Integer>() {
             @Override
             public boolean is(Integer integer) {
                 return integer <= 300;
@@ -247,12 +248,12 @@ public class FnTest {
 
     @Test
     public void testRange() {
-        assertEquals(Fn.range(0, 99).size(), 100);
+        assertEquals(Fn.ofUntil(99).size(), 100);
     }
 
     @Test
     public void testToString() throws Exception {
-        Fn<Integer> range = Fn.range(0, 10);
+        Fn<Integer> range = Fn.ofUntil(10);
         assertEquals("Fn[0, 1, 2, 3, 4, ...]", range.toString());
     }
 

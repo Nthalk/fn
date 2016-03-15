@@ -13,15 +13,6 @@ public class Fn<A> implements Iterable<A> {
         this.contents = contents;
     }
 
-    public static <K, V extends Iterable<K>> From<V, List<K>> asList() {
-        return new From<V, List<K>>() {
-            @Override
-            public List<K> from(V v) {
-                return of(v).toList();
-            }
-        };
-    }
-
     public static <V> Where<Option<V>> isEmpty() {
         return Option.whereEmpty();
     }
@@ -62,8 +53,16 @@ public class Fn<A> implements Iterable<A> {
         return Option.unwrap(options);
     }
 
-    public static <V> List<V> filter(Iterable<V> source, Where<V> filter) {
-        return Filter.filter(source, filter);
+    public static <T> Fn<T> ofUnwrap(Iterable<Option<T>> options) {
+        return of(unwrap(options));
+    }
+
+    public static <V> Fn<V> ofFilter(Iterable<V> source, Where<V> filter) {
+        return of(filter(source, filter));
+    }
+
+    public static <V> Iterable<V> filter(Iterable<V> source, Where<V> filter) {
+        return Iterables.filter(source, filter);
     }
 
     public static <V> Where<V> not(final V value) {
@@ -125,11 +124,19 @@ public class Fn<A> implements Iterable<A> {
         return Iterables.multiply(source, multiplier);
     }
 
+    public static <A, B> Fn<B> ofConversion(final Iterable<A> source, final From<A, B> from) {
+        return of(convert(source, from));
+    }
+
     public static <A, B> Iterable<B> convert(final Iterable<A> source, final From<A, B> from) {
         return Iterables.from(source, from);
     }
 
-    private static <A> Iterable<A> unique(Iterable<A> as) {
+    public static <A> Fn<A> ofUnique(Iterable<A> as) {
+        return of(unique(as));
+    }
+
+    public static <A> Iterable<A> unique(Iterable<A> as) {
         return Iterables.unique(as);
     }
 
@@ -137,7 +144,10 @@ public class Fn<A> implements Iterable<A> {
         return Iterables.repeat(as, times);
     }
 
-    @SuppressWarnings("unchecked")
+    public static <A> Fn<A> ofRepeat(A a, int times) {
+        return of(repeat(a, times));
+    }
+
     public static <A> Iterable<A> repeat(A a, int times) {
         return repeat(of(a), times);
     }
@@ -150,21 +160,41 @@ public class Fn<A> implements Iterable<A> {
         return Iterables.last(as, is);
     }
 
-    public static <A> Fn<A> flatten(Iterable<Iterable<A>> nexts) {
-        return of(Iterables.flatten(nexts));
+
+    public static <A> Fn<A> ofFlatten(Iterable<Iterable<A>> nexts) {
+        return of(flatten(nexts));
     }
 
+    public static <A> Iterable<A> flatten(Iterable<Iterable<A>> nexts) {
+        return Iterables.flatten(nexts);
+    }
+
+    public static <A> Fn<A> ofJoin(Iterable<Iterable<A>> nexts, final A joiner) {
+        return of(join(nexts, joiner));
+    }
     public static <A> Iterable<A> join(Iterable<Iterable<A>> nexts, final A joiner) {
-        return of(Iterables.multiply(nexts, new From<Iterable<A>, Iterable<A>>() {
+        return Iterables.multiply(nexts, new From<Iterable<A>, Iterable<A>>() {
             @Override
             public Iterable<A> from(Iterable<A> as) {
                 return Iterables.join(as, of(joiner));
             }
-        }));
+        });
     }
 
-    public static Fn<Integer> range(final int start, final int end) {
-        return Fn.of(Iterables.of(new Generator<Integer>() {
+    public static Fn<Integer> ofRange(final int start, final int end) {
+        return of(range(start, end));
+    }
+
+    public static Fn<Integer> ofUntil(final int end) {
+        return of(until(end));
+    }
+
+    public static Iterable<Integer> until(final int end) {
+        return range(0, end);
+    }
+
+    public static Iterable<Integer> range(final int start, final int end) {
+        return Iterables.of(new Generator<Integer>() {
             int count = 0;
 
             @Override
@@ -175,7 +205,7 @@ public class Fn<A> implements Iterable<A> {
                 }
                 return next;
             }
-        }));
+        });
     }
 
     public <K> Map<K, List<A>> group(From<A, K> extractor) {
@@ -335,6 +365,15 @@ public class Fn<A> implements Iterable<A> {
             @Override
             public Iterable<A> from(A a) {
                 return Iterables.repeat(a, times);
+            }
+        });
+    }
+
+    public Iterable<Option<A>> optionally(final Where<A> where) {
+        return convert(new From<A, Option<A>>() {
+            @Override
+            public Option<A> from(A a) {
+                return where.is(a) ? Option.of(a) : Option.<A>empty();
             }
         });
     }

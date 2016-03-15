@@ -184,7 +184,7 @@ public abstract class Iterables {
         });
     }
 
-    private static <A> Iterable<A> filter(final Iterable<A> source, final Where<A> where) {
+    public static <A> Iterable<A> filter(final Iterable<A> source, final Where<A> where) {
         return new Iterable<A>() {
             @Override
             public Iterator<A> iterator() {
