@@ -7,25 +7,27 @@ import java.util.*;
 
 public abstract class Iterables {
 
-    private static final Iterable<?> EMPTY = new Iterable<Object>() {
+    public static final Iterator<?> EMPTY_ITERATOR = new Iterator<Object>() {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public Object next() {
+            return null;
+        }
+
+        @Override
+        public void remove() {
+            throw new IllegalStateException();
+        }
+    };
+
+    public static final Iterable<?> EMPTY = new Iterable<Object>() {
         @Override
         public Iterator<Object> iterator() {
-            return new Iterator<Object>() {
-                @Override
-                public boolean hasNext() {
-                    return false;
-                }
-
-                @Override
-                public Object next() {
-                    return null;
-                }
-
-                @Override
-                public void remove() {
-                    throw new IllegalStateException();
-                }
-            };
+            return (Iterator<Object>) EMPTY_ITERATOR;
         }
     };
 

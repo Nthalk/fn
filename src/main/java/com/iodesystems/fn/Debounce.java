@@ -15,7 +15,7 @@ public abstract class Debounce implements Runnable {
     private final boolean continuing;
     private final boolean trailing;
     Clock clock = DEFAULT_CLOCK;
-    private long lastTriggered;
+    long lastTriggered;
     private boolean isLeading = true;
     private ScheduledFuture<?> next = null;
 
@@ -114,34 +114,25 @@ public abstract class Debounce implements Runnable {
             LOG.log(Level.FINEST, "Clearing deferred trailing trigger");
             next = null;
         }
-
-        if (delta >= millisPerTrigger) {
-            if (leading && isLeading) {
-                LOG.log(Level.FINEST, "Triggered due to leading invocation after delay");
-                trigger();
-                isLeading = true;
-                lastTriggered = current;
-            } else {
-                LOG.log(Level.FINEST, "Triggered due to acceptable delay");
-                trigger();
-                lastTriggered = current;
-            }
+        if (leading && isLeading) {
+            LOG.log(Level.FINEST, "Triggered due to leading invocation");
+            trigger();
+            lastTriggered = current;
+            isLeading = false;
+        } else if (delta >= millisPerTrigger) {
+            LOG.log(Level.FINEST, "Triggered due to acceptable delay");
+            trigger();
+            lastTriggered = current;
         } else {
-            if (leading && isLeading) {
-                LOG.log(Level.FINEST, "Triggered due to leading invocation");
-                trigger();
+            if (!continuing) {
+                LOG.log(Level.FINEST, "Resetting lastTriggered due to non-continuing");
                 lastTriggered = current;
-                isLeading = false;
-            } else {
-                if (!continuing) {
-                    LOG.log(Level.FINEST, "Resetting lastTriggered due to non-continuing");
-                    lastTriggered = current;
-                }
-                if (trailing) {
-                    LOG.log(Level.FINEST, "Scheduling deferred trailing trigger");
-                    next = scheduledExecutorService.schedule(this, millisPerTrigger, TimeUnit.MILLISECONDS);
-                }
             }
+            if (trailing) {
+                LOG.log(Level.FINEST, "Scheduling deferred trailing trigger");
+                next = scheduledExecutorService.schedule(this, millisPerTrigger, TimeUnit.MILLISECONDS);
+            }
+
         }
     }
 

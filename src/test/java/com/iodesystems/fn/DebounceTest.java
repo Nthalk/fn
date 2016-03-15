@@ -23,6 +23,120 @@ public class DebounceTest {
     }
 
     @Test
+    public void testThrottleWithDelay() throws InterruptedException {
+        Debounce debounce = Debounce.throttleWithDelay(scheduledExecutorService, 2, new Runnable() {
+            @Override
+            public void run() {
+                count.incrementAndGet();
+            }
+        });
+        debounce.clock = clock;
+        debounce.lastTriggered = clock.currentTimeMillis();
+
+        debounce.run();
+        assertEquals(0, count.get());
+
+        clock.advance(1);
+        debounce.run();
+        assertEquals(0, count.get());
+
+        clock.advance(1);
+        debounce.run();
+        assertEquals(1, count.get());
+
+        clock.advance(1);
+        debounce.run();
+        assertEquals(1, count.get());
+
+        clock.advance(1);
+        debounce.run();
+        assertEquals(2, count.get());
+
+        clock.advance(1);
+        debounce.run();
+        assertEquals(2, count.get());
+
+        clock.advance(10);
+        Thread.sleep(10);
+        assertEquals(3, count.get());
+    }
+
+    @Test
+    public void testThrottleWithDelayWithoutTrailing() throws InterruptedException {
+        Debounce debounce = Debounce.throttleWithDelay(2, new Runnable() {
+            @Override
+            public void run() {
+                count.incrementAndGet();
+            }
+        });
+        debounce.clock = clock;
+        debounce.lastTriggered = clock.currentTimeMillis();
+
+        // Delay prevents it from running
+        debounce.run();
+        assertEquals(0, count.get());
+
+        clock.advance(1);
+        debounce.run();
+        assertEquals(0, count.get());
+
+        clock.advance(1);
+        debounce.run();
+        assertEquals(1, count.get());
+
+        clock.advance(1);
+        debounce.run();
+        assertEquals(1, count.get());
+
+        clock.advance(1);
+        debounce.run();
+        assertEquals(2, count.get());
+
+        clock.advance(1);
+        debounce.run();
+        assertEquals(2, count.get());
+
+        clock.advance(10);
+        Thread.sleep(10);
+        assertEquals(2, count.get());
+    }
+
+    @Test
+    public void testDebounceWithDelayWithoutTrailing() throws InterruptedException {
+        Debounce debounce = Debounce.debounceWithDelay(1, new Runnable() {
+            @Override
+            public void run() {
+                count.incrementAndGet();
+            }
+        });
+        debounce.clock = clock;
+        // Delay prevents it from running
+        debounce.run();
+        assertEquals(0, count.get());
+        debounce.run();
+        assertEquals(0, count.get());
+        debounce.run();
+        assertEquals(0, count.get());
+
+        clock.advance(2);
+        debounce.run();
+        assertEquals(1, count.get());
+
+        clock.advance(2);
+        debounce.run();
+        assertEquals(2, count.get());
+
+        debounce.run();
+        assertEquals(2, count.get());
+
+        clock.advance(10);
+        // Should not run trailing here
+        Thread.sleep(10);
+
+        assertEquals(2, count.get());
+    }
+
+    @Test
     public void testDebounceWithDelay() throws Exception {
         Debounce debounce = Debounce.debounceWithDelay(scheduledExecutorService, 1, new Runnable() {
             @Override
@@ -50,7 +164,7 @@ public class DebounceTest {
         debounce.run();
         assertEquals(2, count.get());
 
-        clock.advance(2);
+        clock.advance(10);
         // Should run trailing here
         Thread.sleep(10);
 
@@ -68,6 +182,7 @@ public class DebounceTest {
         debounce.clock = clock;
         debounce.run();
         // Should run here
+        clock.advance(10);
         Thread.sleep(10);
         assertEquals(1, count.get());
     }
@@ -93,7 +208,7 @@ public class DebounceTest {
         debounce.run();
         assertEquals(2, count.get());
 
-        clock.advance(2);
+        clock.advance(10);
         Thread.sleep(10);
         // Should skip this
 
@@ -133,7 +248,7 @@ public class DebounceTest {
         debounce.run();
         assertEquals(3, count.get());
 
-        clock.advance(1);
+        clock.advance(10);
         Thread.sleep(10);
         assertEquals(3, count.get());
     }
@@ -171,7 +286,7 @@ public class DebounceTest {
         debounce.run();
         assertEquals(3, count.get());
 
-        clock.advance(1);
+        clock.advance(10);
         Thread.sleep(10);
         assertEquals(4, count.get());
     }
