@@ -41,14 +41,22 @@ public abstract class Async<A> {
         return new Initial<A>(executor, initial);
     }
 
-    public static <A> Async<List<A>> when(final Executor executor, Async<A>... asyncs) {
+    public static <A> Next<List<A>, List<A>> when(final Executor executor, final Async<A>... asyncs) {
         final List<A> results = new ArrayList<A>(asyncs.length);
         final AtomicInteger countdown = new AtomicInteger(asyncs.length);
         final AtomicBoolean hasException = new AtomicBoolean(false);
         int index = 0;
 
         final Next<List<A>, List<A>> next = new Next<List<A>, List<A>>(executor, new Result<List<A>>() {
-        });
+            // Ignore this
+        }, null) {
+            @Override
+            public void remove() {
+                for (Async<A> async : asyncs) {
+                    async.remove(this);
+                }
+            }
+        };
 
         for (Async<A> async : asyncs) {
             final int asyncIndex = index++;
@@ -99,27 +107,27 @@ public abstract class Async<A> {
         return next;
     }
 
-    public <B> Async<B> then(OnResult<A, B> onResult) {
+    public <B> Next<A, B> then(OnResult<A, B> onResult) {
         return then(executor, onResult);
     }
 
-    public <B> Async<B> then(OnResult<A, B> onResult, final OnException<B> onException) {
+    public <B> Next<A, B> then(OnResult<A, B> onResult, final OnException<B> onException) {
         return then(executor, onResult, onException);
     }
 
-    public <B> Async<B> then(OnResult<A, B> onResult, final OnException<B> onException, final OnProgress onProgress) {
+    public <B> Next<A, B> then(OnResult<A, B> onResult, final OnException<B> onException, final OnProgress onProgress) {
         return then(executor, onResult, onException, onProgress);
     }
 
-    public <B> Async<B> then(Executor executor, OnResult<A, B> onResult) {
+    public <B> Next<A, B> then(Executor executor, OnResult<A, B> onResult) {
         return then(executor, onResult, null);
     }
 
-    public <B> Async<B> then(Executor executor, OnResult<A, B> onResult, final OnException<B> onException) {
+    public <B> Next<A, B> then(Executor executor, OnResult<A, B> onResult, final OnException<B> onException) {
         return then(executor, onResult, onException, null);
     }
 
-    public <B> Async<B> then(Executor executor, final OnResult<A, B> onResult, final OnException<B> onException, final OnProgress onProgress) {
+    public <B> Next<A, B> then(Executor executor, final OnResult<A, B> onResult, final OnException<B> onException, final OnProgress onProgress) {
         return then(new Next<A, B>(executor, new From<A, B>() {
             @Override
             public B onResult(A a) throws Exception {
@@ -141,23 +149,23 @@ public abstract class Async<A> {
                 }
                 return super.onException(e);
             }
-        }));
+        }, this));
     }
 
-    public Async<A> then(Result<A> from) {
+    public Next<A, A> then(Result<A> from) {
         return then(executor, from);
     }
 
-    public <B> Async<B> then(From<A, B> from) {
+    public <B> Next<A, B> then(From<A, B> from) {
         return then(executor, from);
     }
 
-    public Async<A> then(Executor executor, Result<A> result) {
-        return then(new Next<A, A>(executor, result));
+    public Next<A, A> then(Executor executor, Result<A> result) {
+        return then(new Next<A, A>(executor, result, this));
     }
 
-    public <B> Async<B> then(Executor executor, From<A, B> from) {
-        return then(new Next<A, B>(executor, from));
+    public <B> Next<A, B> then(Executor executor, From<A, B> from) {
+        return then(new Next<A, B>(executor, from, this));
     }
 
     synchronized void progressInternal(Executor executor, int progress) {
@@ -174,19 +182,19 @@ public abstract class Async<A> {
         }
     }
 
-    public Async<A> onProgress(OnProgress onProgress) {
+    public Next<A, A> onProgress(OnProgress onProgress) {
         return then(executor, null, null, onProgress);
     }
 
-    public <B> Async<B> onException(OnException<B> onException) {
+    public <B> Next<A, B> onException(OnException<B> onException) {
         return then(executor, null, onException, null);
     }
 
-    public Async<A> onProgress(Executor executor, OnProgress onProgress) {
+    public Next<A, A> onProgress(Executor executor, OnProgress onProgress) {
         return then(executor, null, null, onProgress);
     }
 
-    public <B> Async<B> onException(Executor executor, OnException<B> onException) {
+    public <B> Next<A, B> onException(Executor executor, OnException<B> onException) {
         return then(executor, null, onException, null);
     }
 
@@ -266,10 +274,16 @@ public abstract class Async<A> {
     public static class Next<A, B> extends Async<B> {
 
         private final From<A, B> from;
+        private final Async parent;
 
-        public Next(Executor executor, From<A, B> from) {
+        public Next(Executor executor, From<A, B> from, Async parent) {
             super(executor);
             this.from = from;
+            this.parent = parent;
+        }
+
+        public void remove() {
+            parent.remove(this);
         }
 
         private void onParentProgressInternal(int progress) {
@@ -342,6 +356,9 @@ public abstract class Async<A> {
         }
     }
 
+    private synchronized <A, B> void remove(Next<A, B> next) {
+        nexts.remove(next);
+    }
 
     public static abstract class Result<A> extends From<A, A> {
         @Override
