@@ -29,6 +29,15 @@ public abstract class Async<A> {
         return async(INLINE, initial);
     }
 
+    public static <A> Async<A> async(final A value) {
+        return async(INLINE, new Callable<A>() {
+            @Override
+            public A call() throws Exception {
+                return value;
+            }
+        });
+    }
+
     public static <A> Deferred<A> defer() {
         return defer(INLINE);
     }

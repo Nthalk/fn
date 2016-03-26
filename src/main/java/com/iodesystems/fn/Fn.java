@@ -25,6 +25,10 @@ public class Fn<A> implements Iterable<A> {
         return Condition.of(where);
     }
 
+    public static <A> Async<A> async(A value) {
+        return Async.async(value);
+    }
+
     public static <A> Async<A> async(Callable<A> initial) {
         return Async.async(initial);
     }
