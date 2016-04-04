@@ -125,7 +125,7 @@ public abstract class Iterables {
             @Override
             public Iterator<B> iterator() {
                 return new Iterator<B>() {
-                    Iterator<A> sourceA = sources.iterator();
+                    final Iterator<A> sourceA = sources.iterator();
                     Iterator<B> sourceB = null;
 
                     @Override
@@ -278,17 +278,12 @@ public abstract class Iterables {
             @Override
             public Iterator<Tuple2<A, B>> iterator() {
                 return new Iterator<Tuple2<A, B>>() {
-                    Iterator<A> sourceA = as.iterator();
-                    Iterator<B> sourceB = bs.iterator();
+                    final Iterator<A> sourceA = as.iterator();
+                    final Iterator<B> sourceB = bs.iterator();
 
                     @Override
                     public boolean hasNext() {
-                        if (sourceA.hasNext() && sourceB.hasNext()) {
-                            return true;
-                        } else {
-                            // Should we drain the other?
-                            return false;
-                        }
+                        return sourceA.hasNext() && sourceB.hasNext();
                     }
 
                     @Override
@@ -397,7 +392,7 @@ public abstract class Iterables {
             @Override
             public Iterator<Iterable<A>> iterator() {
                 return new Iterator<Iterable<A>>() {
-                    Iterator<A> source = contents.iterator();
+                    final Iterator<A> source = contents.iterator();
                     List<A> segment;
                     boolean isTrailingEnd;
 
@@ -450,7 +445,7 @@ public abstract class Iterables {
             @Override
             public Iterator<A> iterator() {
                 return new Iterator<A>() {
-                    Iterator<A> source = contents.iterator();
+                    final Iterator<A> source = contents.iterator();
                     A next = null;
 
                     @Override
@@ -533,7 +528,7 @@ public abstract class Iterables {
             @Override
             public Iterator<A> iterator() {
                 return new Iterator<A>() {
-                    Iterator<Iterable<A>> sources = nexts.iterator();
+                    final Iterator<Iterable<A>> sources = nexts.iterator();
                     Iterator<A> current = null;
 
                     @Override
@@ -571,7 +566,7 @@ public abstract class Iterables {
                 return new Iterator<A>() {
                     A next = null;
                     Iterator<A> currentLevel = sources.iterator();
-                    Stack<A> todo = new Stack<A>();
+                    final Stack<A> todo = new Stack<A>();
 
                     @Override
                     public boolean hasNext() {
@@ -608,8 +603,8 @@ public abstract class Iterables {
             public Iterator<A> iterator() {
                 return new Iterator<A>() {
                     A next;
-                    Iterator<A> source = sources.iterator();
-                    Stack<Iterator<A>> descent = new Stack<Iterator<A>>();
+                    final Iterator<A> source = sources.iterator();
+                    final Stack<Iterator<A>> descent = new Stack<Iterator<A>>();
 
                     @Override
                     public boolean hasNext() {

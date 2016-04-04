@@ -39,8 +39,7 @@ public class Node<T> {
 
         Node node = (Node) o;
 
-        if (children != null ? !children.equals(node.children) : node.children != null) return false;
-        return value != null ? value.equals(node.value) : node.value == null;
+        return children != null ? children.equals(node.children) : node.children == null && (value != null ? value.equals(node.value) : node.value == null);
 
     }
 

@@ -7,8 +7,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public abstract class Debounce implements Runnable {
-    static Clock DEFAULT_CLOCK = new Clock();
-    private static Logger LOG = Logger.getLogger(Debounce.class.getName());
+    static final Clock DEFAULT_CLOCK = new Clock();
+    private static final Logger LOG = Logger.getLogger(Debounce.class.getName());
     private final ScheduledExecutorService scheduledExecutorService;
     private final long millisPerTrigger;
     private final boolean leading;

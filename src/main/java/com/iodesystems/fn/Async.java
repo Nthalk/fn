@@ -52,6 +52,7 @@ public abstract class Async<A> {
 
     public static <A> Next<List<A>, List<A>> when(final Executor executor, final Async<A>... asyncs) {
         final List<A> results = new ArrayList<A>(asyncs.length);
+        final List<Next<A, A>> thens = new ArrayList<Next<A, A>>();
         final AtomicInteger countdown = new AtomicInteger(asyncs.length);
         final AtomicBoolean hasException = new AtomicBoolean(false);
         int index = 0;
@@ -61,8 +62,8 @@ public abstract class Async<A> {
         }, null) {
             @Override
             public void remove() {
-                for (Async<A> async : asyncs) {
-                    async.remove(this);
+                for (Next<A, A> then : thens) {
+                    then.remove();
                 }
             }
         };
@@ -70,13 +71,14 @@ public abstract class Async<A> {
         for (Async<A> async : asyncs) {
             final int asyncIndex = index++;
             results.add(null);
-            async.then(executor, new Result<A>() {
+            thens.add(async.then(executor, new Result<A>() {
                 @Override
                 public A onResult(A a) throws Exception {
                     results.set(asyncIndex, a);
                     if (countdown.decrementAndGet() == 0) {
                         next.onParentResult(executor, results);
                     }
+
                     return super.onResult(a);
                 }
 
@@ -87,7 +89,7 @@ public abstract class Async<A> {
                     }
                     return Option.empty();
                 }
-            });
+            }));
         }
         return next;
     }
@@ -205,6 +207,10 @@ public abstract class Async<A> {
 
     public <B> Next<A, B> onException(Executor executor, OnException<B> onException) {
         return then(executor, null, onException, null);
+    }
+
+    private synchronized void remove(Next<A, ?> next) {
+        nexts.remove(next);
     }
 
     public interface OnResult<A, B> {
@@ -363,10 +369,6 @@ public abstract class Async<A> {
                 exceptionInternal(executor, e);
             }
         }
-    }
-
-    private synchronized <A, B> void remove(Next<A, B> next) {
-        nexts.remove(next);
     }
 
     public static abstract class Result<A> extends From<A, A> {
