@@ -1,5 +1,6 @@
 package com.iodesystems.fn;
 
+import com.iodesystems.fn.tree.simple.Node;
 import com.iodesystems.fn.tuples.Tuple2;
 import org.junit.Test;
 
@@ -8,9 +9,47 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static com.iodesystems.fn.tree.simple.Node.v;
 import static org.junit.Assert.assertEquals;
 
 public class FnTest {
+
+    @Test
+    public void testDepthMultiply() {
+        assertEquals(
+            Fn.ofRange(1, 8).toList(),
+            Fn.<Node>of(v(1, v(2, v(3), v(4)), v(5)), v(6, v(7), v(8)))
+                .depth(new From<Node, Iterable<Node>>() {
+                    @Override
+                    public Iterable<Node> from(Node node) {
+                        return node.getChildren();
+                    }
+                })
+                .convert(new From<Node, Object>() {
+                    @Override
+                    public Object from(Node node) {
+                        return node.getValue();
+                    }
+                })
+                .toList());
+    }
+
+    @Test
+    public void testBreadthMultiply() {
+        assertEquals(
+            Fn.ofRange(1, 8).toList(),
+            Fn.<Node>of(v(1, v(3, v(5), v(6, v(7, v(8)))), v(4)), v(2)).breadth(new From<Node, Iterable<Node>>() {
+                @Override
+                public Iterable<Node> from(Node node) {
+                    return node.getChildren();
+                }
+            }).convert(new From<Node, Object>() {
+                @Override
+                public Object from(Node node) {
+                    return node.getValue();
+                }
+            }).toList());
+    }
 
     @Test
     public void testRepeat() {

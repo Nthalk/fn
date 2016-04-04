@@ -9,7 +9,7 @@ import java.util.concurrent.Executor;
 public class Fn<A> implements Iterable<A> {
     private final Iterable<A> contents;
 
-    private Fn(Iterable<A> contents) {
+    protected Fn(Iterable<A> contents) {
         this.contents = contents;
     }
 
@@ -170,12 +170,13 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public static <A> Iterable<A> flatten(Iterable<Iterable<A>> nexts) {
-        return Iterables.flatten(nexts);
+        return Iterables.join(nexts);
     }
 
     public static <A> Fn<A> ofJoin(Iterable<Iterable<A>> nexts, final A joiner) {
         return of(join(nexts, joiner));
     }
+
     public static <A> Iterable<A> join(Iterable<Iterable<A>> nexts, final A joiner) {
         return Iterables.multiply(nexts, new From<Iterable<A>, Iterable<A>>() {
             @Override
@@ -210,6 +211,11 @@ public class Fn<A> implements Iterable<A> {
                 return next;
             }
         });
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> From<T, T> identity() {
+        return (From<T, T>) From.IDENTITY;
     }
 
     public <K> Map<K, List<A>> group(From<A, K> extractor) {
@@ -359,11 +365,6 @@ public class Fn<A> implements Iterable<A> {
         return Fn.of(Iterables.dropWhile(contents, where));
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T> From<T, T> identity() {
-        return (From<T, T>) From.IDENTITY;
-    }
-
     public Fn<Iterable<A>> multiply(final Integer times) {
         return convert(new From<A, Iterable<A>>() {
             @Override
@@ -380,5 +381,13 @@ public class Fn<A> implements Iterable<A> {
                 return where.is(a) ? Option.of(a) : Option.<A>empty();
             }
         });
+    }
+
+    public Fn<A> depth(From<A, Iterable<A>> multiply) {
+        return of(Iterables.depth(contents, multiply));
+    }
+
+    public Fn<A> breadth(From<A, Iterable<A>> multiply) {
+        return of(Iterables.breadth(contents, multiply));
     }
 }

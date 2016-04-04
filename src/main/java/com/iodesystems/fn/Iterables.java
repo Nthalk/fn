@@ -528,7 +528,7 @@ public abstract class Iterables {
         return set;
     }
 
-    public static <A> Iterable<A> flatten(final Iterable<Iterable<A>> nexts) {
+    public static <A> Iterable<A> join(final Iterable<Iterable<A>> nexts) {
         return new Iterable<A>() {
             @Override
             public Iterator<A> iterator() {
@@ -553,6 +553,88 @@ public abstract class Iterables {
                     @Override
                     public A next() {
                         return current.next();
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new IllegalStateException();
+                    }
+                };
+            }
+        };
+    }
+
+    public static <A> Iterable<A> breadth(final Iterable<A> sources, final From<A, Iterable<A>> multiplier) {
+        return new Iterable<A>() {
+            @Override
+            public Iterator<A> iterator() {
+                return new Iterator<A>() {
+                    A next = null;
+                    Iterator<A> currentLevel = sources.iterator();
+                    Stack<A> todo = new Stack<A>();
+
+                    @Override
+                    public boolean hasNext() {
+                        if (currentLevel.hasNext()) {
+                            next = currentLevel.next();
+                            todo.push(next);
+                            return true;
+                        } else if (!todo.isEmpty()) {
+                            currentLevel = multiplier.from(todo.pop()).iterator();
+                            return hasNext();
+                        } else {
+                            return false;
+                        }
+                    }
+
+                    @Override
+                    public A next() {
+                        return next;
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new IllegalStateException();
+                    }
+
+                };
+            }
+        };
+    }
+
+    public static <A> Iterable<A> depth(final Iterable<A> sources, final From<A, Iterable<A>> multiplier) {
+        return new Iterable<A>() {
+            @Override
+            public Iterator<A> iterator() {
+                return new Iterator<A>() {
+                    A next;
+                    Iterator<A> source = sources.iterator();
+                    Stack<Iterator<A>> descent = new Stack<Iterator<A>>();
+
+                    @Override
+                    public boolean hasNext() {
+                        while (!descent.isEmpty()) {
+                            Iterator<A> top = descent.peek();
+                            if (!top.hasNext()) {
+                                descent.pop();
+                            } else {
+                                next = top.next();
+                                descent.push(multiplier.from(next).iterator());
+                                return true;
+                            }
+                        }
+
+                        if (source.hasNext()) {
+                            next = source.next();
+                            descent.push(multiplier.from(next).iterator());
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    @Override
+                    public A next() {
+                        return next;
                     }
 
                     @Override
