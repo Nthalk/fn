@@ -169,7 +169,7 @@ public class Fn<A> implements Iterable<A> {
         return of(flatten(nexts));
     }
 
-    public static <A> Iterable<A> flatten(Iterable<Iterable<A>> nexts) {
+    public static <A extends Iterable<B>, B> Iterable<B> flatten(Iterable<A> nexts) {
         return Iterables.join(nexts);
     }
 

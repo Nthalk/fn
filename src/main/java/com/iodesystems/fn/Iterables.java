@@ -523,12 +523,12 @@ public abstract class Iterables {
         return set;
     }
 
-    public static <A> Iterable<A> join(final Iterable<Iterable<A>> nexts) {
+    public static <A, B extends Iterable<A>> Iterable<A> join(final Iterable<B> nexts) {
         return new Iterable<A>() {
             @Override
             public Iterator<A> iterator() {
                 return new Iterator<A>() {
-                    final Iterator<Iterable<A>> sources = nexts.iterator();
+                    final Iterator<B> sources = nexts.iterator();
                     Iterator<A> current = null;
 
                     @Override

@@ -9,15 +9,29 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static com.iodesystems.fn.Fn.flatten;
+import static com.iodesystems.fn.Fn.ofRange;
 import static com.iodesystems.fn.tree.simple.Node.v;
 import static org.junit.Assert.assertEquals;
 
 public class FnTest {
 
     @Test
+    public void testFlattenNesting() {
+        flatten(ofRange(1, 100)
+                    .multiply(4)
+                    .convert(new From<Iterable<Integer>, List<Integer>>() {
+                        @Override
+                        public List<Integer> from(Iterable<Integer> integers) {
+                            return Fn.of(integers).toList();
+                        }
+                    }));
+    }
+
+    @Test
     public void testDepthMultiply() {
         assertEquals(
-            Fn.ofRange(1, 8).toList(),
+            ofRange(1, 8).toList(),
             Fn.<Node>of(v(1, v(2, v(3), v(4)), v(5)), v(6, v(7), v(8)))
                 .depth(new From<Node, Iterable<Node>>() {
                     @Override
@@ -37,7 +51,7 @@ public class FnTest {
     @Test
     public void testBreadthMultiply() {
         assertEquals(
-            Fn.ofRange(1, 8).toList(),
+            ofRange(1, 8).toList(),
             Fn.<Node>of(v(1, v(3, v(5), v(6, v(7, v(8)))), v(4)), v(2)).breadth(new From<Node, Iterable<Node>>() {
                 @Override
                 public Iterable<Node> from(Node node) {
@@ -255,7 +269,7 @@ public class FnTest {
 
     @Test
     public void testTakeWhile() {
-        assertEquals(100, Fn.ofRange(-100, 1000).takeWhile(new Where<Integer>() {
+        assertEquals(100, ofRange(-100, 1000).takeWhile(new Where<Integer>() {
             @Override
             public boolean is(Integer integer) {
                 return integer <= 300;
