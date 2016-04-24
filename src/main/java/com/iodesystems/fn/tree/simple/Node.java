@@ -1,34 +1,49 @@
 package com.iodesystems.fn.tree.simple;
 
+import com.iodesystems.fn.logic.Condition;
+import com.iodesystems.fn.Fn;
+import com.iodesystems.fn.logic.Where;
+import com.iodesystems.fn.tree.Adapter;
+
 import java.util.Arrays;
 import java.util.List;
 
-public class Node<T> {
-    private final List<Node<?>> children;
-    private final T value;
+public class Node {
+    public static final Adapter<Node> Adapter = new NodeAdapter();
+    protected final List<Node> children;
+    private final Object value;
 
-    public Node(T value, Node<?>... children) {
+    public Node(Object value, Node... children) {
         this(value, Arrays.asList(children));
     }
 
-    public Node(T value, List<Node<?>> children) {
+    public Node(Object value, List<Node> children) {
         this.children = children;
         this.value = value;
     }
 
-    public static <T> Node<T> v(T value, List<Node<?>> children) {
-        return new Node<T>(value, children);
+    public static Node v(Object value, List<Node> children) {
+        return new Node(value, children);
     }
 
-    public static <T> Node<T> v(T value, Node<?>... children) {
-        return new Node<T>(value, children);
+    public static Node v(Object value, Node... children) {
+        return new Node(value, children);
     }
 
-    public List<Node<?>> getChildren() {
+    public static Where<Node> valueIs(final Object value) {
+        return new Condition<Node>() {
+            @Override
+            public boolean is(Node node) {
+                return Fn.eq(value, node.getValue());
+            }
+        };
+    }
+
+    public List<Node> getChildren() {
         return children;
     }
 
-    public T getValue() {
+    public Object getValue() {
         return value;
     }
 
@@ -39,7 +54,8 @@ public class Node<T> {
 
         Node node = (Node) o;
 
-        return children != null ? children.equals(node.children) : node.children == null && (value != null ? value.equals(node.value) : node.value == null);
+        if (children != null ? !children.equals(node.children) : node.children != null) return false;
+        return value != null ? value.equals(node.value) : node.value == null;
 
     }
 

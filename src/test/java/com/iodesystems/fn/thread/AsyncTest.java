@@ -1,5 +1,7 @@
-package com.iodesystems.fn;
+package com.iodesystems.fn.thread;
 
+import com.iodesystems.fn.Fn;
+import com.iodesystems.fn.data.Option;
 import net.jodah.concurrentunit.Waiter;
 import org.junit.Test;
 

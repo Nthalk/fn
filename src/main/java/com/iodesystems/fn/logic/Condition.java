@@ -1,4 +1,4 @@
-package com.iodesystems.fn;
+package com.iodesystems.fn.logic;
 
 public abstract class Condition<A> implements Where<A> {
     public static <A> Condition<A> of(final Where<A> where) {

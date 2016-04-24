@@ -1,7 +1,8 @@
 package com.iodesystems.fn;
 
+import com.iodesystems.fn.data.*;
+import com.iodesystems.fn.logic.Where;
 import com.iodesystems.fn.tree.simple.Node;
-import com.iodesystems.fn.tuples.Tuple2;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -32,7 +33,7 @@ public class FnTest {
     public void testDepthMultiply() {
         assertEquals(
             ofRange(1, 8).toList(),
-            Fn.<Node>of(v(1, v(2, v(3), v(4)), v(5)), v(6, v(7), v(8)))
+            Fn.of(v(1, v(2, v(3), v(4)), v(5)), v(6, v(7), v(8)))
                 .depth(new From<Node, Iterable<Node>>() {
                     @Override
                     public Iterable<Node> from(Node node) {
@@ -52,7 +53,7 @@ public class FnTest {
     public void testBreadthMultiply() {
         assertEquals(
             ofRange(1, 8).toList(),
-            Fn.<Node>of(v(1, v(3, v(5), v(6, v(7, v(8)))), v(4)), v(2)).breadth(new From<Node, Iterable<Node>>() {
+            Fn.of(v(1, v(3, v(5), v(6, v(7, v(8)))), v(4)), v(2)).breadth(new From<Node, Iterable<Node>>() {
                 @Override
                 public Iterable<Node> from(Node node) {
                     return node.getChildren();
@@ -104,7 +105,7 @@ public class FnTest {
 
     @Test
     public void testWithIndex() {
-        Map<String, List<Tuple2<Integer, Integer>>> group = Fn
+        Map<String, List<Pair<Integer, Integer>>> group = Fn
             .of(1, 2, 3, 4)
             .multiply(new From<Integer, Iterable<Integer>>() {
                 @Override
@@ -113,15 +114,15 @@ public class FnTest {
                 }
             })
             .withIndex()
-            .group(new From<Tuple2<Integer, Integer>, String>() {
+            .group(new From<Pair<Integer, Integer>, String>() {
                 @Override
-                public String from(Tuple2<Integer, Integer> integerIntegerTuple2) {
+                public String from(Pair<Integer, Integer> integerIntegerTuple2) {
                     return integerIntegerTuple2.getB().toString();
                 }
             });
         assertEquals(4, group.size());
-        for (List<Tuple2<Integer, Integer>> tuple2s : group.values()) {
-            assertEquals(tuple2s.get(0).getB().intValue(), tuple2s.size());
+        for (List<Pair<Integer, Integer>> pairs : group.values()) {
+            assertEquals(pairs.get(0).getB().intValue(), pairs.size());
         }
     }
 

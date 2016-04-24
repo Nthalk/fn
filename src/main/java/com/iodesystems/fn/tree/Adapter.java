@@ -1,6 +1,6 @@
 package com.iodesystems.fn.tree;
 
-import com.iodesystems.fn.From;
+import com.iodesystems.fn.data.From;
 
 import java.util.List;
 

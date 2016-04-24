@@ -1,4 +1,4 @@
-package com.iodesystems.fn;
+package com.iodesystems.fn.data;
 
 public interface From<A, B> {
     From<?, ?> IDENTITY = new From<Object, Object>() {

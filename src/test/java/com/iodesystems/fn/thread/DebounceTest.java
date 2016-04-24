@@ -1,4 +1,4 @@
-package com.iodesystems.fn;
+package com.iodesystems.fn.thread;
 
 import org.junit.Before;
 import org.junit.Test;

@@ -1,5 +1,6 @@
 package com.iodesystems.fn;
 
+import com.iodesystems.fn.data.From;
 import org.junit.Test;
 
 import java.util.Arrays;

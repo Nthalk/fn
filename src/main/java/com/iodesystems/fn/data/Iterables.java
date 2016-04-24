@@ -1,7 +1,7 @@
-package com.iodesystems.fn;
+package com.iodesystems.fn.data;
 
 
-import com.iodesystems.fn.tuples.Tuple2;
+import com.iodesystems.fn.logic.Where;
 
 import java.util.*;
 
@@ -26,6 +26,7 @@ public abstract class Iterables {
 
     public static final Iterable<?> EMPTY = new Iterable<Object>() {
         @Override
+        @SuppressWarnings("unchecked")
         public Iterator<Object> iterator() {
             return (Iterator<Object>) EMPTY_ITERATOR;
         }
@@ -273,11 +274,11 @@ public abstract class Iterables {
         return Arrays.asList(source);
     }
 
-    public static <A, B> Iterable<Tuple2<A, B>> parallel(final Iterable<A> as, final Iterable<B> bs) {
-        return new Iterable<Tuple2<A, B>>() {
+    public static <A, B> Iterable<Pair<A, B>> parallel(final Iterable<A> as, final Iterable<B> bs) {
+        return new Iterable<Pair<A, B>>() {
             @Override
-            public Iterator<Tuple2<A, B>> iterator() {
-                return new Iterator<Tuple2<A, B>>() {
+            public Iterator<Pair<A, B>> iterator() {
+                return new Iterator<Pair<A, B>>() {
                     final Iterator<A> sourceA = as.iterator();
                     final Iterator<B> sourceB = bs.iterator();
 
@@ -287,8 +288,8 @@ public abstract class Iterables {
                     }
 
                     @Override
-                    public Tuple2<A, B> next() {
-                        return new Tuple2<A, B>(sourceA.next(), sourceB.next());
+                    public Pair<A, B> next() {
+                        return new Pair<A, B>(sourceA.next(), sourceB.next());
                     }
 
                     @Override
@@ -559,23 +560,24 @@ public abstract class Iterables {
         };
     }
 
-    public static <A> Iterable<A> breadth(final Iterable<A> sources, final From<A, Iterable<A>> multiplier) {
+    public static <A> Iterable<A> breadth(final Iterable<A> sources,
+                                          final From<A, Iterable<A>> multiplier) {
         return new Iterable<A>() {
             @Override
             public Iterator<A> iterator() {
                 return new Iterator<A>() {
-                    A next = null;
+                    final List<A> todo = new LinkedList<A>();
                     Iterator<A> currentLevel = sources.iterator();
-                    final Stack<A> todo = new Stack<A>();
+                    A next;
 
                     @Override
                     public boolean hasNext() {
                         if (currentLevel.hasNext()) {
                             next = currentLevel.next();
-                            todo.push(next);
+                            todo.add(next);
                             return true;
                         } else if (!todo.isEmpty()) {
-                            currentLevel = multiplier.from(todo.pop()).iterator();
+                            currentLevel = multiplier.from(todo.remove(0)).iterator();
                             return hasNext();
                         } else {
                             return false;
@@ -597,31 +599,82 @@ public abstract class Iterables {
         };
     }
 
+    public static <A> Iterable<List<A>> breadthPaths(final Iterable<A> sources,
+                                                     final From<A, Iterable<A>> multiplier) {
+        return new Iterable<List<A>>() {
+            @Override
+            public Iterator<List<A>> iterator() {
+                return new Iterator<List<A>>() {
+                    final LinkedList<A> todo = new LinkedList<A>();
+                    final LinkedList<A> path = new LinkedList<A>();
+                    Iterator<A> currentLevel = sources.iterator();
+                    A next;
+                    boolean isFirst = true;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (currentLevel.hasNext()) {
+                            next = currentLevel.next();
+                            if (!isFirst) {
+                                path.removeLast();
+                            } else {
+                                isFirst = false;
+                            }
+                            path.add(next);
+                            todo.add(next);
+                            return true;
+                        } else if (!todo.isEmpty()) {
+                            isFirst = true;
+                            path.removeLast();
+                            next = todo.removeFirst();
+                            path.add(next);
+                            currentLevel = multiplier.from(next).iterator();
+                            return hasNext();
+                        }
+                        return false;
+                    }
+
+                    @Override
+                    public List<A> next() {
+                        return new ArrayList<A>(path);
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new IllegalStateException();
+                    }
+
+                };
+            }
+        };
+    }
+
     public static <A> Iterable<A> depth(final Iterable<A> sources, final From<A, Iterable<A>> multiplier) {
         return new Iterable<A>() {
             @Override
             public Iterator<A> iterator() {
                 return new Iterator<A>() {
-                    A next;
                     final Iterator<A> source = sources.iterator();
-                    final Stack<Iterator<A>> descent = new Stack<Iterator<A>>();
+                    final List<Iterator<A>> descent = new LinkedList<Iterator<A>>();
+                    A next;
 
                     @Override
                     public boolean hasNext() {
                         while (!descent.isEmpty()) {
-                            Iterator<A> top = descent.peek();
+                            int lastIndex = descent.size() - 1;
+                            Iterator<A> top = descent.get(lastIndex);
                             if (!top.hasNext()) {
-                                descent.pop();
+                                descent.remove(lastIndex);
                             } else {
                                 next = top.next();
-                                descent.push(multiplier.from(next).iterator());
+                                descent.add(multiplier.from(next).iterator());
                                 return true;
                             }
                         }
 
                         if (source.hasNext()) {
                             next = source.next();
-                            descent.push(multiplier.from(next).iterator());
+                            descent.add(multiplier.from(next).iterator());
                             return true;
                         }
                         return false;

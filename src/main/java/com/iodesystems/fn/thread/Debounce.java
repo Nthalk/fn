@@ -1,4 +1,4 @@
-package com.iodesystems.fn;
+package com.iodesystems.fn.thread;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;

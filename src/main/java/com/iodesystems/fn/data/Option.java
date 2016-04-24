@@ -1,4 +1,6 @@
-package com.iodesystems.fn;
+package com.iodesystems.fn.data;
+
+import com.iodesystems.fn.logic.Where;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;

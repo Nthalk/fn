@@ -1,4 +1,4 @@
-package com.iodesystems.fn;
+package com.iodesystems.fn.data;
 
 import java.util.HashMap;
 import java.util.Map;

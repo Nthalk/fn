@@ -1,6 +1,9 @@
 package com.iodesystems.fn;
 
-import com.iodesystems.fn.tuples.Tuple2;
+import com.iodesystems.fn.data.*;
+import com.iodesystems.fn.logic.Condition;
+import com.iodesystems.fn.logic.Where;
+import com.iodesystems.fn.thread.Async;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -160,6 +163,10 @@ public class Fn<A> implements Iterable<A> {
         return Iterables.first(as, is);
     }
 
+    public static <A> A first(Iterable<A> as, Where<A> is, A ifNull) {
+        return Iterables.first(as, is).get(ifNull);
+    }
+
     public static <A> Option<A> last(Iterable<A> as, Where<A> is) {
         return Iterables.last(as, is);
     }
@@ -218,6 +225,25 @@ public class Fn<A> implements Iterable<A> {
         return (From<T, T>) From.IDENTITY;
     }
 
+    public static boolean eq(Object a, Object b) {
+        if (a == b) return true;
+        if (a == null || b == null) return false;
+        return a.equals(b);
+    }
+
+    public static <A> List<A> list(A a) {
+        ArrayList<A> as = new ArrayList<A>(1);
+        as.add(a);
+        return as;
+    }
+
+    public static <A> List<A> list(A a, A... rest) {
+        ArrayList<A> as = new ArrayList<A>(1 + rest.length);
+        as.add(a);
+        Collections.addAll(as, rest);
+        return as;
+    }
+
     public <K> Map<K, List<A>> group(From<A, K> extractor) {
         return group(contents, extractor);
     }
@@ -232,6 +258,14 @@ public class Fn<A> implements Iterable<A> {
 
     public Option<A> first(Where<A> where) {
         return first(contents, where);
+    }
+
+    public A first(Where<A> where, A ifNull) {
+        return first(contents, where, ifNull);
+    }
+
+    public A firstOrNull(Where<A> where) {
+        return first(contents, where, null);
     }
 
     public Option<A> last(Where<A> where) {
@@ -283,17 +317,17 @@ public class Fn<A> implements Iterable<A> {
         return Iterables.toList(contents);
     }
 
-    public <T> Fn<Tuple2<T, A>> withIndex(Iterable<T> index) {
+    public <T> Fn<Pair<T, A>> withIndex(Iterable<T> index) {
         return Fn.of(Iterables.parallel(index, contents));
     }
 
-    public Fn<Tuple2<Integer, A>> withIndex() {
-        return convert(new From<A, Tuple2<Integer, A>>() {
+    public Fn<Pair<Integer, A>> withIndex() {
+        return convert(new From<A, Pair<Integer, A>>() {
             int i = 0;
 
             @Override
-            public Tuple2<Integer, A> from(A a) {
-                return new Tuple2<Integer, A>(i++, a);
+            public Pair<Integer, A> from(A a) {
+                return new Pair<Integer, A>(i++, a);
             }
         });
     }
@@ -349,7 +383,7 @@ public class Fn<A> implements Iterable<A> {
             public boolean is(A a) {
                 return !setOther.contains(a);
             }
-        }).join(Filter.filter(other, new Where<A>() {
+        }).join(Iterables.filter(other, new Where<A>() {
             @Override
             public boolean is(A a) {
                 return !set.contains(a);
@@ -385,6 +419,10 @@ public class Fn<A> implements Iterable<A> {
 
     public Fn<A> depth(From<A, Iterable<A>> multiply) {
         return of(Iterables.depth(contents, multiply));
+    }
+
+    public Fn<List<A>> breadthPaths(From<A, Iterable<A>> multiply) {
+        return of(Iterables.breadthPaths(contents, multiply));
     }
 
     public Fn<A> breadth(From<A, Iterable<A>> multiply) {

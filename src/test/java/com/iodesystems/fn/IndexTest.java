@@ -1,5 +1,7 @@
 package com.iodesystems.fn;
 
+import com.iodesystems.fn.data.From;
+import com.iodesystems.fn.data.Indexer;
 import org.junit.Test;
 
 import java.util.Map;
