@@ -11,6 +11,7 @@ import java.util.concurrent.Executor;
 
 public class Fn<A> implements Iterable<A> {
     private final Iterable<A> contents;
+    private static final Fn<?> EMPTY = new Fn<Object>(Iterables.empty());
 
     protected Fn(Iterable<A> contents) {
         this.contents = contents;
@@ -18,6 +19,11 @@ public class Fn<A> implements Iterable<A> {
 
     public static <V> Where<Option<V>> isEmpty() {
         return Option.whereEmpty();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <V> Fn<V> empty() {
+        return (Fn<V>) EMPTY;
     }
 
     public static <V> Where<Option<V>> isPresent() {
@@ -427,5 +433,18 @@ public class Fn<A> implements Iterable<A> {
 
     public Fn<A> breadth(From<A, Iterable<A>> multiply) {
         return of(Iterables.breadth(contents, multiply));
+    }
+
+    public static <A> Fn<A> tails(Fn<List<A>> items) {
+        return of(items).convert(new From<List<A>, A>() {
+            @Override
+            public A from(List<A> as) {
+                if (as.isEmpty()) {
+                    return null;
+                } else {
+                    return as.get(as.size() - 1);
+                }
+            }
+        });
     }
 }
