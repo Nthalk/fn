@@ -28,5 +28,4 @@ public abstract class Condition<A> implements Where<A> {
         };
     }
 
-
 }

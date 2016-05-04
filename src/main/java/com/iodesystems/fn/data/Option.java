@@ -101,18 +101,13 @@ public abstract class Option<T> implements Iterable<T> {
 
     public abstract T get();
 
-    @SuppressWarnings("SameParameterValue")
-    public T get(T ifEmpty) {
-        if (isEmpty()) {
-            return ifEmpty;
-        } else {
-            return get();
-        }
-    }
+    public abstract T orElse(T ifEmpty);
 
     public abstract boolean isEmpty();
 
     public abstract boolean isPresent();
+
+    public abstract T orResolve(Generator<T> with);
 
     public static class Empty<T> extends Option<T> {
         private Empty() {
@@ -140,6 +135,10 @@ public abstract class Option<T> implements Iterable<T> {
             throw new NoSuchElementException();
         }
 
+        @Override
+        public T orElse(T ifEmpty) {
+            return ifEmpty;
+        }
 
         @Override
         public boolean isEmpty() {
@@ -150,6 +149,11 @@ public abstract class Option<T> implements Iterable<T> {
         public boolean isPresent() {
             return false;
         }
+
+        @Override
+        public T orResolve(Generator<T> with) {
+            return with.next();
+        }
     }
 
     public static class Present<T> extends Option<T> {
@@ -158,7 +162,6 @@ public abstract class Option<T> implements Iterable<T> {
         private Present(T thing) {
             this.thing = thing;
         }
-
 
         @Override
         public boolean equals(Object o) {
@@ -181,6 +184,11 @@ public abstract class Option<T> implements Iterable<T> {
         }
 
         @Override
+        public T orElse(T ifEmpty) {
+            return thing;
+        }
+
+        @Override
         public boolean isEmpty() {
             return false;
         }
@@ -188,6 +196,11 @@ public abstract class Option<T> implements Iterable<T> {
         @Override
         public boolean isPresent() {
             return true;
+        }
+
+        @Override
+        public T orResolve(Generator<T> with) {
+            return thing;
         }
     }
 

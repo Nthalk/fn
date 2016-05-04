@@ -112,7 +112,7 @@ public abstract class Async<A> {
             next.onParentProgress(executor, progress);
         }
         if (result != null) {
-            next.onParentResult(executor, result.get(null));
+            next.onParentResult(executor, result.orElse(null));
         } else if (exception != null) {
             next.onParentException(executor, exception);
         }
@@ -240,7 +240,7 @@ public abstract class Async<A> {
                 next.onParentProgress(null, progress);
             }
             if (result != null) {
-                next.onParentResult(null, result.get(null));
+                next.onParentResult(null, result.orElse(null));
             } else if (exception != null) {
                 next.onParentException(null, exception);
             }

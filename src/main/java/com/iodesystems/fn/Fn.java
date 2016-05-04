@@ -170,7 +170,7 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public static <A> A first(Iterable<A> as, Where<A> is, A ifNull) {
-        return Iterables.first(as, is).get(ifNull);
+        return Iterables.first(as, is).orElse(ifNull);
     }
 
     public static <A> Option<A> last(Iterable<A> as, Where<A> is) {
