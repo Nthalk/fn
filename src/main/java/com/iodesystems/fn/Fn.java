@@ -10,8 +10,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 
 public class Fn<A> implements Iterable<A> {
-    private final Iterable<A> contents;
     private static final Fn<?> EMPTY = new Fn<Object>(Iterables.empty());
+    private final Iterable<A> contents;
 
     protected Fn(Iterable<A> contents) {
         this.contents = contents;
@@ -250,6 +250,19 @@ public class Fn<A> implements Iterable<A> {
         return as;
     }
 
+    public static <A> Fn<A> tails(Fn<List<A>> items) {
+        return of(items).convert(new From<List<A>, A>() {
+            @Override
+            public A from(List<A> as) {
+                if (as.isEmpty()) {
+                    return null;
+                } else {
+                    return as.get(as.size() - 1);
+                }
+            }
+        });
+    }
+
     public <K> Map<K, List<A>> group(From<A, K> extractor) {
         return group(contents, extractor);
     }
@@ -435,16 +448,15 @@ public class Fn<A> implements Iterable<A> {
         return of(Iterables.breadth(contents, multiply));
     }
 
-    public static <A> Fn<A> tails(Fn<List<A>> items) {
-        return of(items).convert(new From<List<A>, A>() {
-            @Override
-            public A from(List<A> as) {
-                if (as.isEmpty()) {
-                    return null;
-                } else {
-                    return as.get(as.size() - 1);
-                }
-            }
-        });
+    public int count() {
+        int count = 0;
+        for (A content : contents) {
+            count++;
+        }
+        return count;
+    }
+
+    public Fn<A> loop() {
+        return of(Iterables.loop(contents));
     }
 }

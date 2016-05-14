@@ -17,6 +17,16 @@ public class IterablesTest {
     }
 
     @Test
+    public void testRepeat(){
+        assertEquals(9, Fn.of(1,2,3).repeat(3).count());
+    }
+
+    @Test
+    public void testLoop(){
+        assertEquals(100, Fn.of(1).loop().take(100).count());
+    }
+
+    @Test
     public void testTake() {
         assertEquals(Arrays.asList(1, 2), Fn.of(1, 2, 3).take(2).toList());
     }

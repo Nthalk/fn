@@ -693,4 +693,37 @@ public abstract class Iterables {
             }
         };
     }
+
+    public static <A> Iterable<A> loop(final Iterable<A> contents) {
+        return new Iterable<A>() {
+            Iterator<A> iterator = contents.iterator();
+            boolean first = true;
+
+            @Override
+            public Iterator<A> iterator() {
+                return new Iterator<A>() {
+                    @Override
+                    public boolean hasNext() {
+                        if (first) {
+                            first = false;
+                            return iterator.hasNext();
+                        } else if (!iterator.hasNext()) {
+                            iterator = contents.iterator();
+                        }
+                        return true;
+                    }
+
+                    @Override
+                    public A next() {
+                        return iterator.next();
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new IllegalStateException();
+                    }
+                };
+            }
+        };
+    }
 }
