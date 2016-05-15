@@ -636,7 +636,7 @@ public abstract class Iterables {
 
                     @Override
                     public List<A> next() {
-                        return new ArrayList<A>(path);
+                        return path;
                     }
 
                     @Override

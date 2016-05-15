@@ -55,44 +55,43 @@ public class TreeTests {
         Fn<Node> fnRoot = Fn.of(root, v(8));
         Fn<Node> allNodes = fnRoot.breadth(Node.Adapter);
 
-        List<List<Node>> paths = fnRoot
-            .breadthPaths(Node.Adapter)
-            .toList();
+        Fn<List<Node>> paths = fnRoot
+            .breadthPaths(Node.Adapter);
 
         assertEquals(8, paths.size());
         assertEquals(Fn.list(allNodes.firstOrNull(Node.valueIs(1))),
-                     paths.get(0));
+                     paths.getOrElse(0));
 
         assertEquals(Fn.list(allNodes.firstOrNull(Node.valueIs(8))),
-                     paths.get(1));
+                     paths.getOrElse(1));
 
         assertEquals(Fn.list(allNodes.firstOrNull(Node.valueIs(1)),
                              allNodes.firstOrNull(Node.valueIs(2))),
-                     paths.get(2));
+                     paths.getOrElse(2));
 
         assertEquals(Fn.list(allNodes.firstOrNull(Node.valueIs(1)),
                              allNodes.firstOrNull(Node.valueIs(7))),
-                     paths.get(3));
+                     paths.getOrElse(3));
 
         assertEquals(Fn.list(allNodes.firstOrNull(Node.valueIs(1)),
                              allNodes.firstOrNull(Node.valueIs(2)),
                              allNodes.firstOrNull(Node.valueIs(3))),
-                     paths.get(4));
+                     paths.getOrElse(4));
 
         assertEquals(Fn.list(allNodes.firstOrNull(Node.valueIs(1)),
                              allNodes.firstOrNull(Node.valueIs(2)),
                              allNodes.firstOrNull(Node.valueIs(4))),
-                     paths.get(5));
+                     paths.getOrElse(5));
 
         assertEquals(Fn.list(allNodes.firstOrNull(Node.valueIs(1)),
                              allNodes.firstOrNull(Node.valueIs(2)),
                              allNodes.firstOrNull(Node.valueIs(5))),
-                     paths.get(6));
+                     paths.getOrElse(6));
 
         assertEquals(Fn.list(allNodes.firstOrNull(Node.valueIs(1)),
                              allNodes.firstOrNull(Node.valueIs(2)),
                              allNodes.firstOrNull(Node.valueIs(5)),
                              allNodes.firstOrNull(Node.valueIs(6))),
-                     paths.get(7));
+                     paths.getOrElse(7));
     }
 }

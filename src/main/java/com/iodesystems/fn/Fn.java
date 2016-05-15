@@ -177,7 +177,6 @@ public class Fn<A> implements Iterable<A> {
         return Iterables.last(as, is);
     }
 
-
     public static <A> Fn<A> ofFlatten(Iterable<Iterable<A>> nexts) {
         return of(flatten(nexts));
     }
@@ -261,6 +260,19 @@ public class Fn<A> implements Iterable<A> {
                 }
             }
         });
+    }
+
+    public static <T> From<List<T>, List<T>> list() {
+        return new From<List<T>, List<T>>() {
+            @Override
+            public List<T> from(List<T> ts) {
+                return new ArrayList<T>(ts);
+            }
+        };
+    }
+
+    public A firstOrElse(A ifNull) {
+        return first().orElse(ifNull);
     }
 
     public <K> Map<K, List<A>> group(From<A, K> extractor) {
@@ -448,15 +460,29 @@ public class Fn<A> implements Iterable<A> {
         return of(Iterables.breadth(contents, multiply));
     }
 
-    public int count() {
-        int count = 0;
-        for (A content : contents) {
-            count++;
-        }
-        return count;
-    }
-
     public Fn<A> loop() {
         return of(Iterables.loop(contents));
     }
+
+    public Option<A> get(int i) {
+        return drop(i).first();
+    }
+
+    public A getOrElse(int i) {
+        return get(i).orElse(null);
+    }
+
+    public A getOrElse(int i, A ifEmpty) {
+        return get(i).orElse(ifEmpty);
+    }
+
+    public Option<A> first() {
+        Iterator<A> iterator = contents.iterator();
+        if (iterator.hasNext()) {
+            return Option.of(iterator.next());
+        } else {
+            return Option.empty();
+        }
+    }
+
 }

@@ -17,13 +17,13 @@ public class IterablesTest {
     }
 
     @Test
-    public void testRepeat(){
-        assertEquals(9, Fn.of(1,2,3).repeat(3).count());
+    public void testRepeat() {
+        assertEquals(9, Fn.of(1, 2, 3).repeat(3).size());
     }
 
     @Test
-    public void testLoop(){
-        assertEquals(100, Fn.of(1).loop().take(100).count());
+    public void testLoop() {
+        assertEquals(100, Fn.of(1).loop().take(100).size());
     }
 
     @Test
