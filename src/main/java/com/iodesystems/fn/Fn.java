@@ -74,8 +74,23 @@ public class Fn<A> implements Iterable<A> {
         return of(filter(source, filter));
     }
 
+    public static <V> Iterable<V> only(Iterable<V> source, Where<V> filter) {
+        return Iterables.filter(source, filter);
+    }
+
+
+    public static <V> Iterable<V> except(Iterable<V> source, Where<V> filter) {
+        return Iterables.filter(source, Condition.inverseOf(filter));
+    }
+
+
     public static <V> Iterable<V> filter(Iterable<V> source, Where<V> filter) {
         return Iterables.filter(source, filter);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <V> Where<V> notNull(){
+        return (Where<V>) Where.NOT_NULL;
     }
 
     public static <V> Where<V> not(final V value) {
@@ -119,6 +134,32 @@ public class Fn<A> implements Iterable<A> {
 
     public static <A> Fn<A> of(final A... as) {
         return of(Iterables.of(as));
+    }
+
+    public static <A> Fn<A> with(Generator<A> generator) {
+        return Fn.of(Iterables.of(generator));
+    }
+
+    public static <A> Fn<A> with(Iterable<A> contents) {
+        if (contents instanceof Fn) {
+            return (Fn<A>) contents;
+        }
+        return new Fn<A>(contents);
+    }
+
+    public static <A> Fn<A> with(final A as) {
+        return of(Iterables.of(as));
+    }
+
+    public static <A> Fn<A> with(final A... as) {
+        return of(Iterables.of(as));
+    }
+
+    public <B> B startWith(B with, Combine<A, B> combine) {
+        for (A a : this) {
+            with = combine.from(a, with);
+        }
+        return with;
     }
 
     public static <A> Iterable<A> take(final int count, final Iterable<A> source) {

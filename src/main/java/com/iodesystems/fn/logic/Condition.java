@@ -28,4 +28,12 @@ public abstract class Condition<A> implements Where<A> {
         };
     }
 
+    public static <V> Condition<V> inverseOf(final Where<V> filter) {
+        return new Condition<V>() {
+            @Override
+            public boolean is(V v) {
+                return !filter.is(v);
+            }
+        };
+    }
 }
