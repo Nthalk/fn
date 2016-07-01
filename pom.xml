@@ -19,7 +19,7 @@
 
     <groupId>com.iodesystems</groupId>
     <artifactId>fn</artifactId>
-    <version>1.1.5-SNAPSHOT</version>
+    <version>1.1.5</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -29,7 +29,7 @@
         <connection>scm:git:git@github.com:Nthalk/fn.git</connection>
         <developerConnection>scm:git:git@github.com:Nthalk/fn.git</developerConnection>
         <url>http://nthalk.github.io/fn/</url>
-        <tag>HEAD</tag>
+        <tag>fn-1.1.5</tag>
     </scm>
     <build>
         <plugins>
