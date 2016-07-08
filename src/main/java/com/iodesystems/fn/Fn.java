@@ -80,7 +80,7 @@ public class Fn<A> implements Iterable<A> {
 
 
     public static <V> Iterable<V> except(Iterable<V> source, Where<V> filter) {
-        return Iterables.filter(source, Condition.inverseOf(filter));
+        return Iterables.filter(source, Condition.not(filter));
     }
 
 
@@ -362,6 +362,18 @@ public class Fn<A> implements Iterable<A> {
 
     public Fn<A> filter(Where<A> where) {
         return of(filter(contents, where));
+    }
+
+    public Fn<A> only(Where<A> where) {
+        return of(filter(contents, where));
+    }
+
+    public Fn<A> except(Where<A> where) {
+        return of(filter(contents, not(where)));
+    }
+
+    public Condition<A> not(Where<A> where) {
+        return Condition.not(where);
     }
 
     public <B> B combine(B initial, Combine<A, B> condenser) {
