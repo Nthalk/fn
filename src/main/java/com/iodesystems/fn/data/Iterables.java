@@ -137,7 +137,7 @@ public abstract class Iterables {
                                 return true;
                             }
                         }
-                        return sourceB.hasNext();
+                        return sourceB != null && sourceB.hasNext();
                     }
 
                     @Override

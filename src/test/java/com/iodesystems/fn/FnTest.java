@@ -5,10 +5,7 @@ import com.iodesystems.fn.logic.Where;
 import com.iodesystems.fn.tree.simple.Node;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.iodesystems.fn.Fn.flatten;
 import static com.iodesystems.fn.Fn.ofRange;
@@ -124,6 +121,17 @@ public class FnTest {
         for (List<Pair<Integer, Integer>> pairs : group.values()) {
             assertEquals(pairs.get(0).getB().intValue(), pairs.size());
         }
+    }
+
+    @Test
+    public void testEmptyMultiply() {
+        assertEquals(new ArrayList<Integer>(), Fn.<Integer>of()
+            .multiply(new From<Integer, Iterable<Integer>>() {
+                @Override
+                public Iterable<Integer> from(Integer integer) {
+                    return Fn.repeat(integer, integer);
+                }
+            }).toList());
     }
 
     @Test
