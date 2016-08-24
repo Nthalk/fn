@@ -15,6 +15,11 @@ import static org.junit.Assert.assertEquals;
 public class FnTest {
 
     @Test
+    public void testMonad() {
+        Fn.of(Fn.<String>identity());
+    }
+
+    @Test
     public void testFlattenNesting() {
         flatten(ofRange(1, 100)
                     .multiply(4)
@@ -278,22 +283,23 @@ public class FnTest {
 
     @Test
     public void testTakeWhile() {
-        assertEquals(100, ofRange(-100, 1000).takeWhile(new Where<Integer>() {
-            @Override
-            public boolean is(Integer integer) {
-                return integer <= 300;
-            }
-        }).dropWhile(new Where<Integer>() {
-            @Override
-            public boolean is(Integer integer) {
-                return integer <= 0;
-            }
-        }).filter(new Where<Integer>() {
-            @Override
-            public boolean is(Integer integer) {
-                return integer % 3 == 0;
-            }
-        }).size());
+        assertEquals(100, ofRange(-100, 1000)
+            .takeWhile(new Where<Integer>() {
+                @Override
+                public boolean is(Integer integer) {
+                    return integer <= 300;
+                }
+            }).dropWhile(new Where<Integer>() {
+                @Override
+                public boolean is(Integer integer) {
+                    return integer <= 0;
+                }
+            }).filter(new Where<Integer>() {
+                @Override
+                public boolean is(Integer integer) {
+                    return integer % 3 == 0;
+                }
+            }).size());
     }
 
     @Test
