@@ -11,7 +11,7 @@ reflection.
       <dependency>
         <groupId>com.iodesystems</groupId>
         <artifactId>fn</artifactId>
-        <version>1.0.6</version>
+        <version>1.1.8</version>
       </dependency
       ....
     </dependencies
@@ -19,25 +19,15 @@ reflection.
 ### Java Support
 Fn supports Java 1.6, with an effort for Java 1.8 hygiene.
 
-### Repository
-
-As fn is not yet hosted in the central repository, it is currently hosted on a public repo here:
-    
-    <repositories>
-        <repository>
-            <id>iodesystems</id>
-            <url>http://nexus.iodesystems.com/nexus/content/groups/public</url>
-        </repository>
-    </repositories>
 
 ### The Fn Object
 
 Almost all of the operations can be used independently, or with a `Fn` helper. 
 
     Fn.of(1,2,3).filter(Fn.is(2)); // <-- Helper
-    Fn.filter(Arrays.asList(1,2,3), Fn.is(2)); // <-- No helper
+    Fn.where(Arrays.asList(1,2,3), Fn.is(2)); // <-- No helper
     
-Because complicated actions can be written cleaner in plain old java, the `Fn` object is `Iterable`,
+Because complicated actions can often be written cleaner in plain old java, the `Fn` object is `Iterable`,
 so multiple dispatching operations can be performed with ease:
 
     for(Integer value : Fn.of(1,2,3).not(2).repeat(2)){
@@ -61,7 +51,17 @@ However, this will yield a `Map` of size 3. If you want to preserve your groups
            return integer.toString();
        }
     });
-    
+
+### Tree Support
+
+Fn includes `breadth`, `depth`, and `breadthPaths`, which make working on nested objects easier.
+
+    Fn.of(node).breadth(new From<Node, Iterable<Node>(){
+        public String from(Node node){
+            return node.getChildren();
+        }
+    }
+
 ### Async
 
 Async code on Java has historically been a pain, however, Fn offers `Async<A>` and `Deferred<A>` objects.
@@ -108,9 +108,8 @@ The deferred example is just as simple (this example also shows progress trackin
     assertEquals(progress[0], new Integer(1));
     assertEquals(progress[1], new Integer(2));
 
-Each async is branchable and repeatable, and any segment can run on any `Executor`.
+Each async is branchable, repeatable, and any segment can run on any `Executor`.
  
-When a handler uses the same `Executor` as it's parent, or the `INLINE` executor, the handler will run 
-inline, on the same thread, except if the parent is a `Deferred`.
+When a handler uses the same `Executor` as it's parent, or the `INLINE` executor, the handler will on the same thread as what triggered it.
 
 When not specifying an `Executor` for a down stream handler, the parent's executor will be used.
