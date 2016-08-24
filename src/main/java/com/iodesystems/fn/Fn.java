@@ -17,6 +17,24 @@ public class Fn<A> implements Iterable<A> {
         this.contents = contents;
     }
 
+    public static <A, B> Option<B> get(Map<A, B> from, A key) {
+        if (from.containsKey(key)) {
+            return Option.of(from.get(key));
+        } else {
+            return Option.empty();
+        }
+    }
+
+    public static <A, B> B getOrAdd(Map<A, B> from, A key, Generator<B> orAdd) {
+        if (from.containsKey(key)) {
+            return from.get(key);
+        } else {
+            B add = orAdd.next();
+            from.put(key, add);
+            return add;
+        }
+    }
+
     public static <V> Where<Option<V>> isEmpty() {
         return Option.whereEmpty();
     }
@@ -71,25 +89,31 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public static <V> Fn<V> ofFilter(Iterable<V> source, Where<V> filter) {
+        return ofOnly(source, filter);
+    }
+
+    public static <V> Fn<V> ofOnly(Iterable<V> source, Where<V> filter) {
         return of(filter(source, filter));
+    }
+
+    public static <V> Fn<V> ofExcept(Iterable<V> source, Where<V> filter) {
+        return of(except(source, Condition.not(filter)));
     }
 
     public static <V> Iterable<V> only(Iterable<V> source, Where<V> filter) {
         return Iterables.filter(source, filter);
     }
 
-
     public static <V> Iterable<V> except(Iterable<V> source, Where<V> filter) {
         return Iterables.filter(source, Condition.not(filter));
     }
 
-
     public static <V> Iterable<V> filter(Iterable<V> source, Where<V> filter) {
-        return Iterables.filter(source, filter);
+        return only(source, filter);
     }
 
     @SuppressWarnings("unchecked")
-    public static <V> Where<V> notNull(){
+    public static <V> Where<V> notNull() {
         return (Where<V>) Where.NOT_NULL;
     }
 
@@ -153,13 +177,6 @@ public class Fn<A> implements Iterable<A> {
 
     public static <A> Fn<A> with(final A... as) {
         return of(Iterables.of(as));
-    }
-
-    public <B> B startWith(B with, Combine<A, B> combine) {
-        for (A a : this) {
-            with = combine.from(a, with);
-        }
-        return with;
     }
 
     public static <A> Iterable<A> take(final int count, final Iterable<A> source) {
@@ -312,6 +329,28 @@ public class Fn<A> implements Iterable<A> {
         };
     }
 
+    public static <A> Option<A> last(Iterable<A> contents) {
+        if (contents instanceof List) {
+            // Optimize for list
+            List<A> list = (List<A>) contents;
+            if (list.isEmpty()) {
+                return Option.empty();
+            } else {
+                return Option.of(list.get(list.size() - 1));
+            }
+        } else {
+            return Fn.of(contents).last();
+        }
+
+    }
+
+    public <B> B startWith(B with, Combine<A, B> combine) {
+        for (A a : this) {
+            with = combine.from(a, with);
+        }
+        return with;
+    }
+
     public A firstOrElse(A ifNull) {
         return first().orElse(ifNull);
     }
@@ -459,9 +498,19 @@ public class Fn<A> implements Iterable<A> {
         return Iterables.toSet(contents);
     }
 
+    public Fn<A> subtract(Iterable<A> other) {
+        final Set<A> ignore = Iterables.toSet(other);
+        return filter(new Where<A>() {
+            @Override
+            public boolean is(A a) {
+                return !ignore.contains(a);
+            }
+        });
+    }
+
     public Fn<A> difference(Iterable<A> other) {
         final Set<A> set = toSet();
-        final Set<A> setOther = Fn.of(other).toSet();
+        final Set<A> setOther = Iterables.toSet(other);
         return filter(new Where<A>() {
             @Override
             public boolean is(A a) {
@@ -536,6 +585,14 @@ public class Fn<A> implements Iterable<A> {
         } else {
             return Option.empty();
         }
+    }
+
+    public Option<A> last() {
+        A last = null;
+        for (A content : contents) {
+            last = content;
+        }
+        return Option.of(last);
     }
 
 }
