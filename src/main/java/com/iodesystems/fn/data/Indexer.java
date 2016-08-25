@@ -7,8 +7,10 @@ public abstract class Indexer<K, V> implements From<V, K> {
 
     public static <K, V> Map<K, V> index(Iterable<V> source, From<V, K> extractor) {
         Map<K, V> index = new HashMap<K, V>();
-        for (V v : source) {
-            index.put(extractor.from(v), v);
+        if (source != null) {
+            for (V v : source) {
+                index.put(extractor.from(v), v);
+            }
         }
         return index;
     }
