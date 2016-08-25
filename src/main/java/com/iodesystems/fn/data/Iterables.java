@@ -2,6 +2,7 @@ package com.iodesystems.fn.data;
 
 
 import com.iodesystems.fn.logic.Where;
+import com.iodesystems.fn.tree.NodeWithParent;
 
 import java.util.*;
 
@@ -605,37 +606,34 @@ public abstract class Iterables {
             @Override
             public Iterator<List<A>> iterator() {
                 return new Iterator<List<A>>() {
-                    final LinkedList<A> todo = new LinkedList<A>();
-                    final LinkedList<A> path = new LinkedList<A>();
-                    Iterator<A> currentLevel = sources.iterator();
-                    A next;
-                    boolean isFirst = true;
+                    private final LinkedList<NodeWithParent<A>> todo = new LinkedList<NodeWithParent<A>>();
+                    private NodeWithParent<A> parent;
+                    private NodeWithParent<A> current;
+                    private Iterator<A> currentLevel = sources.iterator();
 
                     @Override
                     public boolean hasNext() {
                         if (currentLevel.hasNext()) {
-                            next = currentLevel.next();
-                            if (!isFirst) {
-                                path.removeLast();
-                            } else {
-                                isFirst = false;
-                            }
-                            path.add(next);
-                            todo.add(next);
+                            current = new NodeWithParent<A>(parent, currentLevel.next());
+                            todo.add(current);
                             return true;
                         } else if (!todo.isEmpty()) {
-                            isFirst = true;
-                            path.removeLast();
-                            next = todo.removeFirst();
-                            path.add(next);
-                            currentLevel = multiplier.from(next).iterator();
+                            parent = todo.removeFirst();
+                            currentLevel = multiplier.from(parent.getItem()).iterator();
                             return hasNext();
+                        } else {
+                            return false;
                         }
-                        return false;
                     }
 
                     @Override
                     public List<A> next() {
+                        LinkedList<A> path = new LinkedList<A>();
+                        path.add(current.getItem());
+                        while (current.getParent() != null) {
+                            current = current.getParent();
+                            path.addFirst(current.getItem());
+                        }
                         return path;
                     }
 

@@ -52,6 +52,42 @@ public class FnTest {
     }
 
     @Test
+    public void testBreadthPath() {
+        Node v4 = v(4);
+        Node v3 = v(3);
+        Node v2 = v(2, v4);
+        Node v1 = v(1, v2, v3);
+
+        List<List<Node>> paths = Fn.of(v1).breadthPaths(Node.Adapter).toList();
+        assertEquals(Fn.of(v1).toList(), paths.get(0));
+        assertEquals(Fn.of(v1, v2).toList(), paths.get(1));
+        assertEquals(Fn.of(v1, v3).toList(), paths.get(2));
+        assertEquals(Fn.of(v1, v2, v4).toList(), paths.get(3));
+        assertEquals(4, paths.size());
+    }
+
+    @Test
+    public void testBreadthPath2() {
+        Node v5 = v(5);
+        Node v4 = v(4, v5);
+        Node v3 = v(3);
+        Node v2 = v(2, v3);
+        Node v1 = v(1, v2, v4);
+        Node v6 = v(6);
+
+        List<List<Node>> paths = Fn.of(v1, v6).breadthPaths(Node.Adapter).toList();
+        assertEquals(Fn.of(v1).toList(), paths.get(0));
+        assertEquals(Fn.of(v6).toList(), paths.get(1));
+        assertEquals(Fn.of(v1, v2).toList(), paths.get(2));
+        assertEquals(Fn.of(v1, v4).toList(), paths.get(3));
+        assertEquals(Fn.of(v1, v2, v3).toList(), paths.get(4));
+        assertEquals(Fn.of(v1, v4, v5).toList(), paths.get(5));
+
+
+        assertEquals(6, paths.size());
+    }
+
+    @Test
     public void testBreadthMultiply() {
         assertEquals(
             ofRange(1, 8).toList(),
