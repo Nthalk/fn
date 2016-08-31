@@ -132,8 +132,11 @@ public class FnTest {
 
     @Test
     public void testAndOr() {
-        assertEquals(Arrays.asList(2, 4), Fn.of(1, 2, 3, 4).filter(Fn.where(Fn.is(2)).or(Fn.is(4))).toList());
-        assertEquals(Collections.singletonList(4), Fn.of(1, 2, 3, 4).filter(Fn.where(Fn.is(1)).or(Fn.is(4)).and(new Where<Integer>() {
+        assertEquals(Arrays.asList(2, 4), Fn.of(1, 2, 3, 4).where(Fn.is(2)
+                                                                      .or(Fn.is(4))).toList());
+        assertEquals(Collections.singletonList(4), Fn.of(1, 2, 3, 4).where(Fn.is(1)
+                                                                               .or(Fn.is(4))
+                                                                               .and(new Where<Integer>() {
             @Override
             public boolean is(Integer integer) {
                 return integer % 2 == 0;
@@ -374,5 +377,16 @@ public class FnTest {
     @Test
     public void testIntersection() {
         assertEquals(Arrays.asList(4, 5), Fn.of(1, 2, 3, 4, 5).intersection(Fn.of(4, 5, 6, 7)).toList());
+    }
+
+    @Test
+    public void testOfFlatten() {
+        List<List<Integer>> lists = Fn.of(1, 2, 3).multiply(3).convert(new From<Iterable<Integer>, List<Integer>>() {
+            @Override
+            public List<Integer> from(Iterable<Integer> integers) {
+                return Fn.of(integers).toList();
+            }
+        }).toList();
+        assertEquals(9, Fn.ofFlatten(lists).size());
     }
 }

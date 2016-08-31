@@ -10,32 +10,20 @@ public abstract class Condition<A> implements Where<A> {
         };
     }
 
-    public Condition<A> or(final Where<A>... where) {
+    public Condition<A> or(final Where<A> where) {
         return new Condition<A>() {
             @Override
             public boolean is(A a) {
-                if (Condition.this.is(a)) {
-                    return true;
-                }
-                for (Where<A> aWhere : where) {
-                    if (aWhere.is(a)) return true;
-                }
-                return false;
+                return Condition.this.is(a) || where.is(a);
             }
         };
     }
 
-    public Condition<A> and(final Where<A>... where) {
+    public Condition<A> and(final Where<A> where) {
         return new Condition<A>() {
             @Override
             public boolean is(A a) {
-                if (!Condition.this.is(a)) {
-                    return false;
-                }
-                for (Where<A> aWhere : where) {
-                    if (!aWhere.is(a)) return false;
-                }
-                return true;
+                return Condition.this.is(a) && where.is(a);
             }
         };
     }

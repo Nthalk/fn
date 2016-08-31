@@ -48,7 +48,7 @@ public class Fn<A> implements Iterable<A> {
         return Option.wherePresent();
     }
 
-    public static <A> Condition<A> where(Where<A> where) {
+    public static <A> Condition<A> condition(Where<A> where) {
         return Condition.of(where);
     }
 
@@ -125,8 +125,8 @@ public class Fn<A> implements Iterable<A> {
         };
     }
 
-    public static <V> Where<V> is(final V value) {
-        return new Where<V>() {
+    public static <V> Condition<V> is(final V value) {
+        return new Condition<V>() {
             public boolean is(V v) {
                 return v.equals(value);
             }
@@ -235,7 +235,7 @@ public class Fn<A> implements Iterable<A> {
         return Iterables.last(as, is);
     }
 
-    public static <A> Fn<A> ofFlatten(Iterable<Iterable<A>> nexts) {
+    public static <A> Fn<A> ofFlatten(Iterable<? extends Iterable<A>> nexts) {
         return of(flatten(nexts));
     }
 
@@ -407,12 +407,16 @@ public class Fn<A> implements Iterable<A> {
         return of(filter(contents, where));
     }
 
-    public Fn<A> except(Where<A> where) {
-        return of(filter(contents, not(where)));
+    public Fn<A> where(Where<A> where) {
+        return only(where);
     }
 
-    public Condition<A> not(Where<A> where) {
-        return Condition.not(where);
+    public Fn<A> whereNot(Where<A> where) {
+        return except(where);
+    }
+
+    public Fn<A> except(Where<A> where) {
+        return of(filter(contents, Condition.not(where)));
     }
 
     public <B> B combine(B initial, Combine<A, B> condenser) {
