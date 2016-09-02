@@ -160,6 +160,24 @@ public class Fn<A> implements Iterable<A> {
         return of(Iterables.of(as));
     }
 
+    public static <A> Fn<A> ofNullable(Iterable<A> contents) {
+        if (contents == null) {
+            return Fn.empty();
+        }
+        return of(contents).where(Fn.<A>notNull());
+    }
+
+    public static <A> Fn<A> ofNullable(final A as) {
+        if (as == null) {
+            return Fn.empty();
+        }
+        return of(as);
+    }
+
+    public static <A> Fn<A> ofNullable(final A... as) {
+        return of(as).where(Fn.<A>notNull());
+    }
+
     public static <A> Fn<A> with(Generator<A> generator) {
         return Fn.of(Iterables.of(generator));
     }
