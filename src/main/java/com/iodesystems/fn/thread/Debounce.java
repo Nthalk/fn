@@ -104,35 +104,45 @@ public abstract class Debounce implements Runnable {
         };
     }
 
-    @Override
-    public synchronized void run() {
-        LOG.log(Level.FINEST, "Trigger attempted");
-        long current = clock.currentTimeMillis();
-        long delta = current - lastTriggered;
-
-        if (next != null && next.cancel(false)) {
-            LOG.log(Level.FINEST, "Clearing deferred trailing trigger");
-            next = null;
+    public void cancel() {
+        synchronized (this) {
+            if (next != null) {
+                next.cancel(true);
+            }
         }
-        if (leading && isLeading) {
-            LOG.log(Level.FINEST, "Triggered due to leading invocation");
-            trigger();
-            lastTriggered = current;
-            isLeading = false;
-        } else if (delta >= millisPerTrigger) {
-            LOG.log(Level.FINEST, "Triggered due to acceptable delay");
-            trigger();
-            lastTriggered = current;
-        } else {
-            if (!continuing) {
-                LOG.log(Level.FINEST, "Resetting lastTriggered due to non-continuing");
-                lastTriggered = current;
-            }
-            if (trailing) {
-                LOG.log(Level.FINEST, "Scheduling deferred trailing trigger");
-                next = scheduledExecutorService.schedule(this, millisPerTrigger, TimeUnit.MILLISECONDS);
-            }
+    }
 
+    @Override
+    public void run() {
+        synchronized (this) {
+            LOG.log(Level.FINEST, "Trigger attempted");
+            long current = clock.currentTimeMillis();
+            long delta = current - lastTriggered;
+
+            if (next != null && next.cancel(false)) {
+                LOG.log(Level.FINEST, "Clearing deferred trailing trigger");
+                next = null;
+            }
+            if (leading && isLeading) {
+                LOG.log(Level.FINEST, "Triggered due to leading invocation");
+                trigger();
+                lastTriggered = current;
+                isLeading = false;
+            } else if (delta >= millisPerTrigger) {
+                LOG.log(Level.FINEST, "Triggered due to acceptable delay");
+                trigger();
+                lastTriggered = current;
+            } else {
+                if (!continuing) {
+                    LOG.log(Level.FINEST, "Resetting lastTriggered due to non-continuing");
+                    lastTriggered = current;
+                }
+                if (trailing) {
+                    LOG.log(Level.FINEST, "Scheduling deferred trailing trigger");
+                    next = scheduledExecutorService.schedule(this, millisPerTrigger, TimeUnit.MILLISECONDS);
+                }
+
+            }
         }
     }
 
