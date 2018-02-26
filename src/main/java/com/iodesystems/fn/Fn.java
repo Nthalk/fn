@@ -152,6 +152,10 @@ public class Fn<A> implements Iterable<A> {
         return new Fn<A>(contents);
     }
 
+    public static <A> Fn<A> of(Enumeration<A> contents) {
+        return new Fn<A>(Iterables.of(contents));
+    }
+
     public static <A> Fn<A> of(final A as) {
         return of(Iterables.of(as));
     }
@@ -172,6 +176,10 @@ public class Fn<A> implements Iterable<A> {
             return Fn.empty();
         }
         return of(as);
+    }
+
+    public Enumeration<A> enumeration(){
+        return Iterables.toEnumeration(this);
     }
 
     public static <A> Fn<A> ofNullable(final A... as) {
@@ -456,6 +464,10 @@ public class Fn<A> implements Iterable<A> {
 
     public int size() {
         return Iterables.size(contents);
+    }
+
+    public A[] toArray(A[] preallocated){
+        return Iterables.toArray(contents, preallocated);
     }
 
     public List<A> toList() {

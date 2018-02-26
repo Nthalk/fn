@@ -229,6 +229,22 @@ public abstract class Iterables {
         return i;
     }
 
+    public static <A> Enumeration<A> toEnumeration(Iterable<A> contents) {
+        final Iterator<A> iterator = contents.iterator();
+        return new Enumeration<A>() {
+
+            @Override
+            public boolean hasMoreElements() {
+                return iterator.hasNext();
+            }
+
+            @Override
+            public A nextElement() {
+                return iterator.next();
+            }
+        };
+    }
+
     public static <A> List<A> toList(Iterable<A> contents) {
         if (contents instanceof List) {
             return (List<A>) contents;
@@ -256,6 +272,30 @@ public abstract class Iterables {
                     @Override
                     public A next() {
                         return next;
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new IllegalStateException();
+                    }
+                };
+            }
+        };
+    }
+
+    public static <A> Iterable<A> of(final Enumeration<A> source) {
+        return new Iterable<A>() {
+            @Override
+            public Iterator<A> iterator() {
+                return new Iterator<A>() {
+                    @Override
+                    public boolean hasNext() {
+                        return source.hasMoreElements();
+                    }
+
+                    @Override
+                    public A next() {
+                        return source.nextElement();
                     }
 
                     @Override
@@ -723,5 +763,13 @@ public abstract class Iterables {
                 };
             }
         };
+    }
+
+    public static <A> A[] toArray(Iterable<A> contents, A[] preallocated) {
+        int i = 0;
+        for (A content : contents) {
+            preallocated[i++] = content;
+        }
+        return preallocated;
     }
 }
