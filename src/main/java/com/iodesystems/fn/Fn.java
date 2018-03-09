@@ -44,6 +44,10 @@ public class Fn<A> implements Iterable<A> {
         return (Fn<V>) EMPTY;
     }
 
+    public static <V> List<V> emptyList(){
+        return Collections.emptyList();
+    }
+
     public static <V> Where<Option<V>> isPresent() {
         return Option.wherePresent();
     }
@@ -346,13 +350,8 @@ public class Fn<A> implements Iterable<A> {
         });
     }
 
-    public static <T> From<List<T>, List<T>> list() {
-        return new From<List<T>, List<T>>() {
-            @Override
-            public List<T> from(List<T> ts) {
-                return new ArrayList<T>(ts);
-            }
-        };
+    public static <T> List<T> list() {
+        return new ArrayList<T>();
     }
 
     public static <A> Option<A> last(Iterable<A> contents) {
