@@ -402,4 +402,32 @@ public class FnTest {
         }).toList();
         assertEquals(9, Fn.ofFlatten(lists).size());
     }
+
+    @Test
+    public void testPair() {
+        assertEquals(new Pair<Integer, String>(1, "1"), Fn.pair(1, "1"));
+    }
+
+    @Test
+    public void testMatch() {
+        List<Pair<Integer, String>> result = Fn.of(1, 2, 3, 4)
+                .extractMatch(
+                        Fn.<Integer>convertToString(),
+                        Fn.of("1", "2", "3"),
+                        Fn.<String>identity()).toList();
+
+        assertEquals(Fn.list(Fn.pair(1, "1"), Fn.pair(2, "2"), Fn.pair(3, "3"), Fn.pair(4, null)), result);
+    }
+
+    @Test
+    public void testExtractPair() {
+        List<Pair<Integer, String>> extracted = Fn.of(1, 2, 3).extractPair(new From<Integer, String>() {
+            @Override
+            public String from(Integer integer) {
+                return integer.toString();
+            }
+        }).toList();
+        assertEquals(Fn.list(Pair.of(1, "1"), Pair.of(2, "2"), Pair.of(3, "3")), extracted);
+    }
+
 }

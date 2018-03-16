@@ -57,4 +57,8 @@ public class Pair<A, B> {
         result = 31 * result + (b != null ? b.hashCode() : 0);
         return result;
     }
+
+    public static <A, B> Pair<A, B> of(A a, B b) {
+        return new Pair<A, B>(a, b);
+    }
 }

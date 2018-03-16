@@ -44,7 +44,7 @@ public class Fn<A> implements Iterable<A> {
         return (Fn<V>) EMPTY;
     }
 
-    public static <V> List<V> emptyList(){
+    public static <V> List<V> emptyList() {
         return Collections.emptyList();
     }
 
@@ -182,7 +182,7 @@ public class Fn<A> implements Iterable<A> {
         return of(as);
     }
 
-    public Enumeration<A> enumeration(){
+    public Enumeration<A> enumeration() {
         return Iterables.toEnumeration(this);
     }
 
@@ -465,7 +465,7 @@ public class Fn<A> implements Iterable<A> {
         return Iterables.size(contents);
     }
 
-    public A[] toArray(A[] preallocated){
+    public A[] toArray(A[] preallocated) {
         return Iterables.toArray(contents, preallocated);
     }
 
@@ -628,4 +628,37 @@ public class Fn<A> implements Iterable<A> {
         return Option.of(last);
     }
 
+    public static <A, B> Pair<A, B> pair(A a, B b) {
+        return Pair.of(a, b);
+    }
+
+    public <B> Fn<Pair<A, B>> extractPair(final From<A, B> extract) {
+        return convert(new From<A, Pair<A, B>>() {
+            @Override
+            public Pair<A, B> from(A a) {
+                return Pair.of(a, extract.from(a));
+            }
+        });
+    }
+
+    public <B, C> Fn<Pair<A, C>> extractMatch(final From<A, B> extract,
+                                              Iterable<C> against,
+                                              From<C, B> extractAgainst) {
+        final Map<B, C> index = Fn.of(against).index(extractAgainst);
+        return extractPair(extract).convert(new From<Pair<A, B>, Pair<A, C>>() {
+            @Override
+            public Pair<A, C> from(Pair<A, B> abPair) {
+                return Pair.of(abPair.getA(), index.get(abPair.getB()));
+            }
+        });
+    }
+
+    public static <A> From<A, String> convertToString() {
+        return new From<A, String>(){
+            @Override
+            public String from(A a) {
+                return a.toString();
+            }
+        };
+    }
 }
