@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <name>Fn</name>
@@ -22,7 +21,7 @@
 
     <groupId>com.iodesystems</groupId>
     <artifactId>fn</artifactId>
-    <version>1.1.17-SNAPSHOT</version>
+    <version>1.1.17</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -32,7 +31,7 @@
         <connection>scm:git:git@github.com:Nthalk/fn.git</connection>
         <developerConnection>scm:git:git@github.com:Nthalk/fn.git</developerConnection>
         <url>http://nthalk.github.io/fn/</url>
-        <tag>HEAD</tag>
+        <tag>fn-1.1.17</tag>
     </scm>
 
     <profiles>
