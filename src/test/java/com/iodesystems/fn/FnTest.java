@@ -15,8 +15,20 @@ import static org.junit.Assert.*;
 public class FnTest {
 
     @Test
-    public void testMonad() {
-        Fn.of(Fn.<String>identity());
+    public void testWhereClass() {
+        A a = new A();
+        B b = new B();
+        B2 b2 = new B2();
+        Fn<Object> of = Fn.of(null, a, b, b2, null);
+        assertEquals(Fn.list(b, b2), of.where(B.class).toList());
+        assertEquals(Fn.list(a), of.where(A.class).toList());
+    }
+
+    @Test
+    public void testMap() {
+        Map<String, Integer> map = Fn.mapOf("a", 1, "b", 2);
+        assertEquals(map.get("a"), (Integer) 1);
+        assertEquals(map.get("b"), (Integer) 2);
     }
 
     @Test
@@ -190,7 +202,6 @@ public class FnTest {
                         }))).toList());
     }
 
-
     @Test
     public void testOptionIntegration() {
         Fn<Integer> multiply = Fn
@@ -314,7 +325,6 @@ public class FnTest {
                     }
                 });
 
-
         assertEquals(2, group.size());
         assertEquals(Arrays.asList(4, 8), group.get(0));
         assertEquals(Collections.singletonList(2), group.get(2));
@@ -428,6 +438,18 @@ public class FnTest {
             }
         }).toList();
         assertEquals(Fn.list(Pair.of(1, "1"), Pair.of(2, "2"), Pair.of(3, "3")), extracted);
+    }
+
+    class A {
+
+    }
+
+    class B {
+
+    }
+
+    class B2 extends B {
+
     }
 
 }

@@ -17,6 +17,22 @@ public class Fn<A> implements Iterable<A> {
         this.contents = contents;
     }
 
+    @SuppressWarnings("unchecked")
+    public static <A, B> Map<A, B> mapOf(A key, B value, Object... rest) {
+        Map<A, B> map = new HashMap<A, B>();
+        map.put(key, value);
+        key = null;
+        for (Object o : rest) {
+            if (key == null) {
+                key = (A) o;
+            } else {
+                map.put(key, (B) o);
+                key = null;
+            }
+        }
+        return map;
+    }
+
     public static <A, B> Option<B> get(Map<A, B> from, A key) {
         if (from.containsKey(key)) {
             return Option.of(from.get(key));
@@ -182,10 +198,6 @@ public class Fn<A> implements Iterable<A> {
         return of(as);
     }
 
-    public Enumeration<A> enumeration() {
-        return Iterables.toEnumeration(this);
-    }
-
     public static <A> Fn<A> ofNullable(final A... as) {
         return of(as).where(Fn.<A>notNull());
     }
@@ -337,36 +349,47 @@ public class Fn<A> implements Iterable<A> {
         return as;
     }
 
-    public static <A> Fn<A> tails(Fn<List<A>> items) {
-        return of(items).convert(new From<List<A>, A>() {
+    public static <A> Fn<A> tails(Iterable<Iterable<A>> items) {
+        return of(items).convert(new From<Iterable<A>, A>() {
             @Override
-            public A from(List<A> as) {
-                if (as.isEmpty()) {
-                    return null;
-                } else {
-                    return as.get(as.size() - 1);
-                }
+            public A from(Iterable<A> as) {
+                return last(as);
             }
         });
     }
 
-    public static <T> List<T> list() {
-        return new ArrayList<T>();
-    }
-
-    public static <A> Option<A> last(Iterable<A> contents) {
+    public static <A> A last(Iterable<A> contents) {
         if (contents instanceof List) {
-            // Optimize for list
             List<A> list = (List<A>) contents;
             if (list.isEmpty()) {
-                return Option.empty();
+                return null;
             } else {
-                return Option.of(list.get(list.size() - 1));
+                return list.get(list.size() - 1);
             }
         } else {
-            return Fn.of(contents).last();
+            A last = null;
+            for (A a : contents) {
+                last = a;
+            }
+            return last;
         }
+    }
 
+    public static <A, B> Pair<A, B> pair(A a, B b) {
+        return Pair.of(a, b);
+    }
+
+    public static <A> From<A, String> convertToString() {
+        return new From<A, String>() {
+            @Override
+            public String from(A a) {
+                return a.toString();
+            }
+        };
+    }
+
+    public Enumeration<A> enumeration() {
+        return Iterables.toEnumeration(this);
     }
 
     public <B> B startWith(B with, Combine<A, B> combine) {
@@ -430,6 +453,21 @@ public class Fn<A> implements Iterable<A> {
 
     public Fn<A> only(Where<A> where) {
         return of(filter(contents, where));
+    }
+
+    public <B> Fn<B> where(final Class<B> cls) {
+        return only(new Where<A>() {
+            @Override
+            public boolean is(A a) {
+                return cls.isInstance(a);
+            }
+        }).convert(new From<A, B>() {
+            @Override
+            public B from(A a) {
+                //noinspection unchecked
+                return (B) a;
+            }
+        });
     }
 
     public Fn<A> where(Where<A> where) {
@@ -628,10 +666,6 @@ public class Fn<A> implements Iterable<A> {
         return Option.of(last);
     }
 
-    public static <A, B> Pair<A, B> pair(A a, B b) {
-        return Pair.of(a, b);
-    }
-
     public <B> Fn<Pair<A, B>> extractPair(final From<A, B> extract) {
         return convert(new From<A, Pair<A, B>>() {
             @Override
@@ -651,14 +685,5 @@ public class Fn<A> implements Iterable<A> {
                 return Pair.of(abPair.getA(), index.get(abPair.getB()));
             }
         });
-    }
-
-    public static <A> From<A, String> convertToString() {
-        return new From<A, String>(){
-            @Override
-            public String from(A a) {
-                return a.toString();
-            }
-        };
     }
 }
