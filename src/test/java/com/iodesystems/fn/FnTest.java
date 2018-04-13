@@ -352,6 +352,16 @@ public class FnTest {
     }
 
     @Test
+    public void testLast() {
+        assertEquals(Option.empty(), Fn.of().last());
+    }
+
+    @Test
+    public void testLastStatic() {
+        assertEquals(Option.empty(), Fn.last(Fn.of()));
+    }
+
+    @Test
     public void testGenerate() {
         assertEquals(1000, Fn.of(new Generator<String>() {
             int i = 0;
@@ -379,6 +389,17 @@ public class FnTest {
         Integer[] integers = Fn.ofUntil(2).toArray(preallocated);
         assertArrayEquals(integers, new Integer[]{0, 1, 2});
         assertTrue("Arrays are the same", integers == preallocated);
+    }
+
+    @Test
+    public void testNot() {
+        assertEquals(false, Fn.not(4).is(4));
+    }
+
+    @Test
+    public void testDropWhile() {
+        assertEquals(Fn.list(4, 5),
+                Fn.of(1, 2, 3, 4, 5).dropWhile(Fn.not(4)).toList());
     }
 
     @Test

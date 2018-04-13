@@ -660,6 +660,11 @@ public class Fn<A> implements Iterable<A> {
 
     public Option<A> last() {
         A last = null;
+        if (contents instanceof List) {
+            List<A> contents = (List<A>) this.contents;
+            if (contents.isEmpty()) return Option.empty();
+            return Option.of(contents.get(contents.size() - 1));
+        }
         for (A content : contents) {
             last = content;
         }
