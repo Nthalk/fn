@@ -336,6 +336,10 @@ public class Fn<A> implements Iterable<A> {
         return a.equals(b);
     }
 
+    public static <A> List<A> list(){
+        return new ArrayList<A>();
+    }
+
     public static <A> List<A> list(A a) {
         ArrayList<A> as = new ArrayList<A>(1);
         as.add(a);
@@ -349,29 +353,31 @@ public class Fn<A> implements Iterable<A> {
         return as;
     }
 
-    public static <A> Fn<A> tails(Iterable<Iterable<A>> items) {
-        return of(items).convert(new From<Iterable<A>, A>() {
+    public static <A> Fn<Option<A>> tails(Iterable<Iterable<A>> items) {
+        return of(items).convert(new From<Iterable<A>, Option<A>>() {
             @Override
-            public A from(Iterable<A> as) {
+            public Option<A> from(Iterable<A> as) {
                 return last(as);
             }
         });
     }
 
-    public static <A> A last(Iterable<A> contents) {
+    public static <A> Option<A> last(Iterable<A> contents) {
         if (contents instanceof List) {
             List<A> list = (List<A>) contents;
             if (list.isEmpty()) {
-                return null;
+                return Option.empty();
             } else {
-                return list.get(list.size() - 1);
+                return Option.of(list.get(list.size() - 1));
             }
         } else {
             A last = null;
             for (A a : contents) {
-                last = a;
+                if(a != null) {
+                    last = a;
+                }
             }
-            return last;
+            return Option.of(last);
         }
     }
 

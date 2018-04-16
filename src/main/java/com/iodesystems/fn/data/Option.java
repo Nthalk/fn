@@ -1,5 +1,6 @@
 package com.iodesystems.fn.data;
 
+import com.iodesystems.fn.Fn;
 import com.iodesystems.fn.logic.Where;
 
 import java.util.Iterator;
@@ -99,6 +100,8 @@ public abstract class Option<T> implements Iterable<T> {
         };
     }
 
+    public abstract Fn<T> fn();
+
     public abstract T get();
 
     public abstract T orElse(T ifEmpty);
@@ -110,6 +113,8 @@ public abstract class Option<T> implements Iterable<T> {
     public abstract T orResolve(Generator<T> with);
 
     public static class Empty<T> extends Option<T> {
+        private static final Fn<?> EMPTY_FN = Fn.empty();
+
         private Empty() {
         }
 
@@ -117,6 +122,11 @@ public abstract class Option<T> implements Iterable<T> {
         @SuppressWarnings("unchecked")
         public Iterator<T> iterator() {
             return (Iterator<T>) Iterables.EMPTY_ITERATOR;
+        }
+
+        @Override
+        public Fn<T> fn() {
+            return (Fn<T>) EMPTY_FN;
         }
 
         @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
@@ -161,6 +171,11 @@ public abstract class Option<T> implements Iterable<T> {
 
         private Present(T thing) {
             this.thing = thing;
+        }
+
+        @Override
+        public Fn<T> fn() {
+            return Fn.of(this);
         }
 
         @Override

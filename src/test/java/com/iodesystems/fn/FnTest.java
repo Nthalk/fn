@@ -64,6 +64,17 @@ public class FnTest {
     }
 
     @Test
+    public void testOptionalFn(){
+        assertEquals(Fn.list(), Option.of(null).fn().toList());
+        assertEquals(Fn.list(1), Option.of(0).fn().convert(new From<Integer, Integer>() {
+            @Override
+            public Integer from(Integer integer) {
+                return integer + 1;
+            }
+        }).toList());
+    }
+
+    @Test
     public void testBreadthPath() {
         Node v4 = v(4);
         Node v3 = v(3);
