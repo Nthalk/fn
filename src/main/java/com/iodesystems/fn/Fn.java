@@ -336,7 +336,7 @@ public class Fn<A> implements Iterable<A> {
         return a.equals(b);
     }
 
-    public static <A> List<A> list(){
+    public static <A> List<A> list() {
         return new ArrayList<A>();
     }
 
@@ -362,6 +362,12 @@ public class Fn<A> implements Iterable<A> {
         });
     }
 
+    public Fn<A> reverse() {
+        List<A> as = toList();
+        Collections.reverse(as);
+        return Fn.of(as);
+    }
+
     public static <A> Option<A> last(Iterable<A> contents) {
         if (contents instanceof List) {
             List<A> list = (List<A>) contents;
@@ -373,7 +379,7 @@ public class Fn<A> implements Iterable<A> {
         } else {
             A last = null;
             for (A a : contents) {
-                if(a != null) {
+                if (a != null) {
                     last = a;
                 }
             }
