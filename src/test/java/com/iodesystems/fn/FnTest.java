@@ -5,14 +5,39 @@ import com.iodesystems.fn.logic.Where;
 import com.iodesystems.fn.tree.simple.Node;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.*;
 
-import static com.iodesystems.fn.Fn.flatten;
-import static com.iodesystems.fn.Fn.ofRange;
+import static com.iodesystems.fn.Fn.*;
 import static com.iodesystems.fn.tree.simple.Node.v;
 import static org.junit.Assert.*;
 
 public class FnTest {
+
+    @Test
+    public void testIfNull() {
+        assertEquals("a", ifNull(null, "a"));
+        assertEquals("a", ifNull("a", "b"));
+    }
+
+    @Test
+    public void testReadFully() throws IOException {
+        assertEquals(Fn.ofRange(0, 10000).toList(), Fn
+                .lines(
+                        readFully(new ByteArrayInputStream(
+                                Fn.ofRange(0, 10000).join("\n").getBytes())))
+                .convert(parseInt)
+                .toList());
+    }
+
+    @Test
+    public void testIsBlank() {
+        assertTrue(isBlank(""));
+        assertTrue(isBlank(null));
+        assertFalse(isBlank("a"));
+    }
 
     @Test
     public void testStringSplit() {

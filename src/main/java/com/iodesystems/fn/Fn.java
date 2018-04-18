@@ -5,6 +5,7 @@ import com.iodesystems.fn.logic.Condition;
 import com.iodesystems.fn.logic.Where;
 import com.iodesystems.fn.thread.Async;
 
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
@@ -22,6 +23,65 @@ public class Fn<A> implements Iterable<A> {
 
     protected Fn(Iterable<A> contents) {
         this.contents = contents;
+    }
+
+    public static <A> A ifNull(A thing, A ifNull) {
+        if (thing == null) return ifNull;
+        return thing;
+    }
+
+    public static boolean isBlank(String str) {
+        return str == null || str.length() == 0;
+    }
+
+    public static Fn<String> lines(String input) throws IOException {
+        return lines(new ByteArrayInputStream(input.getBytes()));
+    }
+
+    public static Fn<String> lines(InputStream ios) throws IOException {
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(ios));
+        final String first = reader.readLine();
+        return of(new Iterable<String>() {
+            @Override
+            public Iterator<String> iterator() {
+
+                return new Iterator<String>() {
+                    String next = first;
+
+                    @Override
+                    public void remove() {
+
+                    }
+
+                    @Override
+                    public boolean hasNext() {
+                        return next != null;
+                    }
+
+                    @Override
+                    public String next() {
+                        String tmp = next;
+                        try {
+                            next = reader.readLine();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                        return tmp;
+                    }
+                };
+            }
+        });
+    }
+
+    public static String readFully(InputStream ios) throws IOException {
+        char[] buffer = new char[4096];
+        BufferedReader reader = new BufferedReader(new InputStreamReader(ios));
+        StringBuilder result = new StringBuilder();
+        int len;
+        while ((len = reader.read(buffer)) != -1) {
+            result.append(buffer, 0, len);
+        }
+        return result.toString();
     }
 
     public Fn<List<A>> groupsOf(final int size) {
