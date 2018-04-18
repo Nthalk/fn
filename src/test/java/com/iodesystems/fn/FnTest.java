@@ -31,6 +31,30 @@ public class FnTest {
     }
 
     @Test
+    public void testGroupsOf() {
+        assertEquals(
+                Fn.list(
+                        Fn.list(0, 1, 2),
+                        Fn.list(3, 4, 5),
+                        Fn.list(6, 7, 8),
+                        Fn.list(9, 10)
+                ),
+                Fn.ofRange(0, 10).groupsOf(3).toList()
+        );
+
+    }
+
+    @Test
+    public void testStringSplitAndGroup() {
+        Fn.split("a:1,b:2", ",").multiply(new From<String, Iterable<String>>() {
+            @Override
+            public Iterable<String> from(String s) {
+                return Fn.split(s, ":");
+            }
+        }).groupsOf(3);
+    }
+
+    @Test
     public void testWhereClass() {
         A a = new A();
         B b = new B();

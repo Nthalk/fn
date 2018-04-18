@@ -24,6 +24,41 @@ public class Fn<A> implements Iterable<A> {
         this.contents = contents;
     }
 
+    public Fn<List<A>> groupsOf(final int size) {
+        return of(new Iterable<List<A>>() {
+            @Override
+            public Iterator<List<A>> iterator() {
+                final List<A> as = toList();
+                return new Iterator<List<A>>() {
+                    int position = 0;
+
+                    @Override
+                    public boolean hasNext() {
+                        return position <= as.size();
+                    }
+
+                    @Override
+                    public List<A> next() {
+                        List<A> next = new ArrayList<A>(size);
+                        for (int i = 0; i < size; i++) {
+                            int nextPos = position + i;
+                            if (nextPos < as.size()) {
+                                next.add(as.get(nextPos));
+                            }
+                        }
+                        position += size;
+                        return next;
+                    }
+
+                    @Override
+                    public void remove() {
+
+                    }
+                };
+            }
+        });
+    }
+
     public String join(String glue) {
         StringBuilder out = new StringBuilder();
         for (Object part : this) {
@@ -35,7 +70,7 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public static Fn<String> split(final String target, final String on) {
-        return Fn.of(new Iterable<String>() {
+        return of(new Iterable<String>() {
             @Override
             public Iterator<String> iterator() {
                 return new Iterator<String>() {
