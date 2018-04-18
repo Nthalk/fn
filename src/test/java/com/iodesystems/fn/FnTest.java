@@ -15,6 +15,22 @@ import static org.junit.Assert.*;
 public class FnTest {
 
     @Test
+    public void testStringSplit() {
+        assertEquals(
+                Fn.list(1, 2, 3),
+                Fn.split("1,2,3", ",").convert(Fn.parseInt).toList());
+
+        assertEquals(
+                Fn.list("", "1", "2", "", "3", ""),
+                Fn.split(",1,2,,3,", ",").toList());
+    }
+
+    @Test
+    public void testStringJoin() {
+        assertEquals("-a-1-a-2-a--a-3-a-4-a-", Fn.of(null, 1, 2, null, 3, 4, null).join("-a-"));
+    }
+
+    @Test
     public void testWhereClass() {
         A a = new A();
         B b = new B();
@@ -64,7 +80,7 @@ public class FnTest {
     }
 
     @Test
-    public void testOptionalFn(){
+    public void testOptionalFn() {
         assertEquals(Fn.list(), Option.of(null).fn().toList());
         assertEquals(Fn.list(1), Option.of(0).fn().convert(new From<Integer, Integer>() {
             @Override

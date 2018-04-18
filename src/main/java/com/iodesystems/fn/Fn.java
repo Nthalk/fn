@@ -12,9 +12,62 @@ import java.util.concurrent.Executor;
 public class Fn<A> implements Iterable<A> {
     private static final Fn<?> EMPTY = new Fn<Object>(Iterables.empty());
     private final Iterable<A> contents;
+    public static final From<String, Integer> parseInt = new From<String, Integer>() {
+
+        @Override
+        public Integer from(String s) {
+            return Integer.parseInt(s);
+        }
+    };
 
     protected Fn(Iterable<A> contents) {
         this.contents = contents;
+    }
+
+    public String join(String glue) {
+        StringBuilder out = new StringBuilder();
+        for (Object part : this) {
+            if (part != null) out.append(part.toString());
+            out.append(glue);
+        }
+        if (out.length() > 0) out.delete(out.length() - glue.length(), out.length());
+        return out.toString();
+    }
+
+    public static Fn<String> split(final String target, final String on) {
+        return Fn.of(new Iterable<String>() {
+            @Override
+            public Iterator<String> iterator() {
+                return new Iterator<String>() {
+                    int nextIndex = target.indexOf(on);
+                    int lastIndex = 0;
+
+                    @Override
+                    public boolean hasNext() {
+                        return lastIndex != -1;
+                    }
+
+                    @Override
+                    public String next() {
+                        String tmp;
+                        if (nextIndex == -1) {
+                            tmp = target.substring(lastIndex);
+                            lastIndex = -1;
+                        } else {
+                            tmp = target.substring(lastIndex, nextIndex);
+                            lastIndex = nextIndex + on.length();
+                            nextIndex = target.indexOf(on, lastIndex);
+                        }
+                        return tmp;
+                    }
+
+                    @Override
+                    public void remove() {
+
+                    }
+                };
+            }
+        });
     }
 
     @SuppressWarnings("unchecked")
