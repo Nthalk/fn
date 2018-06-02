@@ -8,20 +8,10 @@ import java.util.NoSuchElementException;
 
 public abstract class Option<T> implements Iterable<T> {
 
-    private static final Empty<?> EMPTY = new Empty<Object>();
-    private static final Where<Option<?>> IS_PRESENT = new Where<Option<?>>() {
-        @Override
-        public boolean is(Option<?> objects) {
-            return objects.isPresent();
-        }
-    };
+    private static final Empty<?> EMPTY = new Empty<>();
+    private static final Where<Option<?>> IS_PRESENT = Option::isPresent;
 
-    private static final Where<Option<?>> IS_EMPTY = new Where<Option<?>>() {
-        @Override
-        public boolean is(Option<?> objects) {
-            return objects.isEmpty();
-        }
-    };
+    private static final Where<Option<?>> IS_EMPTY = Option::isEmpty;
 
     @SuppressWarnings("unchecked")
     public static <V> Where<Option<V>> wherePresent() {
@@ -35,30 +25,26 @@ public abstract class Option<T> implements Iterable<T> {
 
     public static <T> Iterable<T> unwrap(Iterable<Option<T>> options) {
         final Iterator<Option<T>> iterator = options.iterator();
-        return new Iterable<T>() {
-            public Iterator<T> iterator() {
-                return new Iterator<T>() {
-                    private Option<T> next;
+        return () -> new Iterator<T>() {
+            private Option<T> nextT;
 
-                    public boolean hasNext() {
-                        while (iterator.hasNext()) {
-                            next = iterator.next();
-                            if (next.isPresent()) {
-                                return true;
-                            }
-                        }
-                        return false;
+            public boolean hasNext() {
+                while (iterator.hasNext()) {
+                    nextT = iterator.next();
+                    if (nextT.isPresent()) {
+                        return true;
                     }
+                }
+                return false;
+            }
 
-                    public T next() {
-                        return next.get();
-                    }
+            public T next() {
+                return nextT.get();
+            }
 
-                    @Override
-                    public void remove() {
-                        throw new IllegalStateException();
-                    }
-                };
+            @Override
+            public void remove() {
+                throw new IllegalStateException();
             }
         };
     }
@@ -67,7 +53,7 @@ public abstract class Option<T> implements Iterable<T> {
         if (item == null) {
             return empty();
         } else {
-            return new Present<T>(item);
+            return new Present<>(item);
         }
     }
 
@@ -184,7 +170,7 @@ public abstract class Option<T> implements Iterable<T> {
             if (o == null || getClass() != o.getClass()) return false;
             Present<?> present = (Present<?>) o;
             if (thing == present.thing) return true;
-            if (thing != null) if (thing.equals(present.thing)) return true;
+            if (thing != null) return thing.equals(present.thing);
             return false;
         }
 

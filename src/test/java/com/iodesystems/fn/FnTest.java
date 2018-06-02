@@ -1,13 +1,14 @@
 package com.iodesystems.fn;
 
-import com.iodesystems.fn.data.*;
-import com.iodesystems.fn.logic.Where;
+import com.iodesystems.fn.data.From;
+import com.iodesystems.fn.data.Generator;
+import com.iodesystems.fn.data.Option;
+import com.iodesystems.fn.data.Pair;
 import com.iodesystems.fn.tree.simple.Node;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.*;
 
 import static com.iodesystems.fn.Fn.*;
@@ -71,12 +72,7 @@ public class FnTest {
 
     @Test
     public void testStringSplitAndGroup() {
-        Fn.split("a:1,b:2", ",").multiply(new From<String, Iterable<String>>() {
-            @Override
-            public Iterable<String> from(String s) {
-                return Fn.split(s, ":");
-            }
-        }).groupsOf(3);
+        Fn.split("a:1,b:2", ",").multiply(s -> Fn.split(s, ":")).groupsOf(3);
     }
 
     @Test
@@ -100,12 +96,7 @@ public class FnTest {
     public void testFlattenNesting() {
         flatten(ofRange(1, 100)
                 .multiply(4)
-                .convert(new From<Iterable<Integer>, List<Integer>>() {
-                    @Override
-                    public List<Integer> from(Iterable<Integer> integers) {
-                        return Fn.of(integers).toList();
-                    }
-                }));
+                .convert(integers -> Fn.of(integers).toList()));
     }
 
     @Test
@@ -113,30 +104,15 @@ public class FnTest {
         assertEquals(
                 ofRange(1, 8).toList(),
                 Fn.of(v(1, v(2, v(3), v(4)), v(5)), v(6, v(7), v(8)))
-                        .depth(new From<Node, Iterable<Node>>() {
-                            @Override
-                            public Iterable<Node> from(Node node) {
-                                return node.getChildren();
-                            }
-                        })
-                        .convert(new From<Node, Object>() {
-                            @Override
-                            public Object from(Node node) {
-                                return node.getValue();
-                            }
-                        })
+                        .depth(Node::getChildren)
+                        .convert(Node::getValue)
                         .toList());
     }
 
     @Test
     public void testOptionalFn() {
         assertEquals(Fn.list(), Option.of(null).fn().toList());
-        assertEquals(Fn.list(1), Option.of(0).fn().convert(new From<Integer, Integer>() {
-            @Override
-            public Integer from(Integer integer) {
-                return integer + 1;
-            }
-        }).toList());
+        assertEquals(Fn.list(1), Option.of(0).fn().convert(integer -> integer + 1).toList());
     }
 
     @Test
@@ -179,17 +155,7 @@ public class FnTest {
     public void testBreadthMultiply() {
         assertEquals(
                 ofRange(1, 8).toList(),
-                Fn.of(v(1, v(3, v(5), v(6, v(7, v(8)))), v(4)), v(2)).breadth(new From<Node, Iterable<Node>>() {
-                    @Override
-                    public Iterable<Node> from(Node node) {
-                        return node.getChildren();
-                    }
-                }).convert(new From<Node, Object>() {
-                    @Override
-                    public Object from(Node node) {
-                        return node.getValue();
-                    }
-                }).toList());
+                Fn.of(v(1, v(3, v(5), v(6, v(7, v(8)))), v(4)), v(2)).breadth(Node::getChildren).convert(Node::getValue).toList());
     }
 
     @Test
@@ -202,12 +168,7 @@ public class FnTest {
     public void testFrom() {
         int size = Fn
                 .of(1, 2, 3, 4)
-                .convert(new From<Integer, Integer>() {
-                    @Override
-                    public Integer from(Integer integer) {
-                        return integer;
-                    }
-                }).size();
+                .convert(integer -> integer).size();
 
         assertEquals(4, size);
     }
@@ -224,31 +185,16 @@ public class FnTest {
                 .or(Fn.is(4))).toList());
         assertEquals(Collections.singletonList(4), Fn.of(1, 2, 3, 4).where(Fn.is(1)
                 .or(Fn.is(4))
-                .and(new Where<Integer>() {
-                    @Override
-                    public boolean is(Integer integer) {
-                        return integer % 2 == 0;
-                    }
-                })).toList());
+                .and(integer -> integer % 2 == 0)).toList());
     }
 
     @Test
     public void testWithIndex() {
         Map<String, List<Pair<Integer, Integer>>> group = Fn
                 .of(1, 2, 3, 4)
-                .multiply(new From<Integer, Iterable<Integer>>() {
-                    @Override
-                    public Iterable<Integer> from(Integer integer) {
-                        return Fn.repeat(integer, integer);
-                    }
-                })
+                .multiply(integer -> Fn.repeat(integer, integer))
                 .withIndex()
-                .group(new From<Pair<Integer, Integer>, String>() {
-                    @Override
-                    public String from(Pair<Integer, Integer> integerIntegerTuple2) {
-                        return integerIntegerTuple2.getB().toString();
-                    }
-                });
+                .group(integerIntegerTuple2 -> integerIntegerTuple2.getB().toString());
         assertEquals(4, group.size());
         for (List<Pair<Integer, Integer>> pairs : group.values()) {
             assertEquals(pairs.get(0).getB().intValue(), pairs.size());
@@ -258,24 +204,14 @@ public class FnTest {
     @Test
     public void testEmptyMultiply() {
         assertEquals(new ArrayList<Integer>(), Fn.<Integer>of()
-                .multiply(new From<Integer, Iterable<Integer>>() {
-                    @Override
-                    public Iterable<Integer> from(Integer integer) {
-                        return Fn.repeat(integer, integer);
-                    }
-                }).toList());
+                .multiply(integer -> Fn.repeat(integer, integer)).toList());
     }
 
     @Test
     public void testUnwrap() {
         assertEquals(Arrays.asList(2, 4),
                 Fn.ofUnwrap((Fn.of(1, 2, 3, 4)
-                        .optionally(new Where<Integer>() {
-                            @Override
-                            public boolean is(Integer integer) {
-                                return integer % 2 == 0;
-                            }
-                        }))).toList());
+                        .optionally(integer -> integer % 2 == 0))).toList());
     }
 
     @Test
@@ -283,41 +219,21 @@ public class FnTest {
         Fn<Integer> multiply = Fn
                 .of(1, 2, 3, 4)
                 // Expensive filter
-                .convert(new From<Integer, Option<Integer>>() {
-                    @Override
-                    public Option<Integer> from(Integer integer) {
-                        return integer % 2 == 0 ? Option.of(integer) : Option.<Integer>empty();
-                    }
-                })
-                .multiply(new From<Option<Integer>, Iterable<Integer>>() {
-                    @Override
-                    public Iterable<Integer> from(Option<Integer> integers) {
-                        return integers;
-                    }
-                });
+                .convert((From<Integer, Option<Integer>>) integer -> integer % 2 == 0 ? Option.of(integer) : Option.empty())
+                .multiply(integers -> integers);
         assertEquals(2, multiply.size());
     }
 
     @Test
     public void testIndex() {
-        Map<String, Integer> index = Fn.of(1, 2, 3, 4).index(new From<Integer, String>() {
-            @Override
-            public String from(Integer integer) {
-                return integer.toString();
-            }
-        });
+        Map<String, Integer> index = Fn.of(1, 2, 3, 4).index(Object::toString);
         assertEquals(new Integer(1), index.get("1"));
     }
 
     @Test
     public void testSplit() {
         Fn<Iterable<Integer>> split = Fn.of(1, 2, 3, 4, 5)
-                .split(new Where<Integer>() {
-                    @Override
-                    public boolean is(Integer integer) {
-                        return integer % 2 == 0;
-                    }
-                });
+                .split(integer -> integer % 2 == 0);
 
         assertEquals(3, split.size());
 
@@ -331,12 +247,7 @@ public class FnTest {
 
 
         split = Fn.of(1, 2, 3, 4, 5, 6)
-                .split(new Where<Integer>() {
-                    @Override
-                    public boolean is(Integer integer) {
-                        return integer % 2 == 0;
-                    }
-                });
+                .split(integer -> integer % 2 == 0);
 
         assertEquals(4, split.size());
         assertEquals(Option.empty(), joined.first(Fn.is(2)));
@@ -347,12 +258,7 @@ public class FnTest {
 
     @Test
     public void testCombine() {
-        Integer combine = Fn.of(1, 2, 3).combine(0, new Combine<Integer, Integer>() {
-            @Override
-            public Integer from(Integer integer, Integer integer2) {
-                return integer + integer2;
-            }
-        });
+        Integer combine = Fn.of(1, 2, 3).combine(0, (integer, integer2) -> integer + integer2);
         assertEquals(new Integer(6), combine);
     }
 
@@ -373,33 +279,18 @@ public class FnTest {
     }
 
     @Test
-    public void testFn() throws Exception {
+    public void testFn() {
         Map<Integer, List<Integer>> group = Fn
                 .of(1, 2, 3)
                 .join(4, 8)
                 // Strip out odds
-                .filter(new Where<Integer>() {
-                    @Override
-                    public boolean is(Integer integer) {
-                        return integer % 2 == 0;
-                    }
-                })
+                .filter(integer -> integer % 2 == 0)
                 // Duplicate list
-                .multiply(new From<Integer, Iterable<Integer>>() {
-                    @Override
-                    public Iterable<Integer> from(Integer integer) {
-                        return Fn.of(integer, integer);
-                    }
-                })
+                .multiply(integer -> Fn.of(integer, integer))
                 // Unique list
                 .unique()
                 // Group by divisible by four
-                .group(new From<Integer, Integer>() {
-                    @Override
-                    public Integer from(Integer integer) {
-                        return integer % 4;
-                    }
-                });
+                .group(integer -> integer % 4);
 
         assertEquals(2, group.size());
         assertEquals(Arrays.asList(4, 8), group.get(0));
@@ -409,22 +300,7 @@ public class FnTest {
     @Test
     public void testTakeWhile() {
         assertEquals(100, ofRange(-100, 1000)
-                .takeWhile(new Where<Integer>() {
-                    @Override
-                    public boolean is(Integer integer) {
-                        return integer <= 300;
-                    }
-                }).dropWhile(new Where<Integer>() {
-                    @Override
-                    public boolean is(Integer integer) {
-                        return integer <= 0;
-                    }
-                }).filter(new Where<Integer>() {
-                    @Override
-                    public boolean is(Integer integer) {
-                        return integer % 3 == 0;
-                    }
-                }).size());
+                .takeWhile(integer -> integer <= 300).dropWhile(integer -> integer <= 0).filter(integer -> integer % 3 == 0).size());
     }
 
     @Test
@@ -479,7 +355,7 @@ public class FnTest {
     }
 
     @Test
-    public void testToString() throws Exception {
+    public void testToString() {
         Fn<Integer> range = Fn.ofUntil(10);
         assertEquals("Fn[0, 1, 2, 3, 4, ...]", range.toString());
     }
@@ -501,39 +377,29 @@ public class FnTest {
 
     @Test
     public void testOfFlatten() {
-        List<List<Integer>> lists = Fn.of(1, 2, 3).multiply(3).convert(new From<Iterable<Integer>, List<Integer>>() {
-            @Override
-            public List<Integer> from(Iterable<Integer> integers) {
-                return Fn.of(integers).toList();
-            }
-        }).toList();
+        List<List<Integer>> lists = Fn.of(1, 2, 3).multiply(3).convert(integers -> Fn.of(integers).toList()).toList();
         assertEquals(9, Fn.ofFlatten(lists).size());
     }
 
     @Test
     public void testPair() {
-        assertEquals(new Pair<Integer, String>(1, "1"), Fn.pair(1, "1"));
+        assertEquals(new Pair<>(1, "1"), Fn.pair(1, "1"));
     }
 
     @Test
     public void testMatch() {
         List<Pair<Integer, String>> result = Fn.of(1, 2, 3, 4)
                 .extractMatch(
-                        Fn.<Integer>convertToString(),
+                        Fn.convertToString(),
                         Fn.of("1", "2", "3"),
-                        Fn.<String>identity()).toList();
+                        Fn.identity()).toList();
 
         assertEquals(Fn.list(Fn.pair(1, "1"), Fn.pair(2, "2"), Fn.pair(3, "3"), Fn.pair(4, null)), result);
     }
 
     @Test
     public void testExtractPair() {
-        List<Pair<Integer, String>> extracted = Fn.of(1, 2, 3).extractPair(new From<Integer, String>() {
-            @Override
-            public String from(Integer integer) {
-                return integer.toString();
-            }
-        }).toList();
+        List<Pair<Integer, String>> extracted = Fn.of(1, 2, 3).extractPair(Object::toString).toList();
         assertEquals(Fn.list(Pair.of(1, "1"), Pair.of(2, "2"), Pair.of(3, "3")), extracted);
     }
 

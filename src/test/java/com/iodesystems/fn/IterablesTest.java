@@ -1,6 +1,5 @@
 package com.iodesystems.fn;
 
-import com.iodesystems.fn.data.From;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -33,22 +32,12 @@ public class IterablesTest {
 
     @Test
     public void testMultiply() {
-        Fn<Integer> multiply = Fn.of(1, 2, 3).multiply(new From<Integer, Iterable<Integer>>() {
-            @Override
-            public Iterable<Integer> from(Integer integer) {
-                return Fn.of(integer).repeat(integer);
-            }
-        });
+        Fn<Integer> multiply = Fn.of(1, 2, 3).multiply(integer -> Fn.of(integer).repeat(integer));
 
         assertEquals(6, multiply.size());
         assertEquals(3, multiply.unique().size());
 
-        Map<Integer, List<Integer>> group = multiply.group(new From<Integer, Integer>() {
-            @Override
-            public Integer from(Integer integer) {
-                return integer;
-            }
-        });
+        Map<Integer, List<Integer>> group = multiply.group(integer -> integer);
 
         assertEquals(1, group.get(1).size());
         assertEquals(2, group.get(2).size());

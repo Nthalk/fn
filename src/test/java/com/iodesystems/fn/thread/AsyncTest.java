@@ -27,14 +27,9 @@ public class AsyncTest {
         final String[] result = new String[]{null};
 
         // Async's without an executor run inline.
-        Fn.async(new Callable<String>() {
+        Fn.async(() -> "Hello World!").then(new Async.Result<String>() {
             @Override
-            public String call() throws Exception {
-                return "Hello World!";
-            }
-        }).then(new Async.Result<String>() {
-            @Override
-            public String onResult(String message) throws Exception {
+            public String onResult(String message) {
                 // It did it
                 result[0] = message;
                 return null;
@@ -53,12 +48,9 @@ public class AsyncTest {
         final int[] result = new int[]{0};
         final Waiter waiter = new Waiter();
 
-        Fn.async(executor, new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                Thread.sleep(10L);
-                return 1;
-            }
+        Fn.async(executor, () -> {
+            Thread.sleep(10L);
+            return 1;
         }).then(Async.INLINE, new Async.Result<Integer>() {
             @Override
             public Integer onResult(Integer integer) throws Exception {
@@ -78,29 +70,21 @@ public class AsyncTest {
     @Test
     public void testBranchingAndConvertingAsync() throws TimeoutException {
         final Waiter waiter = new Waiter();
-        Async<Integer> source = Fn.async(new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                return 1;
-            }
-        });
+        Async<Integer> source = Fn.async(() -> 1);
 
         source.then(new Async.From<Integer, String>() {
             @Override
-            public String onResult(Integer integer) throws Exception {
+            public String onResult(Integer integer) {
                 waiter.assertEquals(1, integer);
                 waiter.resume();
                 return integer.toString();
             }
         });
 
-        source.then(executor, new Async.OnResult<Integer, Double>() {
-            @Override
-            public Double onResult(Integer integer) throws Exception {
-                waiter.assertEquals(1, integer);
-                waiter.resume();
-                return integer.doubleValue();
-            }
+        source.then(executor, integer -> {
+            waiter.assertEquals(1, integer);
+            waiter.resume();
+            return integer.doubleValue();
         }).then(new Async.Result<Double>() {
             @Override
             public Double onResult(Double aDouble) throws Exception {
@@ -116,13 +100,13 @@ public class AsyncTest {
      * Sometimes you need to have a deferred object, instead of a callable
      */
     @Test
-    public void testSimpleDeferred() throws TimeoutException {
+    public void testSimpleDeferred() {
         final String[] result = new String[]{null};
         final Integer[] progress = new Integer[]{null, null};
         Async.Deferred<String> defer = Fn.defer();
         defer.then(new Async.Result<String>() {
             @Override
-            public String onResult(String o) throws Exception {
+            public String onResult(String o) {
                 result[0] = o;
                 return null;
             }
@@ -151,12 +135,9 @@ public class AsyncTest {
         final Waiter waiter = new Waiter();
         Async.Deferred<Object> defer = Fn.defer();
         defer.result(1);
-        defer.then(new Async.OnResult<Object, Object>() {
-            @Override
-            public Object onResult(Object o) throws Exception {
-                waiter.resume();
-                return null;
-            }
+        defer.then(o -> {
+            waiter.resume();
+            return null;
         });
         defer.result(2);
         defer.result(3);
@@ -172,23 +153,12 @@ public class AsyncTest {
     public void testAsyncExceptionRecovery() throws TimeoutException {
         final Waiter waiter = new Waiter();
 
-        Fn.async(executor, new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
-                throw new Exception();
-            }
-        }).onException(new Async.OnException<Integer>() {
-            @Override
-            public Option<Integer> onException(Exception e) {
-                return Option.of(1);
-            }
-        }).then(new Async.OnResult<Integer, Object>() {
-            @Override
-            public Object onResult(Integer integer) throws Exception {
-                waiter.assertEquals(1, integer);
-                waiter.resume();
-                return null;
-            }
+        Fn.async(executor, () -> {
+            throw new Exception();
+        }).onException(e -> Option.of(1)).then(integer -> {
+            waiter.assertEquals(1, integer);
+            waiter.resume();
+            return null;
         });
 
         waiter.await(300L);
@@ -198,12 +168,7 @@ public class AsyncTest {
     public void testExecutorAsyncAffinity() {
         CountingExecutor countingExecutor = new CountingExecutor();
         CountingExecutor secondCountingExecutor = new CountingExecutor();
-        Async<String> root = Async.async(countingExecutor, new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                return "heyo";
-            }
-        });
+        Async<String> root = Async.async(countingExecutor, () -> "heyo");
         root.then(new Async.Result<String>() {
             // Since the this branch starts off of the same countingExcutor, it will be executed inline
         }).then(secondCountingExecutor, new Async.Result<String>() {
@@ -262,12 +227,7 @@ public class AsyncTest {
     public void testAsync() throws TimeoutException {
         final Waiter waiter = new Waiter();
 
-        Async<String> async = Async.async(executor, new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                return "5";
-            }
-        });
+        Async<String> async = Async.async(executor, () -> "5");
 
         async.then(new Async.From<String, Integer>() {
             @Override
@@ -303,20 +263,14 @@ public class AsyncTest {
     @Test
     public void testOnProgress() {
         Async.Deferred<Object> defer = Fn.defer();
-        defer.onProgress(new Async.OnProgress() {
-            @Override
-            public int onProgress(int progress) {
-                assertEquals(1, progress);
-                // Modification of the progress propagates it to downstream Asyncs.
-                return progress + 1;
-            }
-        }).onProgress(new Async.OnProgress() {
-            @Override
-            public int onProgress(int progress) {
-                assertEquals(2, progress);
-                // -1 prevents progress from propagating
-                return -1;
-            }
+        defer.onProgress(progress -> {
+            assertEquals(1, progress);
+            // Modification of the progress propagates it to downstream Asyncs.
+            return progress + 1;
+        }).onProgress(progress -> {
+            assertEquals(2, progress);
+            // -1 prevents progress from propagating
+            return -1;
         });
         defer.progress(1);
     }
@@ -325,18 +279,10 @@ public class AsyncTest {
     public void testAwaitDeferred() throws TimeoutException {
         final Waiter waiter = new Waiter();
         Async.Deferred<Integer> defer = Fn.defer(executor);
-        defer.then(new Async.OnResult<Integer, Integer>() {
-            @Override
-            public Integer onResult(Integer integer) throws Exception {
-                return integer + 1;
-            }
-        }).then(new Async.OnResult<Integer, Object>() {
-            @Override
-            public Object onResult(Integer integer) throws Exception {
-                waiter.assertEquals(2, integer);
-                waiter.resume();
-                return null;
-            }
+        defer.then(integer -> integer + 1).then(integer -> {
+            waiter.assertEquals(2, integer);
+            waiter.resume();
+            return null;
         });
 
         defer.result(1);
@@ -345,22 +291,7 @@ public class AsyncTest {
 
     @Test
     public void testAwait() {
-        Fn.when(Fn.async(new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
-                return 1;
-            }
-        }), Fn.async(new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
-                return 2;
-            }
-        }), Fn.async(new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
-                return 3;
-            }
-        })).then(new Async.Result<List<Object>>() {
+        Fn.when(Fn.async((Callable<Object>) () -> 1), Fn.async(() -> 2), Fn.async(() -> 3)).then(new Async.Result<List<Object>>() {
             @Override
             public List<Object> onResult(List<Object> objects) throws Exception {
                 assertEquals(Arrays.asList(1, 2, 3), objects);
@@ -373,24 +304,15 @@ public class AsyncTest {
     public void testThreadedAwait() throws Exception {
         final Random random = new Random();
         final Waiter waiter = new Waiter();
-        Fn.when(executor, Fn.async(executor, new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
-                Thread.sleep(random.nextInt(20));
-                return 1;
-            }
-        }), Fn.async(executor, new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
-                Thread.sleep(random.nextInt(20));
-                return 2;
-            }
-        }), Fn.async(executor, new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
-                Thread.sleep(random.nextInt(20));
-                return 3;
-            }
+        Fn.when(executor, Fn.async(executor, (Callable<Object>) () -> {
+            Thread.sleep(random.nextInt(20));
+            return 1;
+        }), Fn.async(executor, () -> {
+            Thread.sleep(random.nextInt(20));
+            return 2;
+        }), Fn.async(executor, () -> {
+            Thread.sleep(random.nextInt(20));
+            return 3;
         })).then(executor, new Async.Result<List<Object>>() {
             @Override
             public List<Object> onResult(List<Object> objects) throws Exception {

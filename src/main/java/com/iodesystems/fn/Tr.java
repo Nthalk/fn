@@ -25,7 +25,7 @@ public class Tr<NODE> {
     }
 
     public Tr<NODE> find(Where<NODE> where) {
-        return new Tr<NODE>(root.breadth(adapter).filter(where), adapter);
+        return new Tr<>(root.breadth(adapter).filter(where), adapter);
     }
 
     public Tr<NODE> findByPath(final Iterable<Where<NODE>> where) {
@@ -37,10 +37,10 @@ public class Tr<NODE> {
         }
 
         if (runs == 0) {
-            return new Tr<NODE>(Fn.<NODE>empty(), adapter);
+            return new Tr<>(Fn.empty(), adapter);
         }
 
-        return new Tr<NODE>(current, adapter);
+        return new Tr<>(current, adapter);
     }
 
     @Override

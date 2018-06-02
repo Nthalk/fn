@@ -13,12 +13,7 @@ public class IndexTest {
     @Test
     public void testIndex() {
         Iterable<Integer> source = Fn.of(1, 2, 3, 4, 5);
-        Map<String, Integer> index = Indexer.index(source, new From<Integer, String>() {
-            @Override
-            public String from(Integer integer) {
-                return integer.toString();
-            }
-        });
+        Map<String, Integer> index = Indexer.index(source, Object::toString);
         assertEquals(index.size(), 5);
         for (Integer integer : source) {
             assertTrue(index.containsKey(integer.toString()));

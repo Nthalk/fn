@@ -11,13 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class Async<A> {
 
-    public static final Executor INLINE = new Executor() {
-        @Override
-        public void execute(Runnable command) {
-            command.run();
-        }
-    };
-    protected final List<Next<A, ?>> nexts = new ArrayList<Next<A, ?>>();
+    public static final Executor INLINE = Runnable::run;
+    protected final List<Next<A, ?>> nexts = new ArrayList<>();
     final Executor executor;
     protected Option<A> result = null;
     protected Exception exception = null;
@@ -32,12 +27,7 @@ public abstract class Async<A> {
     }
 
     public static <A> Async<A> async(final A value) {
-        return async(INLINE, new Callable<A>() {
-            @Override
-            public A call() throws Exception {
-                return value;
-            }
-        });
+        return async(INLINE, () -> value);
     }
 
     public static <A> Deferred<A> defer() {
@@ -45,16 +35,16 @@ public abstract class Async<A> {
     }
 
     public static <A> Deferred<A> defer(Executor executor) {
-        return new Deferred<A>(executor);
+        return new Deferred<>(executor);
     }
 
     public static <A> Async<A> async(Executor executor, Callable<A> initial) {
-        return new Initial<A>(executor, initial);
+        return new Initial<>(executor, initial);
     }
 
     public static <A> Next<List<A>, List<A>> when(final Executor executor, final Async<A>... asyncs) {
-        final List<A> results = new ArrayList<A>(asyncs.length);
-        final List<Next<A, A>> thens = new ArrayList<Next<A, A>>();
+        final List<A> results = new ArrayList<>(asyncs.length);
+        final List<Next<A, A>> thens = new ArrayList<>();
         final AtomicInteger countdown = new AtomicInteger(asyncs.length);
         final AtomicBoolean hasException = new AtomicBoolean(false);
         int index = 0;
@@ -141,7 +131,7 @@ public abstract class Async<A> {
     }
 
     public <B> Next<A, B> then(Executor executor, final OnResult<A, B> onResult, final OnException<B> onException, final OnProgress onProgress) {
-        return then(new Next<A, B>(executor, new From<A, B>() {
+        return then(new Next<>(executor, new From<A, B>() {
             @Override
             public B onResult(A a) throws Exception {
                 return onResult.onResult(a);
@@ -174,11 +164,11 @@ public abstract class Async<A> {
     }
 
     public Next<A, A> then(Executor executor, Result<A> result) {
-        return then(new Next<A, A>(executor, result, this));
+        return then(new Next<>(executor, result, this));
     }
 
     public <B> Next<A, B> then(Executor executor, From<A, B> from) {
-        return then(new Next<A, B>(executor, from, this));
+        return then(new Next<>(executor, from, this));
     }
 
     synchronized void progressInternal(Executor executor, int progress) {
@@ -274,14 +264,11 @@ public abstract class Async<A> {
                     exceptionInternal(executor, e);
                 }
             } else {
-                executor.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            resultInternal(executor, callable.call());
-                        } catch (Exception e) {
-                            exceptionInternal(executor, e);
-                        }
+                executor.execute(() -> {
+                    try {
+                        resultInternal(executor, callable.call());
+                    } catch (Exception e) {
+                        exceptionInternal(executor, e);
                     }
                 });
             }
@@ -319,12 +306,7 @@ public abstract class Async<A> {
             if (isCurrentExecutor(parentExecutor)) {
                 onParentProgressInternal(progress);
             } else {
-                this.executor.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        onParentProgressInternal(progress);
-                    }
-                });
+                this.executor.execute(() -> onParentProgressInternal(progress));
             }
         }
 
@@ -336,12 +318,7 @@ public abstract class Async<A> {
             if (isCurrentExecutor(parentExecutor)) {
                 onParentResultInternal(result);
             } else {
-                this.executor.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        onParentResultInternal(result);
-                    }
-                });
+                this.executor.execute(() -> onParentResultInternal(result));
             }
 
         }
@@ -350,12 +327,7 @@ public abstract class Async<A> {
             if (isCurrentExecutor(parentExecutor)) {
                 onParentExceptionInternal(exception);
             } else {
-                this.executor.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        onParentExceptionInternal(exception);
-                    }
-                });
+                this.executor.execute(() -> onParentExceptionInternal(exception));
             }
         }
 

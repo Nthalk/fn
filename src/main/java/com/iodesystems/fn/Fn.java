@@ -11,15 +11,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 
 public class Fn<A> implements Iterable<A> {
-    private static final Fn<?> EMPTY = new Fn<Object>(Iterables.empty());
+    public static final From<String, Integer> parseInt = Integer::parseInt;
+    private static final Fn<?> EMPTY = new Fn<>(Iterables.empty());
     private final Iterable<A> contents;
-    public static final From<String, Integer> parseInt = new From<String, Integer>() {
-
-        @Override
-        public Integer from(String s) {
-            return Integer.parseInt(s);
-        }
-    };
 
     protected Fn(Iterable<A> contents) {
         this.contents = contents;
@@ -41,34 +35,28 @@ public class Fn<A> implements Iterable<A> {
     public static Fn<String> lines(InputStream ios) throws IOException {
         final BufferedReader reader = new BufferedReader(new InputStreamReader(ios));
         final String first = reader.readLine();
-        return of(new Iterable<String>() {
+        return of(() -> new Iterator<String>() {
+            String next = first;
+
             @Override
-            public Iterator<String> iterator() {
+            public void remove() {
 
-                return new Iterator<String>() {
-                    String next = first;
+            }
 
-                    @Override
-                    public void remove() {
+            @Override
+            public boolean hasNext() {
+                return next != null;
+            }
 
-                    }
-
-                    @Override
-                    public boolean hasNext() {
-                        return next != null;
-                    }
-
-                    @Override
-                    public String next() {
-                        String tmp = next;
-                        try {
-                            next = reader.readLine();
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                        return tmp;
-                    }
-                };
+            @Override
+            public String next() {
+                String tmp = next;
+                try {
+                    next = reader.readLine();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                return tmp;
             }
         });
     }
@@ -84,90 +72,40 @@ public class Fn<A> implements Iterable<A> {
         return result.toString();
     }
 
-    public Fn<List<A>> groupsOf(final int size) {
-        return of(new Iterable<List<A>>() {
-            @Override
-            public Iterator<List<A>> iterator() {
-                final List<A> as = toList();
-                return new Iterator<List<A>>() {
-                    int position = 0;
-
-                    @Override
-                    public boolean hasNext() {
-                        return position <= as.size();
-                    }
-
-                    @Override
-                    public List<A> next() {
-                        List<A> next = new ArrayList<A>(size);
-                        for (int i = 0; i < size; i++) {
-                            int nextPos = position + i;
-                            if (nextPos < as.size()) {
-                                next.add(as.get(nextPos));
-                            }
-                        }
-                        position += size;
-                        return next;
-                    }
-
-                    @Override
-                    public void remove() {
-
-                    }
-                };
-            }
-        });
-    }
-
-    public String join(String glue) {
-        StringBuilder out = new StringBuilder();
-        for (Object part : this) {
-            if (part != null) out.append(part.toString());
-            out.append(glue);
-        }
-        if (out.length() > 0) out.delete(out.length() - glue.length(), out.length());
-        return out.toString();
-    }
-
     public static Fn<String> split(final String target, final String on) {
-        return of(new Iterable<String>() {
+        return of(() -> new Iterator<String>() {
+            int nextIndex = target.indexOf(on);
+            int lastIndex = 0;
+
             @Override
-            public Iterator<String> iterator() {
-                return new Iterator<String>() {
-                    int nextIndex = target.indexOf(on);
-                    int lastIndex = 0;
+            public boolean hasNext() {
+                return lastIndex != -1;
+            }
 
-                    @Override
-                    public boolean hasNext() {
-                        return lastIndex != -1;
-                    }
+            @Override
+            public String next() {
+                String tmp;
+                if (nextIndex == -1) {
+                    tmp = target.substring(lastIndex);
+                    lastIndex = -1;
+                } else {
+                    tmp = target.substring(lastIndex, nextIndex);
+                    lastIndex = nextIndex + on.length();
+                    nextIndex = target.indexOf(on, lastIndex);
+                }
+                return tmp;
+            }
 
-                    @Override
-                    public String next() {
-                        String tmp;
-                        if (nextIndex == -1) {
-                            tmp = target.substring(lastIndex);
-                            lastIndex = -1;
-                        } else {
-                            tmp = target.substring(lastIndex, nextIndex);
-                            lastIndex = nextIndex + on.length();
-                            nextIndex = target.indexOf(on, lastIndex);
-                        }
-                        return tmp;
-                    }
+            @Override
+            public void remove() {
 
-                    @Override
-                    public void remove() {
-
-                    }
-                };
             }
         });
     }
 
     @SuppressWarnings("unchecked")
     public static <A, B> Map<A, B> mapOf(A key, B value, Object... rest) {
-        Map<A, B> map = new HashMap<A, B>();
+        Map<A, B> map = new HashMap<>();
         map.put(key, value);
         key = null;
         for (Object o : rest) {
@@ -286,11 +224,7 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public static <V> Where<V> not(final V value) {
-        return new Where<V>() {
-            public boolean is(V v) {
-                return !v.equals(value);
-            }
-        };
+        return v -> !v.equals(value);
     }
 
     public static <V> Condition<V> is(final V value) {
@@ -317,11 +251,11 @@ public class Fn<A> implements Iterable<A> {
         if (contents instanceof Fn) {
             return (Fn<A>) contents;
         }
-        return new Fn<A>(contents);
+        return new Fn<>(contents);
     }
 
     public static <A> Fn<A> of(Enumeration<A> contents) {
-        return new Fn<A>(Iterables.of(contents));
+        return new Fn<>(Iterables.of(contents));
     }
 
     public static <A> Fn<A> of(final A as) {
@@ -336,7 +270,7 @@ public class Fn<A> implements Iterable<A> {
         if (contents == null) {
             return Fn.empty();
         }
-        return of(contents).where(Fn.<A>notNull());
+        return of(contents).where(Fn.notNull());
     }
 
     public static <A> Fn<A> ofNullable(final A as) {
@@ -347,7 +281,7 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public static <A> Fn<A> ofNullable(final A... as) {
-        return of(as).where(Fn.<A>notNull());
+        return of(as).where(Fn.notNull());
     }
 
     public static <A> Fn<A> with(Generator<A> generator) {
@@ -358,7 +292,7 @@ public class Fn<A> implements Iterable<A> {
         if (contents instanceof Fn) {
             return (Fn<A>) contents;
         }
-        return new Fn<A>(contents);
+        return new Fn<>(contents);
     }
 
     public static <A> Fn<A> with(final A as) {
@@ -438,12 +372,7 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public static <A> Iterable<A> join(Iterable<Iterable<A>> nexts, final A joiner) {
-        return Iterables.multiply(nexts, new From<Iterable<A>, Iterable<A>>() {
-            @Override
-            public Iterable<A> from(Iterable<A> as) {
-                return Iterables.join(as, of(joiner));
-            }
-        });
+        return Iterables.multiply(nexts, as -> Iterables.join(as, of(joiner)));
     }
 
     public static Fn<Integer> ofRange(final int start, final int end) {
@@ -485,35 +414,24 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public static <A> List<A> list() {
-        return new ArrayList<A>();
+        return new ArrayList<>();
     }
 
     public static <A> List<A> list(A a) {
-        ArrayList<A> as = new ArrayList<A>(1);
+        ArrayList<A> as = new ArrayList<>(1);
         as.add(a);
         return as;
     }
 
     public static <A> List<A> list(A a, A... rest) {
-        ArrayList<A> as = new ArrayList<A>(1 + rest.length);
+        ArrayList<A> as = new ArrayList<>(1 + rest.length);
         as.add(a);
         Collections.addAll(as, rest);
         return as;
     }
 
     public static <A> Fn<Option<A>> tails(Iterable<Iterable<A>> items) {
-        return of(items).convert(new From<Iterable<A>, Option<A>>() {
-            @Override
-            public Option<A> from(Iterable<A> as) {
-                return last(as);
-            }
-        });
-    }
-
-    public Fn<A> reverse() {
-        List<A> as = toList();
-        Collections.reverse(as);
-        return Fn.of(as);
+        return of(items).convert(as -> last(as));
     }
 
     public static <A> Option<A> last(Iterable<A> contents) {
@@ -540,12 +458,55 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public static <A> From<A, String> convertToString() {
-        return new From<A, String>() {
-            @Override
-            public String from(A a) {
-                return a.toString();
-            }
-        };
+        return Object::toString;
+    }
+
+    public Fn<List<A>> groupsOf(final int size) {
+        return of(() -> {
+            final List<A> as = toList();
+            return new Iterator<List<A>>() {
+                int position = 0;
+
+                @Override
+                public boolean hasNext() {
+                    return position <= as.size();
+                }
+
+                @Override
+                public List<A> next() {
+                    List<A> next = new ArrayList<>(size);
+                    for (int i = 0; i < size; i++) {
+                        int nextPos = position + i;
+                        if (nextPos < as.size()) {
+                            next.add(as.get(nextPos));
+                        }
+                    }
+                    position += size;
+                    return next;
+                }
+
+                @Override
+                public void remove() {
+
+                }
+            };
+        });
+    }
+
+    public String join(String glue) {
+        StringBuilder out = new StringBuilder();
+        for (Object part : this) {
+            if (part != null) out.append(part.toString());
+            out.append(glue);
+        }
+        if (out.length() > 0) out.delete(out.length() - glue.length(), out.length());
+        return out.toString();
+    }
+
+    public Fn<A> reverse() {
+        List<A> as = toList();
+        Collections.reverse(as);
+        return Fn.of(as);
     }
 
     public Enumeration<A> enumeration() {
@@ -616,17 +577,9 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public <B> Fn<B> where(final Class<B> cls) {
-        return only(new Where<A>() {
-            @Override
-            public boolean is(A a) {
-                return cls.isInstance(a);
-            }
-        }).convert(new From<A, B>() {
-            @Override
-            public B from(A a) {
-                //noinspection unchecked
-                return (B) a;
-            }
+        return only(cls::isInstance).convert(a -> {
+            //noinspection unchecked
+            return (B) a;
         });
     }
 
@@ -681,7 +634,7 @@ public class Fn<A> implements Iterable<A> {
 
             @Override
             public Pair<Integer, A> from(A a) {
-                return new Pair<Integer, A>(i++, a);
+                return new Pair<>(i++, a);
             }
         });
     }
@@ -717,12 +670,7 @@ public class Fn<A> implements Iterable<A> {
 
     public Fn<A> intersection(Iterable<A> other) {
         final Set<A> set = toSet();
-        return Fn.of(other).filter(new Where<A>() {
-            @Override
-            public boolean is(A a) {
-                return set.contains(a);
-            }
-        });
+        return Fn.of(other).filter(a -> set.contains(a));
     }
 
     public Set<A> toSet() {
@@ -731,28 +679,13 @@ public class Fn<A> implements Iterable<A> {
 
     public Fn<A> subtract(Iterable<A> other) {
         final Set<A> ignore = Iterables.toSet(other);
-        return filter(new Where<A>() {
-            @Override
-            public boolean is(A a) {
-                return !ignore.contains(a);
-            }
-        });
+        return filter(a -> !ignore.contains(a));
     }
 
     public Fn<A> difference(Iterable<A> other) {
         final Set<A> set = toSet();
         final Set<A> setOther = Iterables.toSet(other);
-        return filter(new Where<A>() {
-            @Override
-            public boolean is(A a) {
-                return !setOther.contains(a);
-            }
-        }).join(Iterables.filter(other, new Where<A>() {
-            @Override
-            public boolean is(A a) {
-                return !set.contains(a);
-            }
-        }));
+        return filter(a -> !setOther.contains(a)).join(Iterables.filter(other, a -> !set.contains(a)));
     }
 
     public Fn<A> takeWhile(Where<A> where) {
@@ -764,21 +697,11 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public Fn<Iterable<A>> multiply(final Integer times) {
-        return convert(new From<A, Iterable<A>>() {
-            @Override
-            public Iterable<A> from(A a) {
-                return Iterables.repeat(a, times);
-            }
-        });
+        return convert(a -> Iterables.repeat(a, times));
     }
 
     public Iterable<Option<A>> optionally(final Where<A> where) {
-        return convert(new From<A, Option<A>>() {
-            @Override
-            public Option<A> from(A a) {
-                return where.is(a) ? Option.of(a) : Option.<A>empty();
-            }
-        });
+        return convert(a -> where.is(a) ? Option.of(a) : Option.empty());
     }
 
     public Fn<A> depth(From<A, Iterable<A>> multiply) {
@@ -832,22 +755,47 @@ public class Fn<A> implements Iterable<A> {
     }
 
     public <B> Fn<Pair<A, B>> extractPair(final From<A, B> extract) {
-        return convert(new From<A, Pair<A, B>>() {
-            @Override
-            public Pair<A, B> from(A a) {
-                return Pair.of(a, extract.from(a));
-            }
-        });
+        return convert(a -> Pair.of(a, extract.from(a)));
     }
 
     public <B, C> Fn<Pair<A, C>> extractMatch(final From<A, B> extract,
                                               Iterable<C> against,
                                               From<C, B> extractAgainst) {
         final Map<B, C> index = Fn.of(against).index(extractAgainst);
-        return extractPair(extract).convert(new From<Pair<A, B>, Pair<A, C>>() {
+        return extractPair(extract).convert(abPair -> Pair.of(abPair.getA(), index.get(abPair.getB())));
+    }
+
+    public Fn<A> iterateSibiling(From<A, A> extractor) {
+        return multiply(a -> () -> new Iterator<A>() {
+            A nextA = a;
+
             @Override
-            public Pair<A, C> from(Pair<A, B> abPair) {
-                return Pair.of(abPair.getA(), index.get(abPair.getB()));
+            public boolean hasNext() {
+                return nextA != null;
+            }
+
+            @Override
+            public A next() {
+                A tmp = nextA;
+                nextA = extractor.from(nextA);
+                return tmp;
+            }
+        });
+    }
+
+    public <B> Fn<B> iterateSizedIndexAccessors(From<A, Integer> getSize, From2<A, Integer, B> getter) {
+        return multiply(a -> () -> new Iterator<B>() {
+            int size = getSize.from(a);
+            int current = 0;
+
+            @Override
+            public boolean hasNext() {
+                return size > current;
+            }
+
+            @Override
+            public B next() {
+                return getter.from(a, current++);
             }
         });
     }

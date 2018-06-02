@@ -1,18 +1,8 @@
 package com.iodesystems.fn.data;
 
 public class Pair<A, B> {
-    private static final From<Pair<?, ?>, ?> EXTRACT_A = new From<Pair<?, ?>, Object>() {
-        @Override
-        public Object from(Pair<?, ?> aPair) {
-            return aPair.getA();
-        }
-    };
-    private static final From<Pair<?, ?>, ?> EXTRACT_B = new From<Pair<?, ?>, Object>() {
-        @Override
-        public Object from(Pair<?, ?> aPair) {
-            return aPair.getB();
-        }
-    };
+    private static final From<Pair<?, ?>, ?> EXTRACT_A = (From<Pair<?, ?>, Object>) Pair::getA;
+    private static final From<Pair<?, ?>, ?> EXTRACT_B = (From<Pair<?, ?>, Object>) Pair::getB;
     private final A a;
     private final B b;
 
@@ -59,6 +49,6 @@ public class Pair<A, B> {
     }
 
     public static <A, B> Pair<A, B> of(A a, B b) {
-        return new Pair<A, B>(a, b);
+        return new Pair<>(a, b);
     }
 }
