@@ -669,6 +669,7 @@ public abstract class Iterables {
         };
     }
 
+
     public static <A> A[] toArray(Iterable<A> contents, A[] preallocated) {
         int i = 0;
         for (A content : contents) {
@@ -679,5 +680,43 @@ public abstract class Iterables {
 
     private static Iterator<Object> iterator() {
         return (Iterator<Object>) EMPTY_ITERATOR;
+    }
+
+    public static <A> Iterable<A> withNext(final Iterable<A> contents,
+                                           final From<A, A> nextFromCurrent) {
+        return multiply(contents, a -> () -> new Iterator<A>() {
+            A nextA = a;
+
+            @Override
+            public boolean hasNext() {
+                return nextA != null;
+            }
+
+            @Override
+            public A next() {
+                A tmp = nextA;
+                nextA = nextFromCurrent.from(nextA);
+                return tmp;
+            }
+        });
+    }
+
+    public static <A, B> Iterable<B> sizedContents(final Iterable<A> contents,
+                                              final From<A, Integer> getSize,
+                                              final From2<A, Integer, B> getItem) {
+        return multiply(contents, a -> () -> new Iterator<B>() {
+            int size = getSize.from(a);
+            int current = 0;
+
+            @Override
+            public boolean hasNext() {
+                return size > current;
+            }
+
+            @Override
+            public B next() {
+                return getItem.from(a, current++);
+            }
+        });
     }
 }

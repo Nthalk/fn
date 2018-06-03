@@ -11,7 +11,7 @@ public class NextTest {
     public void testLengthGetterIterator() {
         List<Integer> source = Fn.ofRange(1, 10).toList();
         SizedIndexAccessor sizedIndexAccessor = new SizedIndexAccessor(source);
-        assertEquals(source, Fn.of(sizedIndexAccessor).iterateSizedIndexAccessors(SizedIndexAccessor::getSize, SizedIndexAccessor::get).toList());
+        assertEquals(source, Fn.of(sizedIndexAccessor).multiplySizedContents(SizedIndexAccessor::getSize, SizedIndexAccessor::get).toList());
 
     }
 
@@ -21,7 +21,7 @@ public class NextTest {
         for (Integer value : Fn.range(1, 10)) {
             last = new HasSibiling(value, last);
         }
-        assertEquals(10, Fn.of(last).iterateSibiling(HasSibiling::getSibiling).size());
+        assertEquals(10, Fn.of(last).withNext(HasSibiling::getSibiling).size());
     }
 
     class HasSibiling {

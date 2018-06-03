@@ -765,38 +765,11 @@ public class Fn<A> implements Iterable<A> {
         return extractPair(extract).convert(abPair -> Pair.of(abPair.getA(), index.get(abPair.getB())));
     }
 
-    public Fn<A> iterateSibiling(From<A, A> extractor) {
-        return multiply(a -> () -> new Iterator<A>() {
-            A nextA = a;
-
-            @Override
-            public boolean hasNext() {
-                return nextA != null;
-            }
-
-            @Override
-            public A next() {
-                A tmp = nextA;
-                nextA = extractor.from(nextA);
-                return tmp;
-            }
-        });
+    public Fn<A> withNext(From<A, A> nextFromCurrent) {
+        return of(Iterables.withNext(contents, nextFromCurrent));
     }
 
-    public <B> Fn<B> iterateSizedIndexAccessors(From<A, Integer> getSize, From2<A, Integer, B> getter) {
-        return multiply(a -> () -> new Iterator<B>() {
-            int size = getSize.from(a);
-            int current = 0;
-
-            @Override
-            public boolean hasNext() {
-                return size > current;
-            }
-
-            @Override
-            public B next() {
-                return getter.from(a, current++);
-            }
-        });
+    public <B> Fn<B> multiplySizedContents(From<A, Integer> getSize, From2<A, Integer, B> getItem) {
+        return of(Iterables.sizedContents(contents, getSize, getItem));
     }
 }
