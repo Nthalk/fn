@@ -24,6 +24,10 @@ public class Fn<A> implements Iterable<A> {
         return thing;
     }
 
+    public static String ifBlank(String thing, String ifBlank){
+        return isBlank(thing) ? ifBlank : thing;
+    }
+
     public static boolean isBlank(String str) {
         return str == null || str.length() == 0;
     }

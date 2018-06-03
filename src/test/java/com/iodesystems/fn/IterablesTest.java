@@ -2,13 +2,36 @@ package com.iodesystems.fn;
 
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
 public class IterablesTest {
+
+    @Test
+    public void iterateAllTheThings() {
+        Enumeration<Integer> enumeration = Collections.enumeration(Fn.list(1, 2, 3));
+        System.out.println("Enumerations!");
+        for (Integer value : Fn.of(enumeration)) {
+            System.out.print(value);
+        }
+        System.out.println();
+
+        System.out.println("Sized Buckets!");
+        SizedIndexAccessor sizedBucket = new SizedIndexAccessor(Fn.list(1, 2, 3));
+        for (Integer value : Fn.of(sizedBucket).multiplySizedContents(SizedIndexAccessor::getSize, SizedIndexAccessor::get)) {
+            System.out.print(value);
+        }
+        System.out.println();
+
+        System.out.println("Next Containers!");
+        HasNext linkedItemsRoot = Fn.ofRange(1, 3).reverse().combine(null, HasNext::new);
+        for (HasNext hasNext : Fn.of(linkedItemsRoot).withNext(HasNext::getNext)) {
+            System.out.print(hasNext.getValue());
+        }
+        System.out.println();
+
+    }
 
     @Test
     public void testDrop() {

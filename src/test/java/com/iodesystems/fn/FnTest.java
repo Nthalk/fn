@@ -42,6 +42,7 @@ public class FnTest {
 
     @Test
     public void testStringSplit() {
+        assertEquals(Fn.list("a", "b", "c", ""), Fn.split("a_0b_0c_0", "_0").toList());
         assertEquals(
                 Fn.list(1, 2, 3),
                 Fn.split("1,2,3", ",").convert(Fn.parseInt).toList());

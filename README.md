@@ -11,12 +11,13 @@ reflection.
       <dependency>
         <groupId>com.iodesystems</groupId>
         <artifactId>fn</artifactId>
-        <version>1.1.8</version>
+        <version>1.2.1</version>
       </dependency
       ....
     </dependencies
 
 ### Java Support
+
 Fn supports Java 1.6, with an effort for Java 1.8 hygiene.
 
 
@@ -52,6 +53,51 @@ However, this will yield a `Map` of size 3. If you want to preserve your groups
        }
     });
 
+### Iterate all the things
+
+Enumerations, sized lists, and chained sequences are all very obnoxious when you just want to iterate across them:
+
+    Enumeration<Integer> enumeration = Collections.enumeration(Fn.list(1, 2, 3));
+    System.out.println("Enumerations!");
+    for (Integer value : Fn.of(enumeration)) {
+        System.out.print(value);
+    }
+    System.out.println();
+
+    System.out.println("Sized Buckets!");
+    SizedIndexAccessor sizedBucket = new SizedIndexAccessor(Fn.list(1, 2, 3));
+    for (Integer value : Fn.of(sizedBucket).multiplySizedContents(SizedIndexAccessor::getSize, SizedIndexAccessor::get)) {
+        System.out.print(value);
+    }
+    System.out.println();
+
+    System.out.println("Next Containers!");
+    HasNext linkedItemsRoot = Fn.ofRange(1, 3).reverse().combine(null, HasNext::new);
+    for (HasNext hasNext : Fn.of(linkedItemsRoot).withNext(HasNext::getNext)) {
+        System.out.print(hasNext.getValue());
+    }
+    System.out.println();
+
+### Generic utilities
+
+When getting things done, often you need to read OutputStreams into Strings, or iterate into lines:
+
+    String contents = Fn.readFully(inputStream);
+    for(String line : Fn.lines(inputStream);
+    
+It's also useful to know when Strings are blank or null:
+
+    Fn.isBlank("") || Fn.isBlank(null); // true
+     
+And it's also useful to provide an if null (and ifBlank):
+
+    Fn.ifNull(null, 3); // 3
+    Fn.ifBlank("", "default"); // "default"
+
+As well as a string splitting:
+
+    assertEquals(Fn.list("a", "b", "c", ""), Fn.split("a_0b_0c_0", "_0").toList());
+    
 ### Tree Support
 
 Fn includes `breadth`, `depth`, and `breadthPaths`, which make working on nested objects easier.

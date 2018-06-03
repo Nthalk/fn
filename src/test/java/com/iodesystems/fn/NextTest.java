@@ -17,47 +17,11 @@ public class NextTest {
 
     @Test
     public void testNextSibilingIterator() {
-        HasSibiling last = null;
+        HasNext last = null;
         for (Integer value : Fn.range(1, 10)) {
-            last = new HasSibiling(value, last);
+            last = new HasNext(value, last);
         }
-        assertEquals(10, Fn.of(last).withNext(HasSibiling::getSibiling).size());
+        assertEquals(10, Fn.of(last).withNext(HasNext::getNext).size());
     }
 
-    class HasSibiling {
-        private final int value;
-        private final HasSibiling sibiling;
-
-        public HasSibiling(int value, HasSibiling sibiling) {
-            this.value = value;
-            this.sibiling = sibiling;
-        }
-
-        @Override
-        public String toString() {
-            return "HasSibiling{" +
-                    "value=" + value +
-                    '}';
-        }
-
-        public HasSibiling getSibiling() {
-            return sibiling;
-        }
-    }
-
-    private class SizedIndexAccessor {
-        private final List<Integer> wrapped;
-
-        public SizedIndexAccessor(List<Integer> wrapped) {
-            this.wrapped = wrapped;
-        }
-
-        public int getSize() {
-            return wrapped.size();
-        }
-
-        public Integer get(Integer index) {
-            return wrapped.get(index);
-        }
-    }
 }
