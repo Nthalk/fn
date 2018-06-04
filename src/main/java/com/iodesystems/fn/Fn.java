@@ -4,6 +4,7 @@ import com.iodesystems.fn.data.*;
 import com.iodesystems.fn.logic.Condition;
 import com.iodesystems.fn.logic.Where;
 import com.iodesystems.fn.thread.Async;
+import com.iodesystems.fn.thread.Invokable;
 
 import java.io.*;
 import java.util.*;
@@ -24,7 +25,7 @@ public class Fn<A> implements Iterable<A> {
         return thing;
     }
 
-    public static String ifBlank(String thing, String ifBlank){
+    public static String ifBlank(String thing, String ifBlank) {
         return isBlank(thing) ? ifBlank : thing;
     }
 
@@ -616,6 +617,10 @@ public class Fn<A> implements Iterable<A> {
         return of(Iterables.repeat(contents, times));
     }
 
+    public void consume() {
+        Iterables.consume(contents);
+    }
+
     public int size() {
         return Iterables.size(contents);
     }
@@ -775,5 +780,9 @@ public class Fn<A> implements Iterable<A> {
 
     public <B> Fn<B> multiplySizedContents(From<A, Integer> getSize, From2<A, Integer, B> getItem) {
         return of(Iterables.sizedContents(contents, getSize, getItem));
+    }
+
+    public Fn<A> each(Invokable<A> handler) {
+        return of(Iterables.each(contents, handler));
     }
 }

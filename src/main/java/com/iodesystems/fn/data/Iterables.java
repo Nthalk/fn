@@ -2,6 +2,7 @@ package com.iodesystems.fn.data;
 
 
 import com.iodesystems.fn.logic.Where;
+import com.iodesystems.fn.thread.Invokable;
 import com.iodesystems.fn.tree.NodeWithParent;
 
 import java.util.*;
@@ -181,6 +182,10 @@ public abstract class Iterables {
                 throw new IllegalStateException();
             }
         };
+    }
+
+    public static <A> void consume(Iterable<A> as) {
+        for (A ignored : as) ;
     }
 
     public static <A> int size(Iterable<A> as) {
@@ -702,8 +707,8 @@ public abstract class Iterables {
     }
 
     public static <A, B> Iterable<B> sizedContents(final Iterable<A> contents,
-                                              final From<A, Integer> getSize,
-                                              final From2<A, Integer, B> getItem) {
+                                                   final From<A, Integer> getSize,
+                                                   final From2<A, Integer, B> getItem) {
         return multiply(contents, a -> () -> new Iterator<B>() {
             int size = getSize.from(a);
             int current = 0;
@@ -718,5 +723,23 @@ public abstract class Iterables {
                 return getItem.from(a, current++);
             }
         });
+    }
+
+    public static <A> Iterable<A> each(final Iterable<A> contents, final Invokable<A> handler) {
+        return () -> new Iterator<A>() {
+            Iterator<A> parent = contents.iterator();
+
+            @Override
+            public boolean hasNext() {
+                return parent.hasNext();
+            }
+
+            @Override
+            public A next() {
+                A next = parent.next();
+                handler.invoke(next);
+                return next;
+            }
+        };
     }
 }
