@@ -7,24 +7,24 @@ import java.util.Map;
 
 public abstract class Grouper<K, V> implements From<V, K> {
 
-    public static <K, V> Map<K, List<V>> group(Iterable<V> source, From<V, K> extractor) {
-        Map<K, List<V>> groups = new HashMap<>();
-        if (source != null) {
-            for (V v : source) {
-                K k = extractor.from(v);
-                if (groups.containsKey(k)) {
-                    groups.get(k).add(v);
-                } else {
-                    List<V> vs = new ArrayList<>();
-                    vs.add(v);
-                    groups.put(k, vs);
-                }
-            }
+  public static <K, V> Map<K, List<V>> group(Iterable<V> source, From<V, K> extractor) {
+    Map<K, List<V>> groups = new HashMap<>();
+    if (source != null) {
+      for (V v : source) {
+        K k = extractor.from(v);
+        if (groups.containsKey(k)) {
+          groups.get(k).add(v);
+        } else {
+          List<V> vs = new ArrayList<>();
+          vs.add(v);
+          groups.put(k, vs);
         }
-        return groups;
+      }
     }
+    return groups;
+  }
 
-    public Map<K, List<V>> group(Iterable<V> source) {
-        return group(source, this);
-    }
+  public Map<K, List<V>> group(Iterable<V> source) {
+    return group(source, this);
+  }
 }

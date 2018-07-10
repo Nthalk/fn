@@ -1,26 +1,25 @@
 package com.iodesystems.fn;
 
 public class HasNext {
-    private final int value;
-    private final HasNext sibiling;
 
-    public HasNext(int value, HasNext sibiling) {
-        this.value = value;
-        this.sibiling = sibiling;
-    }
+  private final int value;
+  private final HasNext sibling;
 
-    @Override
-    public String toString() {
-        return "HasNext{" +
-                "value=" + value +
-                '}';
-    }
+  public HasNext(int value, HasNext sibling) {
+    this.value = value;
+    this.sibling = sibling;
+  }
 
-    public HasNext getNext() {
-        return sibiling;
-    }
+  @Override
+  public String toString() {
+    return "HasNext{" + "value=" + value + '}';
+  }
 
-    public Integer getValue() {
-        return value;
-    }
+  public HasNext getNext() {
+    return sibling;
+  }
+
+  public Integer getValue() {
+    return value;
+  }
 }

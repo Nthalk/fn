@@ -3,17 +3,18 @@ package com.iodesystems.fn;
 import java.util.List;
 
 class SizedIndexAccessor {
-    private final List<Integer> wrapped;
 
-    public SizedIndexAccessor(List<Integer> wrapped) {
-        this.wrapped = wrapped;
-    }
+  private final List<Integer> wrapped;
 
-    public int getSize() {
-        return wrapped.size();
-    }
+  public SizedIndexAccessor(List<Integer> wrapped) {
+    this.wrapped = wrapped;
+  }
 
-    public Integer get(Integer index) {
-        return wrapped.get(index);
-    }
+  public int getSize() {
+    return wrapped.size();
+  }
+
+  public Integer get(Integer index) {
+    return wrapped.get(index);
+  }
 }
