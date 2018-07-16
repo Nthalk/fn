@@ -18,12 +18,10 @@ public class AsyncTest {
 
   final Executor executor = Executors.newFixedThreadPool(3);
 
-  /**
-   * Async can be run in sync style.
-   */
+  /** Async can be run in sync style. */
   @Test
   public void testSimpleSyncResult() {
-    final String[] result = new String[]{null};
+    final String[] result = new String[] {null};
 
     // Async's without an executor run inline.
     Fn.async(() -> "Hello World!")
@@ -46,15 +44,15 @@ public class AsyncTest {
    */
   @Test
   public void testSimpleAsyncResult() throws TimeoutException {
-    final int[] result = new int[]{0};
+    final int[] result = new int[] {0};
     final Waiter waiter = new Waiter();
 
     Fn.async(
-        executor,
-        () -> {
-          Thread.sleep(10L);
-          return 1;
-        })
+            executor,
+            () -> {
+              Thread.sleep(10L);
+              return 1;
+            })
         .then(
             Async.INLINE,
             new Async.Result<Integer>() {
@@ -70,9 +68,7 @@ public class AsyncTest {
     assertEquals(1, result[0]);
   }
 
-  /**
-   * Asyncs can convert and branch, even on separate Executors
-   */
+  /** Asyncs can convert and branch, even on separate Executors */
   @Test
   public void testBranchingAndConvertingAsync() throws TimeoutException {
     final Waiter waiter = new Waiter();
@@ -108,13 +104,11 @@ public class AsyncTest {
     waiter.await(300L, 3);
   }
 
-  /**
-   * Sometimes you need to have a deferred object, instead of a callable
-   */
+  /** Sometimes you need to have a deferred object, instead of a callable */
   @Test
   public void testSimpleDeferred() {
-    final String[] result = new String[]{null};
-    final Integer[] progress = new Integer[]{null, null};
+    final String[] result = new String[] {null};
+    final Integer[] progress = new Integer[] {null, null};
     Async.Deferred<String> defer = Fn.defer();
     defer.then(
         new Async.Result<String>() {
@@ -168,10 +162,10 @@ public class AsyncTest {
     final Waiter waiter = new Waiter();
 
     Fn.async(
-        executor,
-        () -> {
-          throw new Exception();
-        })
+            executor,
+            () -> {
+              throw new Exception();
+            })
         .onException(e -> Option.of(1))
         .then(
             integer -> {
@@ -189,10 +183,10 @@ public class AsyncTest {
     CountingExecutor secondCountingExecutor = new CountingExecutor();
     Async<String> root = Async.async(countingExecutor, () -> "heyo");
     root.then(
-        new Async.Result<String>() {
-          // Since the this branch starts off of the same countingExcutor, it will be executed
-          // inline
-        })
+            new Async.Result<String>() {
+              // Since the this branch starts off of the same countingExcutor, it will be executed
+              // inline
+            })
         .then(
             secondCountingExecutor,
             new Async.Result<String>() {
@@ -205,10 +199,10 @@ public class AsyncTest {
             });
 
     root.then(
-        new Async.Result<String>() {
-          // Since the this branch starts off of the same countingExcutor, it will be executed
-          // inline
-        })
+            new Async.Result<String>() {
+              // Since the this branch starts off of the same countingExcutor, it will be executed
+              // inline
+            })
         .then(
             secondCountingExecutor,
             new Async.Result<String>() {
@@ -231,11 +225,11 @@ public class AsyncTest {
     Async.Deferred<String> root = Async.defer(countingExecutor);
 
     root.then(
-        countingExecutor,
-        new Async.Result<String>() {
-          // Since the this branch starts off of the same countingExcutor, it will be executed
-          // inline
-        })
+            countingExecutor,
+            new Async.Result<String>() {
+              // Since the this branch starts off of the same countingExcutor, it will be executed
+              // inline
+            })
         .then(
             secondCountingExecutor,
             new Async.Result<String>() {
@@ -251,11 +245,11 @@ public class AsyncTest {
     root.result("heyo");
 
     root.then(
-        countingExecutor,
-        new Async.Result<String>() {
-          // Since the this branch starts off of the same countingExcutor, it will be executed
-          // inline
-        })
+            countingExecutor,
+            new Async.Result<String>() {
+              // Since the this branch starts off of the same countingExcutor, it will be executed
+              // inline
+            })
         .then(
             secondCountingExecutor,
             new Async.Result<String>() {
@@ -375,26 +369,26 @@ public class AsyncTest {
     final Random random = new Random();
     final Waiter waiter = new Waiter();
     Fn.when(
-        executor,
-        Fn.async(
             executor,
-            (Callable<Object>)
+            Fn.async(
+                executor,
+                (Callable<Object>)
+                    () -> {
+                      Thread.sleep(random.nextInt(20));
+                      return 1;
+                    }),
+            Fn.async(
+                executor,
                 () -> {
                   Thread.sleep(random.nextInt(20));
-                  return 1;
+                  return 2;
                 }),
-        Fn.async(
-            executor,
-            () -> {
-              Thread.sleep(random.nextInt(20));
-              return 2;
-            }),
-        Fn.async(
-            executor,
-            () -> {
-              Thread.sleep(random.nextInt(20));
-              return 3;
-            }))
+            Fn.async(
+                executor,
+                () -> {
+                  Thread.sleep(random.nextInt(20));
+                  return 3;
+                }))
         .then(
             executor,
             new Async.Result<List<Object>>() {

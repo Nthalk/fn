@@ -18,6 +18,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -55,8 +57,18 @@ public class Fn<A> implements Iterable<A> {
     return str == null || str.length() == 0;
   }
 
-  public static Fn<String> lines(String input) throws IOException {
-    return lines(new ByteArrayInputStream(input.getBytes()));
+  public static String stackString(Throwable e) {
+    StringWriter stackString = new StringWriter();
+    e.printStackTrace(new PrintWriter(stackString));
+    return stackString.toString();
+  }
+
+  public static Fn<String> lines(String input) {
+    try {
+      return lines(new ByteArrayInputStream(input.getBytes()));
+    } catch (IOException e) {
+      throw new IllegalStateException("this should not happen", e);
+    }
   }
 
   public static Fn<String> lines(InputStream ios) throws IOException {
@@ -68,8 +80,7 @@ public class Fn<A> implements Iterable<A> {
               String next = first;
 
               @Override
-              public void remove() {
-              }
+              public void remove() {}
 
               @Override
               public boolean hasNext() {
@@ -127,8 +138,7 @@ public class Fn<A> implements Iterable<A> {
               }
 
               @Override
-              public void remove() {
-              }
+              public void remove() {}
             });
   }
 
@@ -528,8 +538,7 @@ public class Fn<A> implements Iterable<A> {
             }
 
             @Override
-            public void remove() {
-            }
+            public void remove() {}
           };
         });
   }

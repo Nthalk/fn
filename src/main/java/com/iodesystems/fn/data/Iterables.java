@@ -199,8 +199,7 @@ public abstract class Iterables {
 
   public static <A> void consume(Iterable<A> as) {
     //noinspection StatementWithEmptyBody
-    for (A ignored : as) {
-      ;
+    for (A ignored : as) {;
     }
   }
 

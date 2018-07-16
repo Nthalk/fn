@@ -26,10 +26,10 @@ public class TreeTests {
 
     List<Node> foundByPath =
         tr.findByPath(
-            Fn.of(
-                Node.valueIs(1),
-                Node.valueIs(2),
-                Condition.of(Node.valueIs(6)).or(Node.valueIs(5))))
+                Fn.of(
+                    Node.valueIs(1),
+                    Node.valueIs(2),
+                    Condition.of(Node.valueIs(6)).or(Node.valueIs(5))))
             .contents()
             .toList();
     assertEquals(2, foundByPath.size());
