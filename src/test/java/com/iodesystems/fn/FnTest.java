@@ -329,6 +329,7 @@ public class FnTest {
   public void testWhereClass() {
     A2 a2 = new A2();
     A a = new A();
+    assertEquals(Fn.list(a), Fn.of(a).where(Ai.class).toList());
     assertEquals(Fn.list(a2), Fn.of(a, a2).where(A2.class).toList());
     assertEquals(Fn.list(a, a2), Fn.of(a, a2).where(A.class).toList());
   }
@@ -618,7 +619,9 @@ public class FnTest {
     //    assertEquals(null, Fn.leftJoin1());
   }
 
-  private static class A {}
+  private interface Ai {}
+
+  private static class A implements Ai {}
 
   private static class A2 extends A {}
 }

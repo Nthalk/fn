@@ -208,7 +208,7 @@ public class Iterables {
     return where(as, uniques::add);
   }
 
-  public static <A, B extends A> Iterable<B> where(final Iterable<A> source, final Class<B> cls) {
+  public static <A, B> Iterable<B> where(final Iterable<A> source, final Class<B> cls) {
     //noinspection unchecked
     return (Iterable<B>) where(source, (Where<A>) Wheres.is(cls));
   }
@@ -441,7 +441,7 @@ public class Iterables {
     return (Iterable<A>) EMPTY;
   }
 
-  public static <A, B extends A> Option<B> first(Iterable<A> as, Class<B> cls) {
+  public static <A, B> Option<B> first(Iterable<A> as, Class<B> cls) {
     return first(where(as, cls));
   }
 

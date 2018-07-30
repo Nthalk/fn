@@ -254,7 +254,7 @@ public class Fn<A> extends Option<A> {
     return Iterables.combine(contents, initial, condenser);
   }
 
-  public <B extends A> Fn<B> where(Class<B> cls) {
+  public <B> Fn<B> where(Class<B> cls) {
     //noinspection unchecked
     return of(Iterables.where((Iterable<B>) contents, Wheres.is(cls)));
   }
@@ -275,7 +275,7 @@ public class Fn<A> extends Option<A> {
     return of(Iterables.where(contents, Wheres.not(value)));
   }
 
-  public <B extends A> Fn<A> not(Class<B> cls) {
+  public <B> Fn<A> not(Class<B> cls) {
     //noinspection unchecked
     return of(Iterables.where(contents, (Where<A>) Wheres.not(cls)));
   }
@@ -358,7 +358,7 @@ public class Fn<A> extends Option<A> {
     return Iterables.first(contents, where);
   }
 
-  public <B extends A> Option<B> first(Class<B> cls) {
+  public <B> Option<B> first(Class<B> cls) {
     return Iterables.first(contents, cls);
   }
 
