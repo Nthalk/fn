@@ -174,6 +174,19 @@ public class Fn<A> extends Option<A> {
     return of(Iterables.repeat(a, times));
   }
 
+  public static <K, V> Map<K, V> index(Iterable<V> contents, From<V, K> keyExtractor) {
+    return Indexes.index(contents, keyExtractor);
+  }
+
+  public static <A, K, V> Map<K, V> index(
+      Iterable<A> contents, From<A, K> keyExtractor, From<A, V> valueExtractor) {
+    return Indexes.index(contents, keyExtractor, valueExtractor);
+  }
+
+  public static <K, V> Map<K, List<V>> group(Iterable<V> contents, From<V, K> keyExtractor) {
+    return Groups.group(contents, keyExtractor);
+  }
+
   public static <A, B extends Iterable<A>> Fn<A> flatten(Iterable<B> contents) {
     return of(Iterables.flatten(contents));
   }

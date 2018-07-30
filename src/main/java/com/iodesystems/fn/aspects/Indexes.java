@@ -13,4 +13,13 @@ public class Indexes {
     }
     return map;
   }
+
+  public static <V, A, K> Map<K, V> index(
+      Iterable<A> source, From<A, K> keyExtractor, From<A, V> valueExtractor) {
+    Map<K, V> map = new HashMap<>();
+    for (A a : source) {
+      map.put(keyExtractor.from(a), valueExtractor.from(a));
+    }
+    return map;
+  }
 }
