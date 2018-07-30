@@ -263,6 +263,10 @@ public class Fn<A> extends Option<A> {
     return of(Iterables.where(contents, condition));
   }
 
+  public Fn<A> where(A value) {
+    return of(Iterables.where(contents, Wheres.is(value)));
+  }
+
   public Fn<A> notNull() {
     return of(Iterables.where(contents, Wheres.notNull()));
   }

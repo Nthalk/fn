@@ -326,13 +326,16 @@ public class FnTest {
   }
 
   @Test
-  public void testWhere() {
-    //    assertEquals(null, Fn.where());
+  public void testWhereClass() {
+    A2 a2 = new A2();
+    A a = new A();
+    assertEquals(Fn.list(a2), Fn.of(a, a2).where(A2.class).toList());
+    assertEquals(Fn.list(a, a2), Fn.of(a, a2).where(A.class).toList());
   }
 
   @Test
-  public void testWhere1() {
-    //    assertEquals(null, Fn.where1());
+  public void testWhereValue() {
+    assertEquals(Fn.list(2), Fn.of(1, 2, 3).where(2).toList());
   }
 
   @Test
@@ -614,4 +617,8 @@ public class FnTest {
   public void testLeftJoin1() {
     //    assertEquals(null, Fn.leftJoin1());
   }
+
+  private static class A {}
+
+  private static class A2 extends A {}
 }

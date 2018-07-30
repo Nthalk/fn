@@ -22,6 +22,15 @@ public class Wheres {
     };
   }
 
+  public static <T> Where<T> is(T value) {
+    return new Where<T>() {
+      @Override
+      public boolean is(T t) {
+        return Values.isEqual(t, value);
+      }
+    };
+  }
+
   public static <T> Where<T> not(Class<T> cls) {
     return new Where<T>() {
       @Override
