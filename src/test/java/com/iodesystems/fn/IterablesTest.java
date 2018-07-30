@@ -22,15 +22,13 @@ public class IterablesTest {
 
     System.out.println("Sized Buckets!");
     SizedIndexAccessor sizedBucket = new SizedIndexAccessor(Fn.list(1, 2, 3));
-    for (Integer value :
-        Fn.of(sizedBucket)
-            .multiplySizedContents(SizedIndexAccessor::getSize, SizedIndexAccessor::get)) {
+    for (Integer value : Fn.of(sizedBucket, SizedIndexAccessor::getSize, SizedIndexAccessor::get)) {
       System.out.print(value);
     }
     System.out.println();
 
     System.out.println("Next Containers!");
-    HasNext linkedItemsRoot = Fn.ofRange(1, 3).reverse().combine(null, HasNext::new);
+    HasNext linkedItemsRoot = Fn.range(1, 3).reverse().combine(null, HasNext::new);
     for (HasNext hasNext : Fn.of(linkedItemsRoot).withNext(HasNext::getNext)) {
       System.out.print(hasNext.getValue());
     }
@@ -44,7 +42,7 @@ public class IterablesTest {
 
   @Test
   public void testRepeat() {
-    assertEquals(9, Fn.of(1, 2, 3).repeat(3).size());
+    assertEquals(9, Fn.of(1, 2, 3).loop(3).size());
   }
 
   @Test
@@ -59,7 +57,9 @@ public class IterablesTest {
 
   @Test
   public void testMultiply() {
-    Fn<Integer> multiply = Fn.of(1, 2, 3).multiply(integer -> Fn.of(integer).repeat(integer));
+    Fn<Iterable<Integer>> listsOfIntegers =
+        Fn.of(1, 2, 3).multiply(integer -> Fn.of(integer).loop(integer));
+    Fn<Integer> multiply = Fn.flatten(listsOfIntegers);
 
     assertEquals(6, multiply.size());
     assertEquals(3, multiply.unique().size());

@@ -9,13 +9,11 @@ public class NextTest {
 
   @Test
   public void testLengthGetterIterator() {
-    List<Integer> source = Fn.ofRange(1, 10).toList();
+    List<Integer> source = Fn.range(1, 10).toList();
     SizedIndexAccessor sizedIndexAccessor = new SizedIndexAccessor(source);
     assertEquals(
         source,
-        Fn.of(sizedIndexAccessor)
-            .multiplySizedContents(SizedIndexAccessor::getSize, SizedIndexAccessor::get)
-            .toList());
+        Fn.of(sizedIndexAccessor, SizedIndexAccessor::getSize, SizedIndexAccessor::get).toList());
   }
 
   @Test
@@ -24,6 +22,7 @@ public class NextTest {
     for (Integer value : Fn.range(1, 10)) {
       last = new HasNext(value, last);
     }
-    assertEquals(10, Fn.of(last).withNext(HasNext::getNext).size());
+    List<Integer> list = Fn.of(last).withNext(HasNext::getNext).convert(HasNext::getValue).toList();
+    assertEquals(Fn.range(1, 10).reverse().toList(), list);
   }
 }

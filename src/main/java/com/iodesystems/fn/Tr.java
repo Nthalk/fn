@@ -26,19 +26,19 @@ public class Tr<NODE> {
   }
 
   public Tr<NODE> find(Where<NODE> where) {
-    return new Tr<>(root.breadth(adapter).filter(where), adapter);
+    return new Tr<>(root.breadth(adapter).where(where), adapter);
   }
 
   public Tr<NODE> findByPath(final Iterable<Where<NODE>> where) {
     Fn<NODE> current = root;
     int runs = 0;
     for (Where<NODE> check : where) {
-      current = current.breadth(adapter).filter(check);
+      current = current.breadth(adapter).where(check);
       runs++;
     }
 
     if (runs == 0) {
-      return new Tr<>(Fn.empty(), adapter);
+      return new Tr<>(Fn.none(), adapter);
     }
 
     return new Tr<>(current, adapter);
