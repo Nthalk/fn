@@ -229,12 +229,13 @@ public class Fn<A> extends Option<A> {
   }
 
   public Fn<Option<A>> optionally(Where<A> condition) {
-    return convert(new From<A, Option<A>>() {
-      @Override
-      public Option<A> from(A a) {
-        return condition.is(a) ? Option.of(a) : Option.empty();
-      }
-    });
+    return convert(
+        new From<A, Option<A>>() {
+          @Override
+          public Option<A> from(A a) {
+            return condition.is(a) ? Option.of(a) : Option.empty();
+          }
+        });
   }
 
   public A[] toArray(A[] preallocated) {
@@ -458,16 +459,16 @@ public class Fn<A> extends Option<A> {
   public String join(String glue) {
     return combine(
             new StringBuilder(),
-        new Combine<A, StringBuilder>() {
-          @Override
-          public StringBuilder from(A a, StringBuilder sb) {
-            if (a != null) {
-              sb.append(a);
-            }
-            sb.append(glue);
-            return sb;
-          }
-        })
+            new Combine<A, StringBuilder>() {
+              @Override
+              public StringBuilder from(A a, StringBuilder sb) {
+                if (a != null) {
+                  sb.append(a);
+                }
+                sb.append(glue);
+                return sb;
+              }
+            })
         .toString();
   }
 

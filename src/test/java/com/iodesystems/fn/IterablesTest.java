@@ -59,23 +59,27 @@ public class IterablesTest {
   @Test
   public void testMultiply() {
     Fn<Iterable<Integer>> listsOfIntegers =
-        Fn.of(1, 2, 3).multiply(new From<Integer, Iterable<Integer>>() {
-          @Override
-          public Iterable<Integer> from(Integer integer) {
-            return Fn.of(integer).loop(integer);
-          }
-        });
+        Fn.of(1, 2, 3)
+            .multiply(
+                new From<Integer, Iterable<Integer>>() {
+                  @Override
+                  public Iterable<Integer> from(Integer integer) {
+                    return Fn.of(integer).loop(integer);
+                  }
+                });
     Fn<Integer> multiply = Fn.flatten(listsOfIntegers);
 
     assertEquals(6, multiply.size());
     assertEquals(3, multiply.unique().size());
 
-    Map<Integer, List<Integer>> group = multiply.group(new From<Integer, Integer>() {
-      @Override
-      public Integer from(Integer integer) {
-        return integer;
-      }
-    });
+    Map<Integer, List<Integer>> group =
+        multiply.group(
+            new From<Integer, Integer>() {
+              @Override
+              public Integer from(Integer integer) {
+                return integer;
+              }
+            });
 
     assertEquals(1, group.get(1).size());
     assertEquals(2, group.get(2).size());

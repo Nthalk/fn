@@ -11,24 +11,29 @@ public class Joins {
 
   public static <A, B> Iterable<Pair<A, B>> join(Iterable<A> as, Iterable<B> bs) {
     return Iterables.flatten(
-        Iterables.multiply(as, new From<A, Iterable<Pair<A, B>>>() {
-          @Override
-          public Iterable<Pair<A, B>> from(A a) {
-            return Iterables.convert(bs, new From<B, Pair<A, B>>() {
+        Iterables.multiply(
+            as,
+            new From<A, Iterable<Pair<A, B>>>() {
               @Override
-              public Pair<A, B> from(B b) {
-                return Pair.of(a, b);
+              public Iterable<Pair<A, B>> from(A a) {
+                return Iterables.convert(
+                    bs,
+                    new From<B, Pair<A, B>>() {
+                      @Override
+                      public Pair<A, B> from(B b) {
+                        return Pair.of(a, b);
+                      }
+                    });
               }
-            });
-          }
-        }));
+            }));
   }
 
   public static <A, B> Iterable<Pair<A, B>> join(
       Iterable<A> as, From<A, B> aIndexer, Iterable<B> bs) {
     Map<B, A> index = Indexes.index(as, aIndexer);
     return Iterables.convert(
-        Iterables.where(bs, index::containsKey), new From<B, Pair<A, B>>() {
+        Iterables.where(bs, index::containsKey),
+        new From<B, Pair<A, B>>() {
           @Override
           public Pair<A, B> from(B b) {
             return Pair.of(index.get(b), b);
@@ -39,12 +44,14 @@ public class Joins {
   public static <A, B> Iterable<Pair<A, B>> leftJoin(
       Iterable<A> as, From<A, B> aIndexer, Iterable<B> bs) {
     Map<B, A> index = Indexes.index(as, aIndexer);
-    return Iterables.convert(bs, new From<B, Pair<A, B>>() {
-      @Override
-      public Pair<A, B> from(B b) {
-        return Pair.of(index.get(b), b);
-      }
-    });
+    return Iterables.convert(
+        bs,
+        new From<B, Pair<A, B>>() {
+          @Override
+          public Pair<A, B> from(B b) {
+            return Pair.of(index.get(b), b);
+          }
+        });
   }
 
   public static <A, B, C> Iterable<Pair<A, B>> join(
@@ -79,12 +86,15 @@ public class Joins {
               @Override
               public Iterable<Pair<A, B>> from(B b) {
                 return Iterables.convert(
-                    Maps.getOrAdd(index, bIndexer.from(b), new Generator<List<A>>() {
-                      @Override
-                      public List<A> next() {
-                        return singleEmpty;
-                      }
-                    }),
+                    Maps.getOrAdd(
+                        index,
+                        bIndexer.from(b),
+                        new Generator<List<A>>() {
+                          @Override
+                          public List<A> next() {
+                            return singleEmpty;
+                          }
+                        }),
                     new From<A, Pair<A, B>>() {
                       @Override
                       public Pair<A, B> from(A a) {

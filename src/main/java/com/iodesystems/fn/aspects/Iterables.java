@@ -33,12 +33,13 @@ public class Iterables {
         }
       };
 
-  public static final Iterable<Object> EMPTY = new Iterable<Object>() {
-    @Override
-    public Iterator<Object> iterator() {
-      return EMPTY_ITERATOR;
-    }
-  };
+  public static final Iterable<Object> EMPTY =
+      new Iterable<Object>() {
+        @Override
+        public Iterator<Object> iterator() {
+          return EMPTY_ITERATOR;
+        }
+      };
 
   public static <A> Option<A> first(Iterable<A> as) {
     Iterator<A> iterator = as.iterator();

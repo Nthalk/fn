@@ -42,22 +42,35 @@ public class FnTest {
 
   @Test
   public void testOfGeneratorConstruction() {
-    assertEquals(Fn.list(1, 2, 3), Fn.of(1, new From<Integer, Integer>() {
-      @Override
-      public Integer from(Integer i) {
-        return i + 1;
-      }
-    }).take(3).toList());
+    assertEquals(
+        Fn.list(1, 2, 3),
+        Fn.of(
+                1,
+                new From<Integer, Integer>() {
+                  @Override
+                  public Integer from(Integer i) {
+                    return i + 1;
+                  }
+                })
+            .take(3)
+            .toList());
   }
 
   @Test
   public void testOfGenerator() {
-    assertEquals(Fn.list(1, 2, 3), Fn.of(Generators.of(1, new From<Integer, Integer>() {
-      @Override
-      public Integer from(Integer i) {
-        return i + 1;
-      }
-    })).take(3).toList());
+    assertEquals(
+        Fn.list(1, 2, 3),
+        Fn.of(
+                Generators.of(
+                    1,
+                    new From<Integer, Integer>() {
+                      @Override
+                      public Integer from(Integer i) {
+                        return i + 1;
+                      }
+                    }))
+            .take(3)
+            .toList());
   }
 
   @Test
@@ -83,12 +96,18 @@ public class FnTest {
 
   @Test
   public void testOfPresent() {
-    assertEquals(Fn.list(1), Fn.ofPresent(Fn.of(1).optionally(new Where<Integer>() {
-      @Override
-      public boolean is(Integer i) {
-        return i == 1;
-      }
-    })).toList());
+    assertEquals(
+        Fn.list(1),
+        Fn.ofPresent(
+                Fn.of(1)
+                    .optionally(
+                        new Where<Integer>() {
+                          @Override
+                          public boolean is(Integer i) {
+                            return i == 1;
+                          }
+                        }))
+            .toList());
   }
 
   @Test

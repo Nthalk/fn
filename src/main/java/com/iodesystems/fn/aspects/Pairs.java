@@ -7,22 +7,26 @@ import java.util.Iterator;
 public class Pairs {
 
   public static <A, B> Iterable<Pair<A, B>> pairs(Iterable<B> contents, From<B, A> aExtractor) {
-    return Iterables.convert(contents, new From<B, Pair<A, B>>() {
-      @Override
-      public Pair<A, B> from(B s) {
-        return Pair.of(aExtractor.from(s), s);
-      }
-    });
+    return Iterables.convert(
+        contents,
+        new From<B, Pair<A, B>>() {
+          @Override
+          public Pair<A, B> from(B s) {
+            return Pair.of(aExtractor.from(s), s);
+          }
+        });
   }
 
   public static <A, B, C> Iterable<Pair<A, B>> pairs(
       Iterable<C> contents, From<C, A> aExtractor, From<C, B> bExtractor) {
-    return Iterables.convert(contents, new From<C, Pair<A, B>>() {
-      @Override
-      public Pair<A, B> from(C s) {
-        return Pair.of(aExtractor.from(s), bExtractor.from(s));
-      }
-    });
+    return Iterables.convert(
+        contents,
+        new From<C, Pair<A, B>>() {
+          @Override
+          public Pair<A, B> from(C s) {
+            return Pair.of(aExtractor.from(s), bExtractor.from(s));
+          }
+        });
   }
 
   public static <A> Iterable<Pair<Integer, A>> index(Iterable<A> contents) {

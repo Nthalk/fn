@@ -27,12 +27,13 @@ public class AsyncTest {
     final String[] result = new String[] {null};
 
     // Async's without an executor run inline.
-    Fn.async(new Callable<String>() {
-      @Override
-      public String call() throws Exception {
-        return "Hello World!";
-      }
-    })
+    Fn.async(
+            new Callable<String>() {
+              @Override
+              public String call() throws Exception {
+                return "Hello World!";
+              }
+            })
         .then(
             new Async.Result<String>() {
               @Override
@@ -57,13 +58,13 @@ public class AsyncTest {
 
     Fn.async(
             executor,
-        new Callable<Integer>() {
-          @Override
-          public Integer call() throws Exception {
-            Thread.sleep(10L);
-            return 1;
-          }
-        })
+            new Callable<Integer>() {
+              @Override
+              public Integer call() throws Exception {
+                Thread.sleep(10L);
+                return 1;
+              }
+            })
         .then(
             Async.INLINE,
             new Async.Result<Integer>() {
@@ -83,12 +84,14 @@ public class AsyncTest {
   @Test
   public void testBranchingAndConvertingAsync() throws TimeoutException {
     final Waiter waiter = new Waiter();
-    Async<Integer> source = Fn.async(new Callable<Integer>() {
-      @Override
-      public Integer call() throws Exception {
-        return 1;
-      }
-    });
+    Async<Integer> source =
+        Fn.async(
+            new Callable<Integer>() {
+              @Override
+              public Integer call() throws Exception {
+                return 1;
+              }
+            });
 
     source.then(
         new Async.From<Integer, String>() {
@@ -185,18 +188,19 @@ public class AsyncTest {
 
     Fn.async(
             executor,
-        new Callable<Object>() {
-          @Override
-          public Object call() throws Exception {
-            throw new Exception();
-          }
-        })
-        .onException(new OnException<Integer>() {
-          @Override
-          public Option<Integer> onException(Exception e) {
-            return Option.of(1);
-          }
-        })
+            new Callable<Object>() {
+              @Override
+              public Object call() throws Exception {
+                throw new Exception();
+              }
+            })
+        .onException(
+            new OnException<Integer>() {
+              @Override
+              public Option<Integer> onException(Exception e) {
+                return Option.of(1);
+              }
+            })
         .then(
             new OnResult<Integer, Object>() {
               @Override
@@ -214,12 +218,15 @@ public class AsyncTest {
   public void testExecutorAsyncAffinity() {
     CountingExecutor countingExecutor = new CountingExecutor();
     CountingExecutor secondCountingExecutor = new CountingExecutor();
-    Async<String> root = Async.async(countingExecutor, new Callable<String>() {
-      @Override
-      public String call() throws Exception {
-        return "heyo";
-      }
-    });
+    Async<String> root =
+        Async.async(
+            countingExecutor,
+            new Callable<String>() {
+              @Override
+              public String call() throws Exception {
+                return "heyo";
+              }
+            });
     root.then(
             new Async.Result<String>() {
               // Since the this branch starts off of the same countingExcutor, it will be executed
@@ -312,12 +319,15 @@ public class AsyncTest {
   public void testAsync() throws TimeoutException {
     final Waiter waiter = new Waiter();
 
-    Async<String> async = Async.async(executor, new Callable<String>() {
-      @Override
-      public String call() throws Exception {
-        return "5";
-      }
-    });
+    Async<String> async =
+        Async.async(
+            executor,
+            new Callable<String>() {
+              @Override
+              public String call() throws Exception {
+                return "5";
+              }
+            });
 
     async
         .then(
@@ -387,12 +397,13 @@ public class AsyncTest {
     final Waiter waiter = new Waiter();
     Async.Deferred<Integer> defer = Fn.defer(executor);
     defer
-        .then(new OnResult<Integer, Integer>() {
-          @Override
-          public Integer onResult(Integer integer) throws Exception {
-            return integer + 1;
-          }
-        })
+        .then(
+            new OnResult<Integer, Integer>() {
+              @Override
+              public Integer onResult(Integer integer) throws Exception {
+                return integer + 1;
+              }
+            })
         .then(
             new OnResult<Integer, Object>() {
               @Override
@@ -410,22 +421,28 @@ public class AsyncTest {
   @SuppressWarnings("unchecked")
   @Test
   public void testAwait() {
-    Fn.when(Fn.async(new Callable<Object>() {
-      @Override
-      public Object call() throws Exception {
-        return 1;
-      }
-    }), Fn.async(new Callable<Object>() {
-      @Override
-      public Object call() throws Exception {
-        return 2;
-      }
-    }), Fn.async(new Callable<Object>() {
-      @Override
-      public Object call() throws Exception {
-        return 3;
-      }
-    }))
+    Fn.when(
+            Fn.async(
+                new Callable<Object>() {
+                  @Override
+                  public Object call() throws Exception {
+                    return 1;
+                  }
+                }),
+            Fn.async(
+                new Callable<Object>() {
+                  @Override
+                  public Object call() throws Exception {
+                    return 2;
+                  }
+                }),
+            Fn.async(
+                new Callable<Object>() {
+                  @Override
+                  public Object call() throws Exception {
+                    return 3;
+                  }
+                }))
         .then(
             new Async.Result<List<Object>>() {
               @Override

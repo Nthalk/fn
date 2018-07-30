@@ -73,12 +73,13 @@ public class DocTest {
 
     //
     final String[] result = new String[] {null};
-    Fn.async(new Callable<String>() {
-      @Override
-      public String call() throws Exception {
-        return "Hello world!";
-      }
-    })
+    Fn.async(
+            new Callable<String>() {
+              @Override
+              public String call() throws Exception {
+                return "Hello world!";
+              }
+            })
         .then(
             new Async.Result<String>() {
               @Override

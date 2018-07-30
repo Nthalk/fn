@@ -40,19 +40,21 @@ public abstract class Condition<A> implements Where<A> {
 
   public static <A> Condition<A> isNotValue(A value) {
     if (value == null) {
-      return Condition.of(new Where<A>() {
-        @Override
-        public boolean is(A obj) {
-          return !Objects.isNull(obj);
-        }
-      });
+      return Condition.of(
+          new Where<A>() {
+            @Override
+            public boolean is(A obj) {
+              return !Objects.isNull(obj);
+            }
+          });
     } else {
-      return Condition.of(new Where<A>() {
-        @Override
-        public boolean is(A obj) {
-          return !value.equals(obj);
-        }
-      });
+      return Condition.of(
+          new Where<A>() {
+            @Override
+            public boolean is(A obj) {
+              return !value.equals(obj);
+            }
+          });
     }
   }
 

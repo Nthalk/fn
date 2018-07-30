@@ -35,8 +35,7 @@ public class Strings {
           String next = first;
 
           @Override
-          public void remove() {
-          }
+          public void remove() {}
 
           @Override
           public boolean hasNext() {
@@ -97,8 +96,7 @@ public class Strings {
           }
 
           @Override
-          public void remove() {
-          }
+          public void remove() {}
         };
       }
     };
