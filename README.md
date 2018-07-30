@@ -11,7 +11,7 @@ reflection.
       <dependency>
         <groupId>com.iodesystems</groupId>
         <artifactId>fn</artifactId>
-        <version>1.2.4</version>
+        <version>2.0.0</version>
       </dependency
       ....
     </dependencies
@@ -23,16 +23,14 @@ Fn supports Java 1.6, with an effort for Java 1.8 hygiene.
 
 ### The Fn Object
 
-Almost all of the operations can be used independently, or with a `Fn` helper. 
-
-    Fn.of(1,2,3).filter(Fn.is(2)); // <-- Helper
-    Fn.where(Arrays.asList(1,2,3), Fn.is(2)); // <-- No helper
+The `Fn<A>` object wraps a `Iterable<A>` and provides extension/utility methods to make your job 
+easier.
     
-Because complicated actions can often be written cleaner in plain old java, the `Fn` object is `Iterable`,
-so multiple dispatching operations can be performed with ease:
+Because complicated actions can often be written cleaner in plain old java, the `Fn` object is 
+`Iterable` itself, so multiple dispatching operations can be performed with ease:
 
-    for(Integer value : Fn.of(1,2,3).not(2).repeat(2)){
-        System.out.println(value);
+    for (Integer value : Fn.of(1, 2, 3).not(2).loop(2)) {
+      System.out.println(value);
     }
 
 ### Common usages
@@ -60,21 +58,21 @@ Enumerations, sized lists, and chained sequences are all very obnoxious when you
     Enumeration<Integer> enumeration = Collections.enumeration(Fn.list(1, 2, 3));
     System.out.println("Enumerations!");
     for (Integer value : Fn.of(enumeration)) {
-        System.out.print(value);
+      System.out.print(value);
     }
     System.out.println();
 
     System.out.println("Sized Buckets!");
     SizedIndexAccessor sizedBucket = new SizedIndexAccessor(Fn.list(1, 2, 3));
-    for (Integer value : Fn.of(sizedBucket).multiplySizedContents(SizedIndexAccessor::getSize, SizedIndexAccessor::get)) {
-        System.out.print(value);
+    for (Integer value : Fn.of(sizedBucket, SizedIndexAccessor::getSize, SizedIndexAccessor::get)) {
+      System.out.print(value);
     }
     System.out.println();
 
     System.out.println("Next Containers!");
-    HasNext linkedItemsRoot = Fn.ofRange(1, 3).reverse().combine(null, HasNext::new);
+    HasNext linkedItemsRoot = Fn.range(1, 3).reverse().combine(null, HasNext::new);
     for (HasNext hasNext : Fn.of(linkedItemsRoot).withNext(HasNext::getNext)) {
-        System.out.print(hasNext.getValue());
+      System.out.print(hasNext.getValue());
     }
     System.out.println();
 
@@ -83,7 +81,7 @@ Enumerations, sized lists, and chained sequences are all very obnoxious when you
 When getting things done, often you need to read OutputStreams into Strings, or iterate into lines:
 
     String contents = Fn.readFully(inputStream);
-    for(String line : Fn.lines(inputStream);
+    for(String line : Fn.lines(inputStream));
     
 It's also useful to know when Strings are blank or null:
 
@@ -102,30 +100,21 @@ As well as a string splitting:
 
 Fn includes `breadth`, `depth`, and `breadthPaths`, which make working on nested objects easier.
 
-    Fn.of(node).breadth(new From<Node, Iterable<Node>(){
-        public String from(Node node){
-            return node.getChildren();
-        }
-    }
+    Fn.of(Node.v("value")).breadth(Node::getChildren);
 
 ### Async
 
 Async code on Java has historically been a pain, however, Fn offers `Async<A>` and `Deferred<A>` objects.
 
     final String[] result = new String[]{null};
-    Fn.async(new Callable<String>() {
-        @Override
-        public String call() throws Exception {
-            return "Hello world!";
-        }
-    }).then(new Async.Result<String>() {
-        @Override
-        public String onResult(String message) throws Exception {
-            // It did it
+    Fn.async(() -> "Hello world!")
+        .then(new Async.Result<String>() {
+          @Override
+          public String onResult(String message) throws Exception {
             result[0] = message;
             return null;
-        }
-    });
+          }
+        });
     assertEquals("Hello World!", result[0]);
 
 The deferred example is just as simple (this example also shows progress tracking):

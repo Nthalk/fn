@@ -26,7 +26,12 @@ public abstract class Async<A> {
   }
 
   public static <A> Async<A> async(final A value) {
-    return async(INLINE, () -> value);
+    return async(INLINE, new Callable<A>() {
+      @Override
+      public A call() throws Exception {
+        return value;
+      }
+    });
   }
 
   public static <A> Deferred<A> defer() {
@@ -285,11 +290,14 @@ public abstract class Async<A> {
         }
       } else {
         executor.execute(
-            () -> {
-              try {
-                resultInternal(executor, callable.call());
-              } catch (Exception e) {
-                exceptionInternal(executor, e);
+            new Runnable() {
+              @Override
+              public void run() {
+                try {
+                  Initial.this.resultInternal(executor, callable.call());
+                } catch (Exception e) {
+                  Initial.this.exceptionInternal(executor, e);
+                }
               }
             });
       }
@@ -328,7 +336,12 @@ public abstract class Async<A> {
       if (isCurrentExecutor(parentExecutor)) {
         onParentProgressInternal(progress);
       } else {
-        this.executor.execute(() -> onParentProgressInternal(progress));
+        this.executor.execute(new Runnable() {
+          @Override
+          public void run() {
+            Next.this.onParentProgressInternal(progress);
+          }
+        });
       }
     }
 
@@ -340,7 +353,12 @@ public abstract class Async<A> {
       if (isCurrentExecutor(parentExecutor)) {
         onParentResultInternal(result);
       } else {
-        this.executor.execute(() -> onParentResultInternal(result));
+        this.executor.execute(new Runnable() {
+          @Override
+          public void run() {
+            Next.this.onParentResultInternal(result);
+          }
+        });
       }
     }
 
@@ -348,7 +366,12 @@ public abstract class Async<A> {
       if (isCurrentExecutor(parentExecutor)) {
         onParentExceptionInternal(exception);
       } else {
-        this.executor.execute(() -> onParentExceptionInternal(exception));
+        this.executor.execute(new Runnable() {
+          @Override
+          public void run() {
+            Next.this.onParentExceptionInternal(exception);
+          }
+        });
       }
     }
 

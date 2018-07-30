@@ -1,8 +1,5 @@
 package com.iodesystems.fn.tree.simple;
 
-import com.iodesystems.fn.Fn;
-import com.iodesystems.fn.logic.Condition;
-import com.iodesystems.fn.logic.Where;
 import com.iodesystems.fn.tree.Adapter;
 import java.util.Arrays;
 import java.util.List;
@@ -28,15 +25,6 @@ public class Node {
 
   public static Node v(Object value, Node... children) {
     return new Node(value, children);
-  }
-
-  public static Where<Node> valueIs(final Object value) {
-    return new Condition<Node>() {
-      @Override
-      public boolean is(Node node) {
-        return Fn.eq(value, node.getValue());
-      }
-    };
   }
 
   public List<Node> getChildren() {

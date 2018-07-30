@@ -1,6 +1,6 @@
 package com.iodesystems.fn.data;
 
-import com.iodesystems.fn.Fn;
+import com.iodesystems.fn.aspects.Iterables;
 import com.iodesystems.fn.logic.Where;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -27,8 +27,10 @@ public abstract class Option<T> implements Iterable<T> {
 
   public static <T> Iterable<T> unwrap(Iterable<Option<T>> options) {
     final Iterator<Option<T>> iterator = options.iterator();
-    return () ->
-        new Iterator<T>() {
+    return new Iterable<T>() {
+      @Override
+      public Iterator<T> iterator() {
+        return new Iterator<T>() {
           private Option<T> nextT;
 
           public boolean hasNext() {
@@ -50,6 +52,8 @@ public abstract class Option<T> implements Iterable<T> {
             throw new IllegalStateException();
           }
         };
+      }
+    };
   }
 
   public static <T> Option<T> of(T item) {
@@ -89,8 +93,6 @@ public abstract class Option<T> implements Iterable<T> {
     };
   }
 
-  public abstract Fn<T> fn();
-
   public abstract T get();
 
   public abstract T orElse(T ifEmpty);
@@ -102,7 +104,6 @@ public abstract class Option<T> implements Iterable<T> {
   public abstract T orResolve(Generator<T> with);
 
   public static class Empty<T> extends Option<T> {
-    private static final Fn<?> EMPTY_FN = Fn.empty();
 
     private Empty() {}
 
@@ -110,12 +111,6 @@ public abstract class Option<T> implements Iterable<T> {
     @SuppressWarnings("unchecked")
     public Iterator<T> iterator() {
       return (Iterator<T>) Iterables.EMPTY_ITERATOR;
-    }
-
-    @Override
-    public Fn<T> fn() {
-      //noinspection unchecked
-      return (Fn<T>) EMPTY_FN;
     }
 
     @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
@@ -157,6 +152,7 @@ public abstract class Option<T> implements Iterable<T> {
   }
 
   public static class Present<T> extends Option<T> {
+
     private final T thing;
 
     private Present(T thing) {
@@ -164,17 +160,20 @@ public abstract class Option<T> implements Iterable<T> {
     }
 
     @Override
-    public Fn<T> fn() {
-      return Fn.of(this);
-    }
-
-    @Override
     public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
       Present<?> present = (Present<?>) o;
-      if (thing == present.thing) return true;
-      if (thing != null) return thing.equals(present.thing);
+      if (thing == present.thing) {
+        return true;
+      }
+      if (thing != null) {
+        return thing.equals(present.thing);
+      }
       return false;
     }
 
