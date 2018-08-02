@@ -27,6 +27,7 @@ import com.iodesystems.fn.thread.Async;
 import com.iodesystems.fn.thread.Invokable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -230,11 +231,25 @@ public class Fn<A> extends Option<A> {
 
   @SafeVarargs
   public static <T> List<T> list(T... ts) {
-    return Arrays.asList(ts);
+    if (ts == null) {
+      ArrayList<T> objects = new ArrayList<>();
+      objects.add(null);
+      return objects;
+    } else {
+      return Arrays.asList(ts);
+    }
   }
 
-  public static <A> boolean isEqual(A value, A value1) {
-    return Values.isEqual(value, value1);
+  public static <A> boolean isEqual(A isThis, A theSameAs) {
+    return Values.isEqual(isThis, theSameAs);
+  }
+
+  public <K, V> Map<K, V> putAll(Map<K, V> map, From<A, K> keyFromItem, From<A, V> valueFromItem) {
+    return Maps.putAll(map, this, keyFromItem, valueFromItem);
+  }
+
+  public <K> Map<K, A> putAll(Map<K, A> map, From<A, K> keyFromItem) {
+    return Maps.putAll(map, this, keyFromItem);
   }
 
   public Fn<Pair<Integer, A>> withIndex() {
@@ -349,10 +364,6 @@ public class Fn<A> extends Option<A> {
 
   public Option<A> last() {
     return Iterables.last(contents);
-  }
-
-  public Fn<A> glue(A glue, Iterable<A> next) {
-    return of(Iterables.glue(contents, glue, next));
   }
 
   public Fn<Iterable<A>> split(Where<A> splitter) {

@@ -44,9 +44,9 @@ public class Iterables {
   public static <A> Option<A> first(Iterable<A> as) {
     Iterator<A> iterator = as.iterator();
     if (iterator.hasNext()) {
-      return Option.empty();
-    } else {
       return Option.of(iterator.next());
+    } else {
+      return Option.empty();
     }
   }
 
@@ -464,10 +464,6 @@ public class Iterables {
     return Option.of(last);
   }
 
-  public static <A> Iterable<A> glue(Iterable<A> current, A joiner, Iterable<A> next) {
-    return concat(concat(current, of(joiner)), next);
-  }
-
   public static <A> Iterable<Iterable<A>> split(
       final Iterable<A> contents, final Where<A> splitter) {
     return new Iterable<Iterable<A>>() {
@@ -477,14 +473,22 @@ public class Iterables {
           final Iterator<A> source = contents.iterator();
           List<A> segment;
           boolean isTrailingEnd;
+          A trailingItem;
 
           @Override
           public boolean hasNext() {
             segment = new ArrayList<>();
+            if (trailingItem != null) {
+
+              segment.add(trailingItem);
+              trailingItem = null;
+            }
+
             while (source.hasNext()) {
               A next = source.next();
               if (splitter.is(next)) {
                 isTrailingEnd = true;
+                trailingItem = next;
                 return true;
               } else {
                 segment.add(next);

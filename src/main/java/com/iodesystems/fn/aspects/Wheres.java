@@ -44,7 +44,7 @@ public class Wheres {
     return new Where<T>() {
       @Override
       public boolean is(T t) {
-        return Values.isEqual(t, value);
+        return !Values.isEqual(t, value);
       }
     };
   }

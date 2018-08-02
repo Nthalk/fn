@@ -30,7 +30,9 @@ public class Ranges {
             new Generator<Integer>() {
               @Override
               public Integer next() {
-                return current[0] += by;
+                final int tmp = current[0];
+                current[0] += by;
+                return tmp;
               }
             }),
         new Where<Integer>() {
