@@ -561,11 +561,6 @@ public class FnTest {
   }
 
   @Test
-  public void testConcat1() {
-    //    assertEquals(null, Fn.concat1());
-  }
-
-  @Test
   public void testEach() {
     final int c[] = {0};
     Fn<Integer> each = Fn.of(1, 2, 3).each(i -> c[0] += i);
@@ -627,92 +622,125 @@ public class FnTest {
 
   @Test
   public void testGroup() {
-    //    assertEquals(null, Fn.group());
+    assertEquals(
+        Fn.list(Fn.range(1, 50).list(), Fn.range(51, 100).list()),
+        Fn.range(1, 100).group(50).convert(l -> Fn.of(l).list()).list());
   }
 
   @Test
   public void testGroup1() {
-    //    assertEquals(null, Fn.group1());
+    assertEquals(
+        Fn.mapOf(
+            true, Fn.range(1, 50).list(),
+            false, Fn.range(51, 100).list()),
+        Fn.range(1, 100).group(i -> i <= 50));
   }
 
   @Test
   public void testSize() {
-    //    assertEquals(null, Fn.size());
+    assertEquals(3, Fn.of(1, 2, 3).size());
+    assertEquals(3, Fn.of(Fn.list(1, 2, 3)).size());
   }
 
   @Test
   public void testToString() {
-    //    assertEquals(null, Fn.toString());
+    assertEquals("Fn[1, 2]", Fn.of(1, 2).toString());
+    assertEquals("Fn[1, 2, 3, 4, 5...]", Fn.of(1, 2, 3, 4, 5, 6).toString());
   }
 
   @Test
   public void testConvert() {
-    //    assertEquals(null, Fn.convert());
+    assertEquals(Fn.list("1", "2", "3"), Fn.of(1, 2, 3).convert(Objects::toString).toList());
   }
 
   @Test
   public void testStrings() {
-    //    assertEquals(null, Fn.strings());
+    assertEquals(Fn.list("1", "2"), Fn.of(1, 2).strings().list());
   }
 
   @Test
   public void testJoin() {
-    //    assertEquals(null, Fn.join());
+    assertEquals("1 2 3", Fn.of(1, 2, 3).join(" "));
+    assertEquals("1,2,3", Fn.of(1, 2, 3).join(","));
   }
 
   @Test
   public void testPairs() {
-    //    assertEquals(null, Fn.pairs());
+    assertEquals(Fn.list(Fn.pair("1", 1)), Fn.of(1).pairs(Object::toString).toList());
   }
 
   @Test
-  public void testPairs1() {
-    //    assertEquals(null, Fn.pairs1());
+  public void testPairsWithConversion() {
+    assertEquals(Fn.list(Fn.pair("1", 2)), Fn.of(1).pairs(Object::toString, i -> i + 1).toList());
   }
 
   @Test
   public void testSort() {
-    //    assertEquals(null, Fn.sort());
+    assertEquals(Fn.list(1, 2, 3), Fn.of(3, 2, 1).sort(Integer::compareTo).toList());
   }
 
   @Test
   public void testSubtract() {
-    //    assertEquals(null, Fn.subtract());
+    assertEquals(Fn.of(1, 3).toList(), Fn.of(1, 2, 3).subtract(Fn.of(2)).toList());
   }
 
   @Test
   public void testIntersection() {
-    //    assertEquals(null, Fn.intersection());
+    assertEquals(Fn.of(2).toList(), Fn.of(1, 2, 3).intersection(Fn.of(2)).toList());
   }
 
   @Test
   public void testDifference() {
-    //    assertEquals(null, Fn.difference());
+    assertEquals(Fn.of(1, 3).toList(), Fn.of(1, 2, 3).difference(Fn.of(2)).toList());
   }
 
   @Test
   public void testUnion() {
-    //    assertEquals(null, Fn.union());
+    assertEquals(Fn.of(1, 2, 3, 5).toList(), Fn.of(1, 2, 3).union(Fn.of(5, 3, 2)).toList());
   }
 
   @Test
-  public void testJoin1() {
-    //    assertEquals(null, Fn.join1());
+  public void testJoinIterable() {
+    assertEquals(
+        Fn.list(
+            Fn.pair(1, 4),
+            Fn.pair(1, 5),
+            Fn.pair(1, 6),
+            Fn.pair(2, 4),
+            Fn.pair(2, 5),
+            Fn.pair(2, 6),
+            Fn.pair(3, 4),
+            Fn.pair(3, 5),
+            Fn.pair(3, 6)),
+        Fn.of(1, 2, 3).join(Fn.of(4, 5, 6)).toList());
   }
 
   @Test
-  public void testJoin2() {
-    //    assertEquals(null, Fn.join2());
+  public void testJoinOn() {
+    assertEquals(
+        Fn.list(Fn.pair(1, 4), Fn.pair(2, 5), Fn.pair(3, 6)),
+        Fn.of(1, 2, 3).join(i -> i + 3, Fn.of(4, 5, 6)).list());
   }
 
   @Test
   public void testLeftJoin() {
-    //    assertEquals(null, Fn.leftJoin());
+    assertEquals(
+        Fn.list(Fn.pair(1, 4), Fn.pair(2, 5), Fn.pair(3, 6)),
+        Fn.of(1, 2, 3, 4).leftJoin(i -> i + 3, Fn.of(4, 5, 6)).list());
   }
 
   @Test
-  public void testJoin3() {
-    //    assertEquals(null, Fn.join3());
+  public void testJoinOnKV() {
+    assertEquals(
+        Fn.list(Fn.pair(1, "4"), Fn.pair(2, "5"), Fn.pair(3, "6")),
+        Fn.of(1, 2, 3).join(i -> i + 3, Fn.of("4", "5", "6"), Integer::parseInt).list());
+  }
+
+  @Test
+  public void testLeftJoinOnKV() {
+    assertEquals(
+        Fn.list(Fn.pair(1, "4"), Fn.pair(2, "5"), Fn.pair(3, "6")),
+        Fn.of(1, 2, 3, 4).leftJoin(i -> i + 3, Fn.of("4", "5", "6"), Integer::parseInt).list());
   }
 
   @Test

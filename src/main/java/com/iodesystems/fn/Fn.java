@@ -465,12 +465,16 @@ public class Fn<A> extends Option<A> {
     return Iterables.size(contents);
   }
 
+  public List<A> list() {
+    return toList();
+  }
+
   @Override
   public String toString() {
     List<A> as = take(5).toList();
     if (as.size() == 5) {
       String s = as.toString();
-      return "Fn" + s.substring(0, s.length() - 1) + ", ...]";
+      return "Fn" + s.substring(0, s.length() - 1) + "...]";
     } else {
       return "Fn" + as.toString();
     }
@@ -485,19 +489,16 @@ public class Fn<A> extends Option<A> {
   }
 
   public String join(String glue) {
-    return combine(
-            new StringBuilder(),
-            new Combine<A, StringBuilder>() {
-              @Override
-              public StringBuilder from(A a, StringBuilder sb) {
-                if (a != null) {
-                  sb.append(a);
-                }
-                sb.append(glue);
-                return sb;
-              }
-            })
-        .toString();
+    StringBuilder sb = new StringBuilder();
+    for (A content : contents) {
+      sb.append(content);
+      sb.append(glue);
+    }
+    int length = sb.length();
+    if (length > 0) {
+      sb.delete(length - glue.length(), length);
+    }
+    return sb.toString();
   }
 
   public <B, C> Fn<Pair<B, C>> pairs(From<A, B> aExtractor, From<A, C> bExtractor) {

@@ -52,6 +52,11 @@ public class Pair<A, B> {
   }
 
   @Override
+  public String toString() {
+    return "Pair{" + "a=" + a + ", b=" + b + '}';
+  }
+
+  @Override
   public int hashCode() {
     int result = a != null ? a.hashCode() : 0;
     result = 31 * result + (b != null ? b.hashCode() : 0);
