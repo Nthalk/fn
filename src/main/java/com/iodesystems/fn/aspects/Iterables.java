@@ -5,8 +5,8 @@ import com.iodesystems.fn.data.From;
 import com.iodesystems.fn.data.Generator;
 import com.iodesystems.fn.data.Option;
 import com.iodesystems.fn.data.Pair;
+import com.iodesystems.fn.logic.Handler;
 import com.iodesystems.fn.logic.Where;
-import com.iodesystems.fn.thread.Invokable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -715,7 +715,7 @@ public class Iterables {
     };
   }
 
-  public static <A> Iterable<A> each(final Iterable<A> contents, final Invokable<A> handler) {
+  public static <A> Iterable<A> each(final Iterable<A> contents, final Handler<A> handler) {
     return new Iterable<A>() {
       @Override
       public Iterator<A> iterator() {
@@ -730,7 +730,7 @@ public class Iterables {
           @Override
           public A next() {
             A next = parent.next();
-            handler.invoke(next);
+            handler.handle(next);
             return next;
           }
         };

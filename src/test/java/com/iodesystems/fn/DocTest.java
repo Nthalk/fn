@@ -2,6 +2,7 @@ package com.iodesystems.fn;
 
 import com.iodesystems.fn.data.From;
 import com.iodesystems.fn.thread.Async;
+import com.iodesystems.fn.thread.Deferred;
 import com.iodesystems.fn.tree.simple.Node;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -94,7 +95,7 @@ public class DocTest {
   public void testDocExtra() {
     final String[] result = new String[] {null};
     final Integer[] progress = new Integer[] {null, null};
-    Async.Deferred<String> defer = Fn.defer();
+    Deferred<String> defer = Fn.defer();
     defer.then(
         new Async.Result<String>() {
           @Override

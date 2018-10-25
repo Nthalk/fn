@@ -22,9 +22,10 @@ import com.iodesystems.fn.data.Generator;
 import com.iodesystems.fn.data.Option;
 import com.iodesystems.fn.data.Pair;
 import com.iodesystems.fn.logic.Condition;
+import com.iodesystems.fn.logic.Handler;
 import com.iodesystems.fn.logic.Where;
 import com.iodesystems.fn.thread.Async;
-import com.iodesystems.fn.thread.Invokable;
+import com.iodesystems.fn.thread.Deferred;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -154,11 +155,11 @@ public class Fn<A> extends Option<A> {
     return Async.when(executor, asyncs);
   }
 
-  public static <A> Async.Deferred<A> defer() {
+  public static <A> Deferred<A> defer() {
     return Async.defer();
   }
 
-  public static <A> Async.Deferred<A> defer(Executor executor) {
+  public static <A> Deferred<A> defer(Executor executor) {
     return Async.defer(executor);
   }
 
@@ -417,7 +418,7 @@ public class Fn<A> extends Option<A> {
     return of(Iterables.concat(contents, next));
   }
 
-  public Fn<A> each(Invokable<A> handler) {
+  public Fn<A> each(Handler<A> handler) {
     return of(Iterables.each(contents, handler));
   }
 

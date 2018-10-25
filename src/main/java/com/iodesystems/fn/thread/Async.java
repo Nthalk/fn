@@ -26,14 +26,7 @@ public abstract class Async<A> {
   }
 
   public static <A> Async<A> async(final A value) {
-    return async(
-        INLINE,
-        new Callable<A>() {
-          @Override
-          public A call() throws Exception {
-            return value;
-          }
-        });
+    return async(INLINE, () -> value);
   }
 
   public static <A> Deferred<A> defer() {
@@ -245,41 +238,6 @@ public abstract class Async<A> {
     int onProgress(int progress);
   }
 
-  public static class Deferred<A> extends Async<A> {
-
-    public Deferred(Executor executor) {
-      super(executor);
-    }
-
-    @Override
-    protected synchronized <B> Next<A, B> then(Next<A, B> next) {
-      if (progress >= 0) {
-        next.onParentProgress(null, progress);
-      }
-      if (result != null) {
-        next.onParentResult(null, result.orElse(null));
-      } else if (exception != null) {
-        next.onParentException(null, exception);
-      }
-      nexts.add(next);
-      return next;
-    }
-
-    public void progress(int progress) {
-      if (progress > -1) {
-        progressInternal(null, progress);
-      }
-    }
-
-    public void result(A result) {
-      resultInternal(null, result);
-    }
-
-    public void exception(Exception exception) {
-      exceptionInternal(null, exception);
-    }
-  }
-
   public static class Initial<A> extends Async<A> {
 
     private Initial(final Executor executor, final Callable<A> callable) {
@@ -292,14 +250,11 @@ public abstract class Async<A> {
         }
       } else {
         executor.execute(
-            new Runnable() {
-              @Override
-              public void run() {
-                try {
-                  Initial.this.resultInternal(executor, callable.call());
-                } catch (Exception e) {
-                  Initial.this.exceptionInternal(executor, e);
-                }
+            () -> {
+              try {
+                Initial.this.resultInternal(executor, callable.call());
+              } catch (Exception e) {
+                Initial.this.exceptionInternal(executor, e);
               }
             });
       }
@@ -338,13 +293,7 @@ public abstract class Async<A> {
       if (isCurrentExecutor(parentExecutor)) {
         onParentProgressInternal(progress);
       } else {
-        this.executor.execute(
-            new Runnable() {
-              @Override
-              public void run() {
-                Next.this.onParentProgressInternal(progress);
-              }
-            });
+        this.executor.execute(() -> Next.this.onParentProgressInternal(progress));
       }
     }
 
@@ -356,13 +305,7 @@ public abstract class Async<A> {
       if (isCurrentExecutor(parentExecutor)) {
         onParentResultInternal(result);
       } else {
-        this.executor.execute(
-            new Runnable() {
-              @Override
-              public void run() {
-                Next.this.onParentResultInternal(result);
-              }
-            });
+        this.executor.execute(() -> Next.this.onParentResultInternal(result));
       }
     }
 
@@ -370,13 +313,7 @@ public abstract class Async<A> {
       if (isCurrentExecutor(parentExecutor)) {
         onParentExceptionInternal(exception);
       } else {
-        this.executor.execute(
-            new Runnable() {
-              @Override
-              public void run() {
-                Next.this.onParentExceptionInternal(exception);
-              }
-            });
+        this.executor.execute(() -> Next.this.onParentExceptionInternal(exception));
       }
     }
 
