@@ -1,5 +1,6 @@
 package com.iodesystems.fn;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.iodesystems.fn.aspects.Exceptions;
 import com.iodesystems.fn.aspects.Generators;
 import com.iodesystems.fn.aspects.Groups;
@@ -351,11 +352,13 @@ public class Fn<A> extends Option<A> {
     return first().orElse(ifEmpty);
   }
 
+  @JsonIgnore
   @Override
   public boolean isEmpty() {
     return first().isEmpty();
   }
 
+  @JsonIgnore
   @Override
   public boolean isPresent() {
     return first().isPresent();
