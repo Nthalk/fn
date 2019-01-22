@@ -688,8 +688,8 @@ public class Iterables {
       @Override
       public Iterator<A> iterator() {
         return new Iterator<A>() {
-          A current = null;
           final Iterator<A> original = contents.iterator();
+          A current = null;
 
           @Override
           public boolean hasNext() {

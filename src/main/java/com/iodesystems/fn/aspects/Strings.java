@@ -69,12 +69,17 @@ public class Strings {
   }
 
   public static Iterable<String> split(final String target, final String on) {
+    return split(target, on, null);
+  }
+
+  public static Iterable<String> split(final String target, final String on, Integer limit) {
     return new Iterable<String>() {
       @Override
       public Iterator<String> iterator() {
         return new Iterator<String>() {
           int nextIndex = target.indexOf(on);
           int lastIndex = 0;
+          int count = 0;
 
           @Override
           public boolean hasNext() {
@@ -84,7 +89,7 @@ public class Strings {
           @Override
           public String next() {
             String tmp;
-            if (nextIndex == -1) {
+            if (nextIndex == -1 || (limit != null && ++count == limit)) {
               tmp = target.substring(lastIndex);
               lastIndex = -1;
             } else {

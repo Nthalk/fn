@@ -105,6 +105,15 @@ public class Fn<A> extends Option<A> {
     return Maps.mapOf(key, value, rest);
   }
 
+  public static <K, V> Map<K, V> mapOf(Iterator<K> keys, Iterator<V> values) {
+    return Maps.mapOf(keys, values);
+  }
+
+  public static <K> Map<K, K> mapOf(Iterable<K> keys) {
+    Iterator<K> iterator = keys.iterator();
+    return Maps.mapOf(iterator, iterator);
+  }
+
   public static <K, V> Map<K, V> put(Map<K, V> map, K key, V value) {
     return Maps.put(map, key, value);
   }
@@ -213,8 +222,18 @@ public class Fn<A> extends Option<A> {
     return Strings.readFully(input);
   }
 
+  public static Fn<String> split(String input, String on, int limit) {
+    return of(Strings.split(input, on, limit));
+  }
+
   public static Fn<String> split(String input, String on) {
     return of(Strings.split(input, on));
+  }
+
+  public static Map<String, String> splitMap(
+      String input, String groupSeparator, String valueSeparator) {
+    return Fn.flatten(Fn.split(input, groupSeparator).convert(s -> Fn.split(s, valueSeparator, 2)))
+        .toMap();
   }
 
   public static <T> Fn<T> none() {
@@ -551,5 +570,13 @@ public class Fn<A> extends Option<A> {
 
   public <B, C> Fn<Pair<A, B>> leftJoin(From<A, C> aIndexer, Iterable<B> bs, From<B, C> bIndexer) {
     return of(Joins.leftJoin(contents, aIndexer, bs, bIndexer));
+  }
+
+  public Map<A, A> toMap() {
+    return mapOf(this);
+  }
+
+  public <V> Map<A, V> toMap(From<A, V> valueExtractor) {
+    return Maps.mapOf(this, valueExtractor);
   }
 }

@@ -322,6 +322,18 @@ public class FnTest {
   @Test
   public void testSplit() {
     assertEquals(Fn.list("what", "the", "heck"), Fn.split("what the heck", " ").toList());
+    assertEquals(Fn.list("what", "the heck"), Fn.split("what the heck", " ", 2).toList());
+    assertEquals(
+        Fn.list("what", "the hecking heck"), Fn.split("what the hecking heck", " ", 2).toList());
+    assertEquals(
+        Fn.list("what", "the", "hecking heck"), Fn.split("what the hecking heck", " ", 3).toList());
+  }
+
+  @Test
+  public void testSplitGroup() {
+    assertEquals(
+        Fn.mapOf("a", "1", "b", "2"),
+        Fn.flatten(Fn.split("a:1,b:2", ",").convert(s -> Fn.split(s, ":"))).toMap());
   }
 
   @Test

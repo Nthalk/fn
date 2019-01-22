@@ -4,10 +4,25 @@ import com.iodesystems.fn.data.From;
 import com.iodesystems.fn.data.Generator;
 import com.iodesystems.fn.data.Option;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class Maps<A> {
+public class Maps {
+
+  public static <K, V> Map<K, V> mapOf(Iterator<K> keys, Iterator<V> values) {
+    Map<K, V> map = new HashMap<>();
+    while (keys.hasNext()) {
+      K key = keys.next();
+      if (values.hasNext()) {
+        V value = values.next();
+        map.put(key, value);
+      } else {
+        break;
+      }
+    }
+    return map;
+  }
 
   public static <K, V> Map<K, V> mapOf(K key, V value, Object... rest) {
     Map<K, V> map = new HashMap<>();
@@ -82,5 +97,13 @@ public class Maps<A> {
       from.put(key, add);
       return add;
     }
+  }
+
+  public static <K, V> Map<K, V> mapOf(Iterable<K> keys, From<K, V> valueExtractor) {
+    Map<K, V> map = new HashMap<>();
+    for (K key : keys) {
+      map.put(key, valueExtractor.from(key));
+    }
+    return map;
   }
 }
