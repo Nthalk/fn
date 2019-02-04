@@ -29,6 +29,7 @@ import com.iodesystems.fn.thread.Async;
 import com.iodesystems.fn.thread.Deferred;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -217,6 +218,41 @@ public class Fn<A> extends Option<A> {
 
   public static Fn<String> lines(InputStream input) throws IOException {
     return of(Strings.lines(input));
+  }
+
+  public static void transfer(InputStream input, OutputStream output) throws IOException {
+    byte[] buffer = new byte[4096];
+    int len;
+    while ((len = input.read(buffer)) != -1) {
+      output.write(buffer, 0, len);
+    }
+  }
+
+  public static Iterator<Integer> transferProgress(InputStream input, OutputStream output) {
+    byte[] buffer = new byte[4096];
+
+    return new Iterator<Integer>() {
+      int len;
+
+      @Override
+      public boolean hasNext() {
+        try {
+          return (len = input.read(buffer)) != -1;
+        } catch (IOException e) {
+          throw new RuntimeException("Could not read input", e);
+        }
+      }
+
+      @Override
+      public Integer next() {
+        try {
+          output.write(buffer, 0, len);
+          return len;
+        } catch (IOException e) {
+          throw new RuntimeException("Could not write output", e);
+        }
+      }
+    };
   }
 
   public static String readFully(InputStream input) throws IOException {
