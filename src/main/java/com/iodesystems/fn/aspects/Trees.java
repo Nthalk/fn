@@ -10,10 +10,8 @@ public class Trees {
 
   public static <A> Iterable<A> depth(
       final Iterable<A> sources, final From<A, Iterable<A>> multiplier) {
-    return new Iterable<A>() {
-      @Override
-      public Iterator<A> iterator() {
-        return new Iterator<A>() {
+    return () ->
+        new Iterator<A>() {
           final Iterator<A> source = sources.iterator();
           final List<Iterator<A>> descent = new LinkedList<>();
           A nextA;
@@ -50,16 +48,12 @@ public class Trees {
             throw new IllegalStateException();
           }
         };
-      }
-    };
   }
 
   public static <A> Iterable<A> breadth(
       final Iterable<A> sources, final From<A, Iterable<A>> descend) {
-    return new Iterable<A>() {
-      @Override
-      public Iterator<A> iterator() {
-        return new Iterator<A>() {
+    return () ->
+        new Iterator<A>() {
           final List<A> todo = new LinkedList<>();
           Iterator<A> currentLevel = sources.iterator();
           A nextA;
@@ -88,16 +82,12 @@ public class Trees {
             throw new IllegalStateException();
           }
         };
-      }
-    };
   }
 
   public static <A> Iterable<List<A>> breadthPaths(
       final Iterable<A> sources, final From<A, Iterable<A>> multiplier) {
-    return new Iterable<List<A>>() {
-      @Override
-      public Iterator<List<A>> iterator() {
-        return new Iterator<List<A>>() {
+    return () ->
+        new Iterator<List<A>>() {
           private final LinkedList<NodeWithParent<A>> todo = new LinkedList<>();
           private NodeWithParent<A> parent;
           private NodeWithParent<A> current;
@@ -134,7 +124,5 @@ public class Trees {
             throw new IllegalStateException();
           }
         };
-      }
-    };
   }
 }

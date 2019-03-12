@@ -1,6 +1,5 @@
 package com.iodesystems.fn;
 
-import com.iodesystems.fn.data.From;
 import com.iodesystems.fn.thread.Async;
 import com.iodesystems.fn.thread.Deferred;
 import com.iodesystems.fn.tree.simple.Node;
@@ -10,7 +9,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import org.junit.Test;
 
 public class DocTest {
@@ -23,14 +21,7 @@ public class DocTest {
     }
 
     //
-    Map<String, List<Integer>> grouped =
-        Fn.of(1, 2, 3, 2, 3)
-            .group(
-                new From<Integer, String>() {
-                  public String from(Integer integer) {
-                    return integer.toString();
-                  }
-                });
+    Map<String, List<Integer>> grouped = Fn.of(1, 2, 3, 2, 3).group(Object::toString);
 
     //
     Enumeration<Integer> enumeration = Collections.enumeration(Fn.list(1, 2, 3));
@@ -74,17 +65,11 @@ public class DocTest {
 
     //
     final String[] result = new String[] {null};
-    Fn.async(
-            new Callable<String>() {
-              @Override
-              public String call() throws Exception {
-                return "Hello world!";
-              }
-            })
+    Fn.async(() -> "Hello world!")
         .then(
             new Async.Result<String>() {
               @Override
-              public String onResult(String message) throws Exception {
+              public String onResult(String message) {
                 result[0] = message;
                 return null;
               }
@@ -99,7 +84,7 @@ public class DocTest {
     defer.then(
         new Async.Result<String>() {
           @Override
-          public String onResult(String o) throws Exception {
+          public String onResult(String o) {
             result[0] = o;
             return null;
           }

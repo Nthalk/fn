@@ -27,10 +27,8 @@ public abstract class Option<T> implements Iterable<T> {
 
   public static <T> Iterable<T> unwrap(Iterable<Option<T>> options) {
     final Iterator<Option<T>> iterator = options.iterator();
-    return new Iterable<T>() {
-      @Override
-      public Iterator<T> iterator() {
-        return new Iterator<T>() {
+    return () ->
+        new Iterator<T>() {
           private Option<T> nextT;
 
           public boolean hasNext() {
@@ -52,8 +50,6 @@ public abstract class Option<T> implements Iterable<T> {
             throw new IllegalStateException();
           }
         };
-      }
-    };
   }
 
   public static <T> Option<T> of(T item) {

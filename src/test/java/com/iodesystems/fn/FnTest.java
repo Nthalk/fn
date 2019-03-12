@@ -8,10 +8,8 @@ import static org.junit.Assert.assertTrue;
 
 import com.iodesystems.fn.aspects.Generators;
 import com.iodesystems.fn.aspects.Iterables;
-import com.iodesystems.fn.data.From;
 import com.iodesystems.fn.data.Option;
 import com.iodesystems.fn.data.Pair;
-import com.iodesystems.fn.logic.Where;
 import com.iodesystems.fn.tree.simple.Node;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -58,35 +56,12 @@ public class FnTest {
 
   @Test
   public void testOfGeneratorConstruction() {
-    assertEquals(
-        Fn.list(1, 2, 3),
-        Fn.of(
-                1,
-                new From<Integer, Integer>() {
-                  @Override
-                  public Integer from(Integer i) {
-                    return i + 1;
-                  }
-                })
-            .take(3)
-            .toList());
+    assertEquals(Fn.list(1, 2, 3), Fn.of(1, i -> i + 1).take(3).toList());
   }
 
   @Test
   public void testOfGenerator() {
-    assertEquals(
-        Fn.list(1, 2, 3),
-        Fn.of(
-                Generators.of(
-                    1,
-                    new From<Integer, Integer>() {
-                      @Override
-                      public Integer from(Integer i) {
-                        return i + 1;
-                      }
-                    }))
-            .take(3)
-            .toList());
+    assertEquals(Fn.list(1, 2, 3), Fn.of(Generators.of(1, i -> i + 1)).take(3).toList());
   }
 
   @Test
@@ -112,18 +87,7 @@ public class FnTest {
 
   @Test
   public void testOfPresent() {
-    assertEquals(
-        Fn.list(1),
-        Fn.ofPresent(
-                Fn.of(1)
-                    .optionally(
-                        new Where<Integer>() {
-                          @Override
-                          public boolean is(Integer i) {
-                            return i == 1;
-                          }
-                        }))
-            .toList());
+    assertEquals(Fn.list(1), Fn.ofPresent(Fn.of(1).optionally(i -> i == 1)).toList());
   }
 
   @Test
@@ -574,7 +538,7 @@ public class FnTest {
 
   @Test
   public void testEach() {
-    final int c[] = {0};
+    final int[] c = {0};
     Fn<Integer> each = Fn.of(1, 2, 3).each(i -> c[0] += i);
     assertEquals(0, c[0]);
     each.consume();

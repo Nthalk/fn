@@ -1,5 +1,7 @@
 package com.iodesystems.fn.data;
 
+import java.util.Objects;
+
 public class Pair<A, B> {
 
   private static final From<Pair<?, ?>, ?> EXTRACT_A = (From<Pair<?, ?>, Object>) Pair::getA;
@@ -45,10 +47,10 @@ public class Pair<A, B> {
 
     Pair<?, ?> pair = (Pair<?, ?>) o;
 
-    if (a != null ? !a.equals(pair.a) : pair.a != null) {
+    if (!Objects.equals(a, pair.a)) {
       return false;
     }
-    return b != null ? b.equals(pair.b) : pair.b == null;
+    return Objects.equals(b, pair.b);
   }
 
   @Override

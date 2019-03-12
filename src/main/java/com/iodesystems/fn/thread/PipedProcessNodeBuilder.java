@@ -37,12 +37,9 @@ public class PipedProcessNodeBuilder<SOURCE, IN, OUT> {
     PipedProcessNode<OUT, OUT> processor =
         new PipedProcessNode<>(
             executor,
-            new From<OUT, OUT>() {
-              @Override
-              public OUT from(OUT o) {
-                handler.handle(o);
-                return o;
-              }
+            o -> {
+              handler.handle(o);
+              return o;
             });
     tip.downstream(guarded(processor));
     return this;
@@ -58,11 +55,8 @@ public class PipedProcessNodeBuilder<SOURCE, IN, OUT> {
     if (guard != null) {
       final Where<OUT> guardFinal = guard;
       guard = null;
-      return new Handler<OUT>() {
-        @Override
-        public void handle(OUT o) {
-          if (guardFinal.is(o)) handler.handle(o);
-        }
+      return o -> {
+        if (guardFinal.is(o)) handler.handle(o);
       };
     } else {
       return handler;

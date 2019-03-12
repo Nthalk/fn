@@ -1,24 +1,13 @@
 package com.iodesystems.fn.aspects;
 
 import com.iodesystems.fn.logic.Where;
+import java.util.Objects;
 
 public class Wheres {
 
-  public static Where<Object> ISNULL =
-      new Where<Object>() {
-        @Override
-        public boolean is(Object t) {
-          return t != null;
-        }
-      };
+  public static final Where<Object> ISNULL = Objects::nonNull;
 
-  public static Where<Object> NOTNULL =
-      new Where<Object>() {
-        @Override
-        public boolean is(Object t) {
-          return t != null;
-        }
-      };
+  public static final Where<Object> NOTNULL = Objects::nonNull;
 
   public static <T> Where<T> notNull() {
     return (Where<T>) NOTNULL;
@@ -29,47 +18,22 @@ public class Wheres {
   }
 
   public static <T> Where<T> is(Class<T> cls) {
-    return new Where<T>() {
-      @Override
-      public boolean is(T t) {
-        return t != null && cls.isAssignableFrom(t.getClass());
-      }
-    };
+    return t -> t != null && cls.isAssignableFrom(t.getClass());
   }
 
   public static <T> Where<T> is(T value) {
-    return new Where<T>() {
-      @Override
-      public boolean is(T t) {
-        return Values.isEqual(t, value);
-      }
-    };
+    return t -> Values.isEqual(t, value);
   }
 
   public static <T> Where<T> not(Class<T> cls) {
-    return new Where<T>() {
-      @Override
-      public boolean is(T t) {
-        return t == null || !cls.isAssignableFrom(t.getClass());
-      }
-    };
+    return t -> t == null || !cls.isAssignableFrom(t.getClass());
   }
 
   public static <T> Where<T> not(T value) {
-    return new Where<T>() {
-      @Override
-      public boolean is(T t) {
-        return !Values.isEqual(t, value);
-      }
-    };
+    return t -> !Values.isEqual(t, value);
   }
 
   public static <T> Where<T> not(Where<T> condition) {
-    return new Where<T>() {
-      @Override
-      public boolean is(T t) {
-        return !condition.is(t);
-      }
-    };
+    return t -> !condition.is(t);
   }
 }

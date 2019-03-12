@@ -1,20 +1,12 @@
 package com.iodesystems.fn.aspects;
 
-import com.iodesystems.fn.logic.Where;
 import java.util.Set;
 
 public class Sets {
 
   public static <A> Iterable<A> subtract(Iterable<A> these, Iterable<A> fromThese) {
     Set<A> toRemove = Iterables.toSet(these);
-    return Iterables.where(
-        fromThese,
-        new Where<A>() {
-          @Override
-          public boolean is(A a) {
-            return !toRemove.contains(a);
-          }
-        });
+    return Iterables.where(fromThese, a -> !toRemove.contains(a));
   }
 
   public static <A> Iterable<A> intersection(Iterable<A> these, Iterable<A> andThese) {
@@ -27,22 +19,8 @@ public class Sets {
     Set<A> removeFromThese = Iterables.toSet(andThese);
 
     return Iterables.concat(
-        Iterables.where(
-            these,
-            new Where<A>() {
-              @Override
-              public boolean is(A o) {
-                return !removeFromThese.contains(o);
-              }
-            }),
-        Iterables.where(
-            andThese,
-            new Where<A>() {
-              @Override
-              public boolean is(A o1) {
-                return !removeFromAndThese.contains(o1);
-              }
-            }));
+        Iterables.where(these, o -> !removeFromThese.contains(o)),
+        Iterables.where(andThese, o1 -> !removeFromAndThese.contains(o1)));
   }
 
   public static <A> Iterable<A> union(Iterable<A> these, Iterable<A> andThese) {

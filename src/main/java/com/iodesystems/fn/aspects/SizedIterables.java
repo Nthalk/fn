@@ -8,10 +8,8 @@ public class SizedIterables {
 
   public static <A, B> Iterable<B> of(
       A source, From<A, Integer> getSize, From2<A, Integer, B> getItem) {
-    return new Iterable<B>() {
-      @Override
-      public Iterator<B> iterator() {
-        return new Iterator<B>() {
+    return () ->
+        new Iterator<B>() {
           final int size = getSize.from(source);
           int index = 0;
 
@@ -25,7 +23,5 @@ public class SizedIterables {
             return getItem.from(source, index++);
           }
         };
-      }
-    };
   }
 }

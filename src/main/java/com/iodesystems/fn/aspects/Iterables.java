@@ -33,13 +33,7 @@ public class Iterables {
         }
       };
 
-  public static final Iterable<Object> EMPTY =
-      new Iterable<Object>() {
-        @Override
-        public Iterator<Object> iterator() {
-          return EMPTY_ITERATOR;
-        }
-      };
+  public static final Iterable<Object> EMPTY = () -> EMPTY_ITERATOR;
 
   public static <A> Option<A> first(Iterable<A> as) {
     Iterator<A> iterator = as.iterator();
@@ -59,10 +53,8 @@ public class Iterables {
   }
 
   public static <A> Iterable<A> take(final int count, final Iterable<A> source) {
-    return new Iterable<A>() {
-      @Override
-      public Iterator<A> iterator() {
-        return new Iterator<A>() {
+    return () ->
+        new Iterator<A>() {
           final Iterator<A> parent = source.iterator();
           int soFar = 0;
 
@@ -81,15 +73,11 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
-      }
-    };
   }
 
   public static <A> Iterable<A> drop(final int count, final Iterable<A> source) {
-    return new Iterable<A>() {
-      @Override
-      public Iterator<A> iterator() {
-        return new Iterator<A>() {
+    return () ->
+        new Iterator<A>() {
           final Iterator<A> parent = source.iterator();
           int skip = 0;
 
@@ -111,15 +99,11 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
-      }
-    };
   }
 
   public static <A> Iterable<A> concat(final Iterable<A> a, final Iterable<A> b) {
-    return new Iterable<A>() {
-      @Override
-      public Iterator<A> iterator() {
-        return new Iterator<A>() {
+    return () ->
+        new Iterator<A>() {
           final Iterator<A> nextB = b.iterator();
           Iterator<A> current = a.iterator();
           final Iterator<A> first = current;
@@ -143,16 +127,12 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
-      }
-    };
   }
 
   public static <A, B> Iterable<Iterable<B>> multiply(
       final Iterable<A> sources, final From<A, Iterable<B>> multiplier) {
-    return new Iterable<Iterable<B>>() {
-      @Override
-      public Iterator<Iterable<B>> iterator() {
-        return new Iterator<Iterable<B>>() {
+    return () ->
+        new Iterator<Iterable<B>>() {
           final Iterator<A> sourceA = sources.iterator();
           Iterable<B> next = null;
 
@@ -175,31 +155,26 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
-      }
-    };
   }
 
   public static <A, B> Iterable<B> convert(final Iterable<A> source, final From<A, B> from) {
 
-    return new Iterable<B>() {
-      @Override
-      public Iterator<B> iterator() {
-        final Iterator<A> sourceItems = source.iterator();
-        return new Iterator<B>() {
-          public boolean hasNext() {
-            return sourceItems.hasNext();
-          }
+    return () -> {
+      final Iterator<A> sourceItems = source.iterator();
+      return new Iterator<B>() {
+        public boolean hasNext() {
+          return sourceItems.hasNext();
+        }
 
-          public B next() {
-            return from.from(sourceItems.next());
-          }
+        public B next() {
+          return from.from(sourceItems.next());
+        }
 
-          @Override
-          public void remove() {
-            throw new IllegalStateException();
-          }
-        };
-      }
+        @Override
+        public void remove() {
+          throw new IllegalStateException();
+        }
+      };
     };
   }
 
@@ -214,10 +189,8 @@ public class Iterables {
   }
 
   public static <A> Iterable<A> where(final Iterable<A> source, final Where<A> where) {
-    return new Iterable<A>() {
-      @Override
-      public Iterator<A> iterator() {
-        return new Iterator<A>() {
+    return () ->
+        new Iterator<A>() {
           final Iterator<A> parent = source.iterator();
           A current;
 
@@ -242,8 +215,6 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
-      }
-    };
   }
 
   public static <A> void consume(Iterable<A> as) {
@@ -291,10 +262,8 @@ public class Iterables {
   }
 
   public static <A> Iterable<A> of(final Generator<A> generator) {
-    return new Iterable<A>() {
-      @Override
-      public Iterator<A> iterator() {
-        return new Iterator<A>() {
+    return () ->
+        new Iterator<A>() {
           A nextA;
 
           @Override
@@ -313,15 +282,11 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
-      }
-    };
   }
 
   public static <A> Iterable<A> of(final Enumeration<A> source) {
-    return new Iterable<A>() {
-      @Override
-      public Iterator<A> iterator() {
-        return new Iterator<A>() {
+    return () ->
+        new Iterator<A>() {
           @Override
           public boolean hasNext() {
             return source.hasMoreElements();
@@ -337,8 +302,6 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
-      }
-    };
   }
 
   public static <A> Iterable<A> of(A source) {
@@ -351,10 +314,8 @@ public class Iterables {
   }
 
   public static <A, B> Iterable<Pair<A, B>> parallel(final Iterable<A> as, final Iterable<B> bs) {
-    return new Iterable<Pair<A, B>>() {
-      @Override
-      public Iterator<Pair<A, B>> iterator() {
-        return new Iterator<Pair<A, B>>() {
+    return () ->
+        new Iterator<Pair<A, B>>() {
           final Iterator<A> sourceA = as.iterator();
           final Iterator<B> sourceB = bs.iterator();
 
@@ -373,15 +334,11 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
-      }
-    };
   }
 
   public static <A> Iterable<A> repeat(final A a, final int times) {
-    return new Iterable<A>() {
-      @Override
-      public Iterator<A> iterator() {
-        return new Iterator<A>() {
+    return () ->
+        new Iterator<A>() {
           int count = 0;
 
           @Override
@@ -399,15 +356,11 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
-      }
-    };
   }
 
   public static <A, B> Iterable<Pair<A, B>> cartesian(final Iterable<A> as, final Iterable<B> bs) {
-    return new Iterable<Pair<A, B>>() {
-      @Override
-      public Iterator<Pair<A, B>> iterator() {
-        return new Iterator<Pair<A, B>>() {
+    return () ->
+        new Iterator<Pair<A, B>>() {
           final Iterator<A> sourceA = as.iterator();
           boolean isInitial = true;
           A nextA = null;
@@ -458,15 +411,11 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
-      }
-    };
   }
 
   public static <A> Iterable<A> loop(final Iterable<A> as, final int times) {
-    return new Iterable<A>() {
-      @Override
-      public Iterator<A> iterator() {
-        return new Iterator<A>() {
+    return () ->
+        new Iterator<A>() {
           int count = 0;
           Iterator<A> source = as.iterator();
 
@@ -491,8 +440,6 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
-      }
-    };
   }
 
   @SuppressWarnings("unchecked")
@@ -525,10 +472,8 @@ public class Iterables {
 
   public static <A> Iterable<Iterable<A>> split(
       final Iterable<A> contents, final Where<A> splitter) {
-    return new Iterable<Iterable<A>>() {
-      @Override
-      public Iterator<Iterable<A>> iterator() {
-        return new Iterator<Iterable<A>>() {
+    return () ->
+        new Iterator<Iterable<A>>() {
           final Iterator<A> source = contents.iterator();
           List<A> segment;
           boolean isTrailingEnd;
@@ -572,8 +517,6 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
-      }
-    };
   }
 
   public static <A, B extends Iterable<A>> Iterable<A> flatten(Iterable<B> contents) {
@@ -618,10 +561,8 @@ public class Iterables {
   }
 
   public static <A> Iterable<A> takeWhile(final Iterable<A> contents, final Where<A> where) {
-    return new Iterable<A>() {
-      @Override
-      public Iterator<A> iterator() {
-        return new Iterator<A>() {
+    return () ->
+        new Iterator<A>() {
           final Iterator<A> source = contents.iterator();
           A nextA = null;
 
@@ -644,48 +585,43 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
-      }
-    };
   }
 
   public static <A> Iterable<A> dropWhile(final Iterable<A> contents, final Where<A> where) {
-    return new Iterable<A>() {
-      @Override
-      public Iterator<A> iterator() {
-        final Iterator<A> source = contents.iterator();
+    return () -> {
+      final Iterator<A> source = contents.iterator();
 
-        return new Iterator<A>() {
-          A first = null;
-          boolean yieldedFirst = false;
+      return new Iterator<A>() {
+        A first = null;
+        boolean yieldedFirst = false;
 
-          @Override
-          public boolean hasNext() {
-            if (first == null) {
-              while (source.hasNext()) {
-                first = source.next();
-                if (!where.is(first)) {
-                  return true;
-                }
+        @Override
+        public boolean hasNext() {
+          if (first == null) {
+            while (source.hasNext()) {
+              first = source.next();
+              if (!where.is(first)) {
+                return true;
               }
             }
-            return source.hasNext();
           }
+          return source.hasNext();
+        }
 
-          @Override
-          public A next() {
-            if (!yieldedFirst) {
-              yieldedFirst = true;
-              return first;
-            }
-            return source.next();
+        @Override
+        public A next() {
+          if (!yieldedFirst) {
+            yieldedFirst = true;
+            return first;
           }
+          return source.next();
+        }
 
-          @Override
-          public void remove() {
-            throw new IllegalStateException();
-          }
-        };
-      }
+        @Override
+        public void remove() {
+          throw new IllegalStateException();
+        }
+      };
     };
   }
 
@@ -743,10 +679,8 @@ public class Iterables {
 
   public static <A> Iterable<A> withNext(
       final Iterable<A> contents, final From<A, A> nextFromCurrent) {
-    return new Iterable<A>() {
-      @Override
-      public Iterator<A> iterator() {
-        return new Iterator<A>() {
+    return () ->
+        new Iterator<A>() {
           final Iterator<A> original = contents.iterator();
           A current = null;
 
@@ -770,15 +704,11 @@ public class Iterables {
             }
           }
         };
-      }
-    };
   }
 
   public static <A> Iterable<A> each(final Iterable<A> contents, final Handler<A> handler) {
-    return new Iterable<A>() {
-      @Override
-      public Iterator<A> iterator() {
-        return new Iterator<A>() {
+    return () ->
+        new Iterator<A>() {
           final Iterator<A> parent = contents.iterator();
 
           @Override
@@ -793,7 +723,5 @@ public class Iterables {
             return next;
           }
         };
-      }
-    };
   }
 }

@@ -350,7 +350,6 @@ public class AsyncTest {
     waiter.await(1000L);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testAwait() {
     Fn.when(Fn.async((Callable<Object>) () -> 1), Fn.async(() -> 2), Fn.async(() -> 3))

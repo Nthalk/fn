@@ -24,15 +24,7 @@ public class DebounceTest {
   @Test
   public void testThrottleWithDelay() throws InterruptedException {
     Debounce debounce =
-        Debounce.throttleWithDelay(
-            scheduledExecutorService,
-            2,
-            new Runnable() {
-              @Override
-              public void run() {
-                count.incrementAndGet();
-              }
-            });
+        Debounce.throttleWithDelay(scheduledExecutorService, 2, () -> count.incrementAndGet());
     debounce.clock = clock;
     debounce.lastTriggered = clock.currentTimeMillis();
 
@@ -66,15 +58,7 @@ public class DebounceTest {
 
   @Test
   public void testThrottleWithDelayWithoutTrailing() throws InterruptedException {
-    Debounce debounce =
-        Debounce.throttleWithDelay(
-            2,
-            new Runnable() {
-              @Override
-              public void run() {
-                count.incrementAndGet();
-              }
-            });
+    Debounce debounce = Debounce.throttleWithDelay(2, () -> count.incrementAndGet());
     debounce.clock = clock;
     debounce.lastTriggered = clock.currentTimeMillis();
 
@@ -109,15 +93,7 @@ public class DebounceTest {
 
   @Test
   public void testDebounceWithDelayWithoutTrailing() throws InterruptedException {
-    Debounce debounce =
-        Debounce.debounceWithDelay(
-            1,
-            new Runnable() {
-              @Override
-              public void run() {
-                count.incrementAndGet();
-              }
-            });
+    Debounce debounce = Debounce.debounceWithDelay(1, () -> count.incrementAndGet());
     debounce.clock = clock;
     // Delay prevents it from running
     debounce.run();
@@ -148,15 +124,7 @@ public class DebounceTest {
   @Test
   public void testDebounceWithDelay() throws Exception {
     Debounce debounce =
-        Debounce.debounceWithDelay(
-            scheduledExecutorService,
-            1,
-            new Runnable() {
-              @Override
-              public void run() {
-                count.incrementAndGet();
-              }
-            });
+        Debounce.debounceWithDelay(scheduledExecutorService, 1, () -> count.incrementAndGet());
     debounce.clock = clock;
     // Delay prevents it from running
     debounce.run();
@@ -187,15 +155,7 @@ public class DebounceTest {
   @Test
   public void testDebounceInitial() throws Exception {
     Debounce debounce =
-        Debounce.debounce(
-            scheduledExecutorService,
-            1,
-            new Runnable() {
-              @Override
-              public void run() {
-                count.incrementAndGet();
-              }
-            });
+        Debounce.debounce(scheduledExecutorService, 1, () -> count.incrementAndGet());
     debounce.clock = clock;
     debounce.run();
     // Should run here
@@ -206,15 +166,7 @@ public class DebounceTest {
 
   @Test
   public void testDebounceWithoutTrailing() throws Exception {
-    Debounce debounce =
-        Debounce.debounce(
-            1,
-            new Runnable() {
-              @Override
-              public void run() {
-                count.incrementAndGet();
-              }
-            });
+    Debounce debounce = Debounce.debounce(1, () -> count.incrementAndGet());
     debounce.clock = clock;
     debounce.run();
     assertEquals(1, count.get());
@@ -237,15 +189,7 @@ public class DebounceTest {
 
   @Test
   public void testThrottle() throws Exception {
-    Debounce debounce =
-        Debounce.throttle(
-            2,
-            new Runnable() {
-              @Override
-              public void run() {
-                count.incrementAndGet();
-              }
-            });
+    Debounce debounce = Debounce.throttle(2, () -> count.incrementAndGet());
     debounce.clock = clock;
 
     debounce.run();
@@ -279,15 +223,7 @@ public class DebounceTest {
   @Test
   public void testThrottleWithTrailing() throws Exception {
     Debounce debounce =
-        Debounce.throttle(
-            scheduledExecutorService,
-            2,
-            new Runnable() {
-              @Override
-              public void run() {
-                count.incrementAndGet();
-              }
-            });
+        Debounce.throttle(scheduledExecutorService, 2, () -> count.incrementAndGet());
     debounce.clock = clock;
 
     debounce.run();

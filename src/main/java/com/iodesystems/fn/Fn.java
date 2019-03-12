@@ -314,13 +314,7 @@ public class Fn<A> extends Option<A> {
   }
 
   public Fn<Option<A>> optionally(Where<A> condition) {
-    return convert(
-        new From<A, Option<A>>() {
-          @Override
-          public Option<A> from(A a) {
-            return condition.is(a) ? Option.of(a) : Option.empty();
-          }
-        });
+    return convert(a -> condition.is(a) ? Option.of(a) : Option.empty());
   }
 
   public A[] toArray(A[] preallocated) {

@@ -3,6 +3,7 @@ package com.iodesystems.fn.tree.simple;
 import com.iodesystems.fn.tree.Adapter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class Node {
 
@@ -46,10 +47,10 @@ public class Node {
 
     Node node = (Node) o;
 
-    if (children != null ? !children.equals(node.children) : node.children != null) {
+    if (!Objects.equals(children, node.children)) {
       return false;
     }
-    return value != null ? value.equals(node.value) : node.value == null;
+    return Objects.equals(value, node.value);
   }
 
   @Override

@@ -5,7 +5,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import com.iodesystems.fn.data.Generator;
 import com.iodesystems.fn.data.Option;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -46,16 +45,7 @@ public class OptionTest {
 
   @Test
   public void testOrResolveIfEmpty() {
-    assertEquals(
-        1,
-        Option.empty()
-            .orResolve(
-                new Generator<Object>() {
-                  @Override
-                  public Object next() {
-                    return 1;
-                  }
-                }));
+    assertEquals(1, Option.empty().orResolve(() -> 1));
   }
 
   @Test
@@ -65,16 +55,7 @@ public class OptionTest {
 
   @Test
   public void testGetOrResolveIfPresent() {
-    assertEquals(
-        Integer.valueOf(1),
-        Option.of(1)
-            .orResolve(
-                new Generator<Integer>() {
-                  @Override
-                  public Integer next() {
-                    return 2;
-                  }
-                }));
+    assertEquals(Integer.valueOf(1), Option.of(1).orResolve(() -> 2));
   }
 
   @Test

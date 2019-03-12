@@ -28,10 +28,8 @@ public class Strings {
   public static Iterable<String> lines(InputStream ios) throws IOException {
     final BufferedReader reader = new BufferedReader(new InputStreamReader(ios));
     final String first = reader.readLine();
-    return new Iterable<String>() {
-      @Override
-      public Iterator<String> iterator() {
-        return new Iterator<String>() {
+    return () ->
+        new Iterator<String>() {
           String next = first;
 
           @Override
@@ -53,8 +51,6 @@ public class Strings {
             return tmp;
           }
         };
-      }
-    };
   }
 
   public static String readFully(InputStream ios) throws IOException {
@@ -73,10 +69,8 @@ public class Strings {
   }
 
   public static Iterable<String> split(final String target, final String on, Integer limit) {
-    return new Iterable<String>() {
-      @Override
-      public Iterator<String> iterator() {
-        return new Iterator<String>() {
+    return () ->
+        new Iterator<String>() {
           int nextIndex = target.indexOf(on);
           int lastIndex = 0;
           int count = 0;
@@ -103,7 +97,5 @@ public class Strings {
           @Override
           public void remove() {}
         };
-      }
-    };
   }
 }
