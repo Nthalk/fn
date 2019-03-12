@@ -403,6 +403,65 @@ public class Iterables {
     };
   }
 
+  public static <A, B> Iterable<Pair<A, B>> cartesian(final Iterable<A> as, final Iterable<B> bs) {
+    return new Iterable<Pair<A, B>>() {
+      @Override
+      public Iterator<Pair<A, B>> iterator() {
+        return new Iterator<Pair<A, B>>() {
+          final Iterator<A> sourceA = as.iterator();
+          boolean isInitial = true;
+          A nextA = null;
+          Iterator<B> sourceB = bs.iterator();
+          Pair<A, B> next = null;
+
+          @Override
+          public boolean hasNext() {
+            if (isInitial) {
+              isInitial = false;
+              if (!sourceA.hasNext()) {
+                // A is done, we are done.
+                return false;
+              }
+              nextA = sourceA.next();
+            }
+
+            if (sourceB.hasNext()) {
+              // There is another B in line to cartesian
+              if (nextA == null) {
+                nextA = sourceA.next();
+              }
+              next = new Pair<>(nextA, sourceB.next());
+              return true;
+            } else {
+              // B's ended, restart B with next A.
+              if (!sourceA.hasNext()) {
+                return false;
+              }
+              nextA = sourceA.next();
+              sourceB = bs.iterator();
+              if (sourceB.hasNext()) {
+                next = new Pair<>(nextA, sourceB.next());
+                return true;
+              } else {
+                return false;
+              }
+            }
+          }
+
+          @Override
+          public Pair<A, B> next() {
+            return next;
+          }
+
+          @Override
+          public void remove() {
+            throw new IllegalStateException();
+          }
+        };
+      }
+    };
+  }
+
   public static <A> Iterable<A> loop(final Iterable<A> as, final int times) {
     return new Iterable<A>() {
       @Override

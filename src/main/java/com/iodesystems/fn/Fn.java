@@ -591,6 +591,10 @@ public class Fn<A> extends Option<A> {
     return of(Sets.union(contents, these));
   }
 
+  public <B> Fn<Pair<A, B>> join(Iterable<B> bs, Where<Pair<A, B>> where) {
+    return of(Joins.join(contents, bs, where));
+  }
+
   public <B> Fn<Pair<A, B>> join(Iterable<B> bs) {
     return of(Joins.join(contents, bs));
   }
@@ -617,5 +621,9 @@ public class Fn<A> extends Option<A> {
 
   public <V> Map<A, V> toMap(From<A, V> valueExtractor) {
     return Maps.mapOf(this, valueExtractor);
+  }
+
+  public Fn<A> cache() {
+    return of(list());
   }
 }

@@ -3,6 +3,7 @@ package com.iodesystems.fn.aspects;
 import com.iodesystems.fn.data.From;
 import com.iodesystems.fn.data.Generator;
 import com.iodesystems.fn.data.Pair;
+import com.iodesystems.fn.logic.Where;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -103,5 +104,10 @@ public class Joins {
                     });
               }
             }));
+  }
+
+  public static <A, B> Iterable<Pair<A, B>> join(
+      Iterable<A> as, Iterable<B> bs, Where<Pair<A, B>> where) {
+    return Iterables.where(Iterables.cartesian(as, bs), where);
   }
 }

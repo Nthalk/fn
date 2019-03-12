@@ -756,6 +756,60 @@ public class FnTest {
   }
 
   @Test
+  public void testCartesianJoin() {
+    // Equal
+    assertEquals(
+        Fn.of(
+                Fn.pair(1, "a"),
+                Fn.pair(1, "b"),
+                Fn.pair(1, "c"),
+                Fn.pair(2, "a"),
+                Fn.pair(2, "b"),
+                Fn.pair(2, "c"),
+                Fn.pair(3, "a"),
+                Fn.pair(3, "b"),
+                Fn.pair(3, "c"))
+            .join("."),
+        Fn.range(1, 3).join(Fn.split("a,b,c", ","), (pair) -> true).join("."));
+
+    // Left smaller
+    assertEquals(
+        Fn.of(
+                Fn.pair(1, "a"),
+                Fn.pair(1, "b"),
+                Fn.pair(1, "c"),
+                Fn.pair(2, "a"),
+                Fn.pair(2, "b"),
+                Fn.pair(2, "c"))
+            .join("."),
+        Fn.range(1, 2).join(Fn.split("a,b,c", ","), (pair) -> true).join("."));
+
+    // Right smaller
+    assertEquals(
+        Fn.of(
+                Fn.pair(1, "a"),
+                Fn.pair(1, "c"),
+                Fn.pair(2, "a"),
+                Fn.pair(2, "c"),
+                Fn.pair(3, "a"),
+                Fn.pair(3, "c"))
+            .join("."),
+        Fn.range(1, 3).join(Fn.split("a,c", ","), (pair) -> true).join("."));
+
+    // Empty left
+    assertEquals(
+        Fn.of().join("."), Fn.of(Fn.empty()).join(Fn.split("a,c", ","), (pair) -> true).join("."));
+
+    // Empty right
+    assertEquals(
+        Fn.of().join("."), Fn.of(Fn.range(1, 4)).join(Fn.empty(), (pair) -> true).join("."));
+
+    // Don't blow stack
+    assertEquals(
+        Fn.of().join("."), Fn.of(Fn.range(1, 4)).join(Fn.empty(), (pair) -> true).join("."));
+  }
+
+  @Test
   public void testLeftJoin1() {
     //    assertEquals(null, Fn.leftJoin1());
   }
