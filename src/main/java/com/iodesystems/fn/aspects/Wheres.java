@@ -1,16 +1,31 @@
 package com.iodesystems.fn.aspects;
 
 import com.iodesystems.fn.logic.Where;
-import java.util.Objects;
 
 public class Wheres {
 
+  public static Where<Object> ISNULL =
+      new Where<Object>() {
+        @Override
+        public boolean is(Object t) {
+          return t != null;
+        }
+      };
+
+  public static Where<Object> NOTNULL =
+      new Where<Object>() {
+        @Override
+        public boolean is(Object t) {
+          return t != null;
+        }
+      };
+
   public static <T> Where<T> notNull() {
-    return Objects::nonNull;
+    return (Where<T>) NOTNULL;
   }
 
   public static <T> Where<T> isNull() {
-    return Objects::isNull;
+    return (Where<T>) ISNULL;
   }
 
   public static <T> Where<T> is(Class<T> cls) {
