@@ -365,6 +365,11 @@ public class FnTest {
   }
 
   @Test
+  public void pairs() {
+    assertEquals(Fn.list(Fn.pair("a", 1), Fn.pair("b", 2)), Fn.pairs("a", 1, "b", 2).toList());
+  }
+
+  @Test
   public void testWhereClass() {
     A2 a2 = new A2();
     A a = new A();

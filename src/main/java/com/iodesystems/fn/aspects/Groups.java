@@ -34,6 +34,24 @@ public class Groups {
     };
   }
 
+  public static <A, K, V> Map<K, List<V>> group(
+      Iterable<A> source, From<A, K> keyExtractor, From<A, V> valueExtractor) {
+    Map<K, List<V>> groups = new HashMap<>();
+    if (source != null) {
+      for (A a : source) {
+        K k = keyExtractor.from(a);
+        if (groups.containsKey(k)) {
+          groups.get(k).add(valueExtractor.from(a));
+        } else {
+          List<V> vs = new ArrayList<>();
+          vs.add(valueExtractor.from(a));
+          groups.put(k, vs);
+        }
+      }
+    }
+    return groups;
+  }
+
   public static <K, V> Map<K, List<V>> group(Iterable<V> source, From<V, K> extractor) {
     Map<K, List<V>> groups = new HashMap<>();
     if (source != null) {

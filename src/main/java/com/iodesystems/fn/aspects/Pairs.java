@@ -10,6 +10,34 @@ public class Pairs {
     return Iterables.convert(contents, s -> Pair.of(aExtractor.from(s), s));
   }
 
+  public static <A, B> Iterable<Pair<A, B>> pairs(A a, B b, Object... rest) {
+
+    return () ->
+        new Iterator<Pair<A, B>>() {
+          Pair<A, B> current = new Pair<>(a, b);
+          int currentIndex = 0;
+
+          @Override
+          public boolean hasNext() {
+            if (current != null) {
+              return true;
+            }
+            return false;
+          }
+
+          @Override
+          public Pair<A, B> next() {
+            Pair<A, B> tmp = this.current;
+            if (rest.length >= currentIndex + 2) {
+              this.current = new Pair<>((A) rest[currentIndex++], (B) rest[currentIndex++]);
+            } else {
+              this.current = null;
+            }
+            return tmp;
+          }
+        };
+  }
+
   public static <A, B, C> Iterable<Pair<A, B>> pairs(
       Iterable<C> contents, From<C, A> aExtractor, From<C, B> bExtractor) {
     return Iterables.convert(contents, s -> Pair.of(aExtractor.from(s), bExtractor.from(s)));

@@ -228,6 +228,10 @@ public class Fn<A> extends Option<A> {
     }
   }
 
+  public static <A, B> Fn<Pair<A, B>> pairs(Map<A, B> from) {
+    return Fn.of(from.entrySet()).convert(e -> Fn.pair(e.getKey(), e.getValue()));
+  }
+
   public static Iterator<Integer> transferProgress(InputStream input, OutputStream output) {
     byte[] buffer = new byte[4096];
 
@@ -299,6 +303,10 @@ public class Fn<A> extends Option<A> {
 
   public static <A> boolean isEqual(A isThis, A theSameAs) {
     return Values.isEqual(isThis, theSameAs);
+  }
+
+  public static <A, B> Fn<Pair<A, B>> pairs(A a, B b, Object... rest) {
+    return of(Pairs.pairs(a, b, rest));
   }
 
   public <K, V> Map<K, V> putAll(Map<K, V> map, From<A, K> keyFromItem, From<A, V> valueFromItem) {
@@ -512,6 +520,10 @@ public class Fn<A> extends Option<A> {
 
   public <K> Map<K, List<A>> group(From<A, K> keyExtractor) {
     return Groups.group(contents, keyExtractor);
+  }
+
+  public <K, V> Map<K, List<V>> group(From<A, K> keyExtractor, From<A, V> valueExtractor) {
+    return Groups.group(contents, keyExtractor, valueExtractor);
   }
 
   public int size() {
