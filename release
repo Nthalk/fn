@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
 export GPG_TTY=$(tty)
-mvn -Prelease clean release:prepare release:perform -e
+mvn -B -e\
+  -Prelease,signing-keys clean release:prepare release:perform \
+  -DautoVersionSubmodules=true \
+  -Dgpg.passphrase="$1"
+
 

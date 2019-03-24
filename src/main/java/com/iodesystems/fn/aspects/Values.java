@@ -1,10 +1,19 @@
 package com.iodesystems.fn.aspects;
 
+import com.iodesystems.fn.data.Generator;
+
 public class Values {
 
   public static <A> A ifNull(A thing, A ifNull) {
     if (thing == null) {
       return ifNull;
+    }
+    return thing;
+  }
+
+  public static <A> A ifNull(A thing, Generator<A> ifNull) {
+    if (thing == null) {
+      return ifNull.next();
     }
     return thing;
   }

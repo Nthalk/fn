@@ -149,6 +149,10 @@ public class Fn<A> extends Option<A> {
     return Values.ifNull(value, ifNull);
   }
 
+  public static <A> A ifNull(A value, Generator<A> ifNull) {
+    return Values.ifNull(value, ifNull);
+  }
+
   public static <A> Async<A> async(A value) {
     return Async.async(value);
   }

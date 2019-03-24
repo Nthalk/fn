@@ -5,6 +5,10 @@ import java.util.Iterator;
 public class Ranges {
 
   public static Iterable<Integer> of(Integer min, Integer max) {
+    return of(min, max, 1);
+  }
+
+  public static Iterable<Integer> of(Integer min, Integer max, Integer by) {
     return Iterables.takeWhile(
         new Iterable<Integer>() {
           @Override
@@ -20,24 +24,12 @@ public class Ranges {
               @Override
               public Integer next() {
                 int tmp = this.current;
-                this.current++;
+                this.current += by;
                 return tmp;
               }
             };
           }
         },
-        i -> i <= max);
-  }
-
-  public static Iterable<Integer> of(Integer min, Integer max, Integer by) {
-    final int[] current = {min};
-    return Iterables.takeWhile(
-        Iterables.of(
-            () -> {
-              final int tmp = current[0];
-              current[0] += by;
-              return tmp;
-            }),
         i -> i <= max);
   }
 }
