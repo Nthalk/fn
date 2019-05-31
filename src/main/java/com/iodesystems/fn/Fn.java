@@ -636,4 +636,48 @@ public class Fn<A> extends Option<A> {
   public Fn<A> cache() {
     return of(list());
   }
+
+  public Fn<A> removeLast() {
+    return removeLast(1);
+  }
+
+  public Fn<A> removeLast(int count) {
+    return removeLast(count, null);
+  }
+
+  public Fn<A> removeLast(Handler<A> handler) {
+    return removeLast(1, handler);
+  }
+
+  public Fn<A> removeLast(int count, Handler<A> handler) {
+    Fn<A> cache = cache();
+    int size = cache.size();
+    if (handler != null) {
+      for (A a : cache.drop(size - count)) {
+        handler.handle(a);
+      }
+    }
+    return cache.take(size - count);
+  }
+
+  public Fn<A> remove(Handler<A> handler) {
+    return remove(1, handler);
+  }
+
+  public Fn<A> remove() {
+    return remove(1);
+  }
+
+  public Fn<A> remove(int count) {
+    return remove(count, null);
+  }
+
+  public Fn<A> remove(int count, Handler<A> handler) {
+    if (handler != null) {
+      for (A a : take(count)) {
+        handler.handle(a);
+      }
+    }
+    return drop(1);
+  }
 }
