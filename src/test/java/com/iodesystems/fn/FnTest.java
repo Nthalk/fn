@@ -345,7 +345,7 @@ public class FnTest {
 
   @Test
   public void testToArray() {
-    assertArrayEquals(new Integer[]{1, 2, 3}, Fn.of(1, 2, 3).toArray(new Integer[3]));
+    assertArrayEquals(new Integer[] {1, 2, 3}, Fn.of(1, 2, 3).toArray(new Integer[3]));
   }
 
   @Test
@@ -361,7 +361,7 @@ public class FnTest {
 
   @Test
   public void testCombine() {
-    assertEquals((Object) 7, Fn.of(1, 2, 3).combine(1, (a, b) -> a + b));
+    assertEquals((Object) 7, Fn.of(1, 2, 3).combine(1, Integer::sum));
   }
 
   @Test
@@ -372,11 +372,12 @@ public class FnTest {
   @Test
   public void remove() {
     Integer[] ints = new Integer[3];
-    List<Integer> remaining = Fn.of(1, 2, 3, 4)
-        .remove(h -> ints[0] = h)
-        .removeLast(h -> ints[2] = h)
-        .remove(h -> ints[1] = h)
-        .toList();
+    List<Integer> remaining =
+        Fn.of(1, 2, 3, 4)
+            .remove(h -> ints[0] = h)
+            .removeLast(h -> ints[2] = h)
+            .remove(h -> ints[1] = h)
+            .toList();
     assertEquals(Fn.list(3), remaining);
     assertEquals(Fn.list(1, 2, 4), Fn.list(ints));
   }
@@ -741,39 +742,39 @@ public class FnTest {
     // Equal
     assertEquals(
         Fn.of(
-            Fn.pair(1, "a"),
-            Fn.pair(1, "b"),
-            Fn.pair(1, "c"),
-            Fn.pair(2, "a"),
-            Fn.pair(2, "b"),
-            Fn.pair(2, "c"),
-            Fn.pair(3, "a"),
-            Fn.pair(3, "b"),
-            Fn.pair(3, "c"))
+                Fn.pair(1, "a"),
+                Fn.pair(1, "b"),
+                Fn.pair(1, "c"),
+                Fn.pair(2, "a"),
+                Fn.pair(2, "b"),
+                Fn.pair(2, "c"),
+                Fn.pair(3, "a"),
+                Fn.pair(3, "b"),
+                Fn.pair(3, "c"))
             .join("."),
         Fn.range(1, 3).join(Fn.split("a,b,c", ","), (pair) -> true).join("."));
 
     // Left smaller
     assertEquals(
         Fn.of(
-            Fn.pair(1, "a"),
-            Fn.pair(1, "b"),
-            Fn.pair(1, "c"),
-            Fn.pair(2, "a"),
-            Fn.pair(2, "b"),
-            Fn.pair(2, "c"))
+                Fn.pair(1, "a"),
+                Fn.pair(1, "b"),
+                Fn.pair(1, "c"),
+                Fn.pair(2, "a"),
+                Fn.pair(2, "b"),
+                Fn.pair(2, "c"))
             .join("."),
         Fn.range(1, 2).join(Fn.split("a,b,c", ","), (pair) -> true).join("."));
 
     // Right smaller
     assertEquals(
         Fn.of(
-            Fn.pair(1, "a"),
-            Fn.pair(1, "c"),
-            Fn.pair(2, "a"),
-            Fn.pair(2, "c"),
-            Fn.pair(3, "a"),
-            Fn.pair(3, "c"))
+                Fn.pair(1, "a"),
+                Fn.pair(1, "c"),
+                Fn.pair(2, "a"),
+                Fn.pair(2, "c"),
+                Fn.pair(3, "a"),
+                Fn.pair(3, "c"))
             .join("."),
         Fn.range(1, 3).join(Fn.split("a,c", ","), (pair) -> true).join("."));
 
@@ -795,9 +796,7 @@ public class FnTest {
     //    assertEquals(null, Fn.leftJoin1());
   }
 
-  private interface Ai {
-
-  }
+  private interface Ai {}
 
   private static class A implements Ai {
 
@@ -815,7 +814,5 @@ public class FnTest {
     }
   }
 
-  private class Success extends RuntimeException {
-
-  }
+  private class Success extends RuntimeException {}
 }

@@ -502,6 +502,10 @@ public class Fn<A> extends Option<A> {
     return Indexes.index(contents, keyExtractor);
   }
 
+  public <K, V> Map<K, V> index(From<A, K> keyExtractor, From<A, V> valueExtractor) {
+    return Indexes.index(contents, keyExtractor, valueExtractor);
+  }
+
   public Fn<A> breadth(final From<A, Iterable<A>> descend) {
     return of(Trees.breadth(contents, descend));
   }
