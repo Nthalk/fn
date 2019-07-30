@@ -230,6 +230,7 @@ public class Fn<A> extends Option<A> {
     while ((len = input.read(buffer)) != -1) {
       output.write(buffer, 0, len);
     }
+    output.flush();
   }
 
   public static <A, B> Fn<Pair<A, B>> pairs(Map<A, B> from) {
@@ -245,7 +246,12 @@ public class Fn<A> extends Option<A> {
       @Override
       public boolean hasNext() {
         try {
-          return (len = input.read(buffer)) != -1;
+          if ((len = input.read(buffer)) != -1) {
+            return true;
+          } else {
+            output.flush();
+            return false;
+          }
         } catch (IOException e) {
           throw new RuntimeException("Could not read input", e);
         }
