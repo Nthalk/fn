@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.junit.Test;
 
 public class DocTest {
@@ -49,7 +51,8 @@ public class DocTest {
     ByteArrayInputStream inputStream = new ByteArrayInputStream("asdf".getBytes());
     try {
       String contents = Fn.readFully(inputStream);
-      for (String line : Fn.lines(inputStream)) {}
+      for (String line : Fn.lines(inputStream)) {
+      }
     } catch (IOException ignore) {
 
     }
@@ -63,8 +66,8 @@ public class DocTest {
     //
     Fn.of(Node.v("value")).breadth(Node::getChildren);
 
-    //
-    final String[] result = new String[] {null};
+    // Asyncronous helpers
+    final String[] result = new String[]{null};
     Fn.async(() -> "Hello world!")
         .then(
             new Async.Result<String>() {
@@ -74,12 +77,30 @@ public class DocTest {
                 return null;
               }
             });
+
+    // Pipeline helpers
+    ExecutorService backgroundExecutor = Executors.newFixedThreadPool(1);
+    ExecutorService forgroundExecutor = Executors.newFixedThreadPool(1);
+    Fl<String> pipeline = Fl.of(String.class)
+        .on(backgroundExecutor)
+        .convert(String::length)
+        .when(i -> i % 2 == 0)
+        .fork(fork -> fork
+            .on(forgroundExecutor)
+            .when(i -> i % 2 == 0)
+            .handle(i -> System.out.println(i + " is even")))
+        .fork(fork -> fork
+            .when(i -> i % 2 == 1)
+            .handle(i -> System.out.println(i + " is odd")))
+        .build();
+
+    pipeline.submit("data");
   }
 
   @Test
   public void testDocExtra() {
-    final String[] result = new String[] {null};
-    final Integer[] progress = new Integer[] {null, null};
+    final String[] result = new String[]{null};
+    final Integer[] progress = new Integer[]{null, null};
     Deferred<String> defer = Fn.defer();
     defer.then(
         new Async.Result<String>() {

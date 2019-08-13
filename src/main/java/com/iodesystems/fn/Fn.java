@@ -22,11 +22,15 @@ import com.iodesystems.fn.data.From2;
 import com.iodesystems.fn.data.Generator;
 import com.iodesystems.fn.data.Option;
 import com.iodesystems.fn.data.Pair;
+import com.iodesystems.fn.formats.Csv;
+import com.iodesystems.fn.formats.Csv.Writer;
 import com.iodesystems.fn.logic.Condition;
 import com.iodesystems.fn.logic.Handler;
 import com.iodesystems.fn.logic.Where;
 import com.iodesystems.fn.thread.Async;
 import com.iodesystems.fn.thread.Deferred;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -317,6 +321,36 @@ public class Fn<A> extends Option<A> {
 
   public static <A, B> Fn<Pair<A, B>> pairs(A a, B b, Object... rest) {
     return of(Pairs.pairs(a, b, rest));
+  }
+
+  public static InputStream stream(String s) {
+    return new ByteArrayInputStream(s.getBytes());
+  }
+
+  public static Fn<List<String>> fromCsv(InputStream stream) {
+    return Fn.of(new Csv.Reader(stream, ',', "'\""));
+  }
+
+  public static Option<InputStream> resource(String s) {
+    return Option.of(Fn.class.getClassLoader().getResourceAsStream(s));
+  }
+
+  public static Fn<List<String>> fromCsv(String csv) {
+    return fromCsv(stream(csv));
+  }
+
+  public static void toCsv(Iterable<List<String>> rows, OutputStream out) throws IOException {
+    Writer writer = new Writer(out);
+    writer.write(rows);
+    writer.close();
+  }
+
+  public static String toCsv(Iterable<List<String>> rows) throws IOException {
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    Writer writer = new Writer(out);
+    writer.write(rows);
+    writer.close();
+    return out.toString();
   }
 
   public <K, V> Map<K, V> putAll(Map<K, V> map, From<A, K> keyFromItem, From<A, V> valueFromItem) {
