@@ -51,8 +51,7 @@ public class DocTest {
     ByteArrayInputStream inputStream = new ByteArrayInputStream("asdf".getBytes());
     try {
       String contents = Fn.readFully(inputStream);
-      for (String line : Fn.lines(inputStream)) {
-      }
+      for (String line : Fn.lines(inputStream)) {}
     } catch (IOException ignore) {
 
     }
@@ -67,7 +66,7 @@ public class DocTest {
     Fn.of(Node.v("value")).breadth(Node::getChildren);
 
     // Asyncronous helpers
-    final String[] result = new String[]{null};
+    final String[] result = new String[] {null};
     Fn.async(() -> "Hello world!")
         .then(
             new Async.Result<String>() {
@@ -81,26 +80,26 @@ public class DocTest {
     // Pipeline helpers
     ExecutorService backgroundExecutor = Executors.newFixedThreadPool(1);
     ExecutorService forgroundExecutor = Executors.newFixedThreadPool(1);
-    Fl<String> pipeline = Fl.of(String.class)
-        .on(backgroundExecutor)
-        .convert(String::length)
-        .when(i -> i % 2 == 0)
-        .fork(fork -> fork
-            .on(forgroundExecutor)
+    Fl<String> pipeline =
+        Fl.of(String.class)
+            .on(backgroundExecutor)
+            .convert(String::length)
             .when(i -> i % 2 == 0)
-            .handle(i -> System.out.println(i + " is even")))
-        .fork(fork -> fork
-            .when(i -> i % 2 == 1)
-            .handle(i -> System.out.println(i + " is odd")))
-        .build();
+            .fork(
+                fork ->
+                    fork.on(forgroundExecutor)
+                        .when(i -> i % 2 == 0)
+                        .handle(i -> System.out.println(i + " is even")))
+            .fork(fork -> fork.when(i -> i % 2 == 1).handle(i -> System.out.println(i + " is odd")))
+            .build();
 
     pipeline.submit("data");
   }
 
   @Test
   public void testDocExtra() {
-    final String[] result = new String[]{null};
-    final Integer[] progress = new Integer[]{null, null};
+    final String[] result = new String[] {null};
+    final Integer[] progress = new Integer[] {null, null};
     Deferred<String> defer = Fn.defer();
     defer.then(
         new Async.Result<String>() {
