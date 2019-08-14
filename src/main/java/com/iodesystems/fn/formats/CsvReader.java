@@ -16,6 +16,10 @@ public class CsvReader implements CloseableIterable<List<String>> {
   private List<String> currentRow = new ArrayList<>();
   private State state = State.QUOTE_OR_FIELD_OR_SEPARATOR_OR_NEWLINE;
 
+  public CsvReader(InputStream inputStream) {
+    this(inputStream, ',', "'\"");
+  }
+
   public CsvReader(InputStream inputStream, char separator, String quotes) {
     r = new InputStreamReader(inputStream);
     this.separator = separator;
