@@ -1,5 +1,7 @@
 package com.iodesystems.fn;
 
+import com.iodesystems.fn.formats.CsvWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -10,7 +12,26 @@ import org.junit.Test;
 public class CsvTest {
 
   @Test
-  public void testLargeCsv() throws IOException, InterruptedException {
+  public void testRowVariants() throws IOException {
+    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    CsvWriter csvWriter = new CsvWriter(buffer);
+    csvWriter.writeRow((List<String>) null);
+    csvWriter.writeRow((String[]) null);
+    csvWriter.writeRow(Fn.list("a", "b", "c", null, ",", "\""));
+    csvWriter.writeRow("a", "b", "c", null, ",", "\"");
+    csvWriter.writeRow(new String[] {"a", "b", "c"});
+    csvWriter.close();
+    Fn<List<String>> data = Fn.fromCsv(buffer.toString());
+    Assert.assertEquals(
+        Fn.list(
+            Fn.list("a", "b", "c", "", ",", "\""),
+            Fn.list("a", "b", "c", "", ",", "\""),
+            Fn.list("a", "b", "c")),
+        data.list());
+  }
+
+  @Test
+  public void testLargeCsv() throws IOException {
     int rows = 10000;
     int cells = 25;
 
@@ -34,6 +55,7 @@ public class CsvTest {
     Fn<List<String>> pipedData = Fn.fromCsv(pis);
     Integer combine = pipedData.combine(0, (r, i) -> i + r.size());
     Assert.assertEquals((Integer) (rows * cells), combine);
+    pipedData.close();
   }
 
   @Test

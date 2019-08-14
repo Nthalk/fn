@@ -6,6 +6,11 @@ import java.util.concurrent.Executors;
 import org.junit.Test;
 
 public class PipeTest {
+
+  private void print(String msg) {
+    System.out.println(Thread.currentThread().getName() + msg);
+  }
+
   @Test
   public void test() throws InterruptedException {
     ExecutorService ui = Executors.newFixedThreadPool(1);
@@ -15,14 +20,14 @@ public class PipeTest {
             .on(bg)
             .convert(
                 s -> {
-                  System.out.println(Thread.currentThread().getName() + "(bg convert):" + s);
+                  print("(bg convert):" + s);
                   return s.length();
                 })
-            .handle(l -> System.out.println(Thread.currentThread().getName() + "(bg handle):" + l))
+            .then(l -> print("(bg handle):" + l))
             .on(ui)
             .convert(
                 s -> {
-                  System.out.println(Thread.currentThread().getName() + "(ui convert):" + s);
+                  print("(ui convert):" + s);
                   return String.valueOf(s);
                 })
             .on(bg)
@@ -30,14 +35,11 @@ public class PipeTest {
                 f ->
                     f.when(
                             e -> {
-                              System.out.println(Thread.currentThread().getName() + "(bg when):");
+                              print("(bg when):");
                               return true;
                             })
-                        .handle(
-                            l ->
-                                System.out.println(
-                                    Thread.currentThread().getName() + "(bg when-handle):" + l)))
-            .handle(l -> System.out.println(Thread.currentThread().getName() + "(bg handle):" + l))
+                        .then(l -> print("(bg when-handle):" + l)))
+            .then(l -> print("(bg handle):" + l))
             .build();
     source.submit("e");
     Thread.sleep(1000);

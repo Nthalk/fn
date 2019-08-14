@@ -1,17 +1,29 @@
 package com.iodesystems.fn.aspects;
 
+import com.iodesystems.fn.data.CloseableIterable;
 import com.iodesystems.fn.data.From;
 import com.iodesystems.fn.tree.NodeWithParent;
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 public class Trees {
 
-  public static <A> Iterable<A> depth(
+  public static <A> CloseableIterable<A> depth(
       final Iterable<A> sources, final From<A, Iterable<A>> multiplier) {
-    return () ->
-        new Iterator<A>() {
+    return new CloseableIterable<A>() {
+      @Override
+      public void close() throws IOException {
+        if (sources instanceof Closeable) {
+          ((Closeable) sources).close();
+        }
+      }
+
+      @Override
+      public Iterator<A> iterator() {
+        return new Iterator<A>() {
           final Iterator<A> source = sources.iterator();
           final List<Iterator<A>> descent = new LinkedList<>();
           A nextA;
@@ -48,12 +60,23 @@ public class Trees {
             throw new IllegalStateException();
           }
         };
+      }
+    };
   }
 
-  public static <A> Iterable<A> breadth(
+  public static <A> CloseableIterable<A> breadth(
       final Iterable<A> sources, final From<A, Iterable<A>> descend) {
-    return () ->
-        new Iterator<A>() {
+    return new CloseableIterable<A>() {
+      @Override
+      public void close() throws IOException {
+        if (sources instanceof Closeable) {
+          ((Closeable) sources).close();
+        }
+      }
+
+      @Override
+      public Iterator<A> iterator() {
+        return new Iterator<A>() {
           final List<A> todo = new LinkedList<>();
           Iterator<A> currentLevel = sources.iterator();
           A nextA;
@@ -82,12 +105,23 @@ public class Trees {
             throw new IllegalStateException();
           }
         };
+      }
+    };
   }
 
-  public static <A> Iterable<List<A>> breadthPaths(
+  public static <A> CloseableIterable<List<A>> breadthPaths(
       final Iterable<A> sources, final From<A, Iterable<A>> multiplier) {
-    return () ->
-        new Iterator<List<A>>() {
+    return new CloseableIterable<List<A>>() {
+      @Override
+      public void close() throws IOException {
+        if (sources instanceof Closeable) {
+          ((Closeable) sources).close();
+        }
+      }
+
+      @Override
+      public Iterator<List<A>> iterator() {
+        return new Iterator<List<A>>() {
           private final LinkedList<NodeWithParent<A>> todo = new LinkedList<>();
           private NodeWithParent<A> parent;
           private NodeWithParent<A> current;
@@ -124,5 +158,7 @@ public class Trees {
             throw new IllegalStateException();
           }
         };
+      }
+    };
   }
 }

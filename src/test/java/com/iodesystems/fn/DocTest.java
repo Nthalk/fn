@@ -89,8 +89,8 @@ public class DocTest {
                 fork ->
                     fork.on(forgroundExecutor)
                         .when(i -> i % 2 == 0)
-                        .handle(i -> System.out.println(i + " is even")))
-            .fork(fork -> fork.when(i -> i % 2 == 1).handle(i -> System.out.println(i + " is odd")))
+                        .then(i -> System.out.println(i + " is even")))
+            .fork(fork -> fork.when(i -> i % 2 == 1).then(i -> System.out.println(i + " is odd")))
             .build();
 
     pipeline.submit("data");

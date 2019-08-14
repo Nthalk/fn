@@ -22,8 +22,8 @@ import com.iodesystems.fn.data.From2;
 import com.iodesystems.fn.data.Generator;
 import com.iodesystems.fn.data.Option;
 import com.iodesystems.fn.data.Pair;
-import com.iodesystems.fn.formats.Csv;
-import com.iodesystems.fn.formats.Csv.Writer;
+import com.iodesystems.fn.formats.CsvReader;
+import com.iodesystems.fn.formats.CsvWriter;
 import com.iodesystems.fn.logic.Condition;
 import com.iodesystems.fn.logic.Handler;
 import com.iodesystems.fn.logic.Where;
@@ -31,6 +31,7 @@ import com.iodesystems.fn.thread.Async;
 import com.iodesystems.fn.thread.Deferred;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -46,13 +47,19 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 
-public class Fn<A> extends Option<A> {
+public class Fn<A> extends Option<A> implements Closeable {
 
   public static final Fn<?> EMPTY = of(Iterables.empty());
   private final Iterable<A> contents;
+  private final Closeable closable;
 
   public Fn(Iterable<A> contents) {
     this.contents = contents;
+    if (contents instanceof Closeable) {
+      closable = (Closeable) contents;
+    } else {
+      closable = null;
+    }
   }
 
   public static <A, B> Pair<A, B> pair(A a, B b) {
@@ -328,7 +335,7 @@ public class Fn<A> extends Option<A> {
   }
 
   public static Fn<List<String>> fromCsv(InputStream stream) {
-    return Fn.of(new Csv.Reader(stream, ',', "'\""));
+    return Fn.of(new CsvReader(stream, ',', "'\""));
   }
 
   public static Option<InputStream> resource(String s) {
@@ -340,15 +347,15 @@ public class Fn<A> extends Option<A> {
   }
 
   public static void toCsv(Iterable<List<String>> rows, OutputStream out) throws IOException {
-    Writer writer = new Writer(out);
-    writer.write(rows);
+    CsvWriter writer = new CsvWriter(out);
+    writer.writeRows(rows);
     writer.close();
   }
 
   public static String toCsv(Iterable<List<String>> rows) throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    Writer writer = new Writer(out);
-    writer.write(rows);
+    CsvWriter writer = new CsvWriter(out);
+    writer.writeRows(rows);
     writer.close();
     return out.toString();
   }
@@ -723,5 +730,12 @@ public class Fn<A> extends Option<A> {
       }
     }
     return drop(1);
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (closable != null) {
+      closable.close();
+    }
   }
 }

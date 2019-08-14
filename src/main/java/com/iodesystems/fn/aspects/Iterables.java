@@ -1,5 +1,6 @@
 package com.iodesystems.fn.aspects;
 
+import com.iodesystems.fn.data.CloseableIterable;
 import com.iodesystems.fn.data.Combine;
 import com.iodesystems.fn.data.From;
 import com.iodesystems.fn.data.Generator;
@@ -7,6 +8,8 @@ import com.iodesystems.fn.data.Option;
 import com.iodesystems.fn.data.Pair;
 import com.iodesystems.fn.logic.Handler;
 import com.iodesystems.fn.logic.Where;
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -52,9 +55,18 @@ public class Iterables {
     return Option.of(last);
   }
 
-  public static <A> Iterable<A> take(final int count, final Iterable<A> source) {
-    return () ->
-        new Iterator<A>() {
+  public static <A> CloseableIterable<A> take(final int count, final Iterable<A> source) {
+    return new CloseableIterable<A>() {
+      @Override
+      public void close() throws IOException {
+        if (source instanceof Closeable) {
+          ((Closeable) source).close();
+        }
+      }
+
+      @Override
+      public Iterator<A> iterator() {
+        return new Iterator<A>() {
           final Iterator<A> parent = source.iterator();
           int soFar = 0;
 
@@ -73,11 +85,22 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
+      }
+    };
   }
 
-  public static <A> Iterable<A> drop(final int count, final Iterable<A> source) {
-    return () ->
-        new Iterator<A>() {
+  public static <A> CloseableIterable<A> drop(final int count, final Iterable<A> source) {
+    return new CloseableIterable<A>() {
+      @Override
+      public void close() throws IOException {
+        if (source instanceof Closeable) {
+          ((Closeable) source).close();
+        }
+      }
+
+      @Override
+      public Iterator<A> iterator() {
+        return new Iterator<A>() {
           final Iterator<A> parent = source.iterator();
           int skip = 0;
 
@@ -99,11 +122,25 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
+      }
+    };
   }
 
-  public static <A> Iterable<A> concat(final Iterable<A> a, final Iterable<A> b) {
-    return () ->
-        new Iterator<A>() {
+  public static <A> CloseableIterable<A> concat(final Iterable<A> a, final Iterable<A> b) {
+    return new CloseableIterable<A>() {
+      @Override
+      public void close() throws IOException {
+        if (a instanceof Closeable) {
+          ((Closeable) a).close();
+        }
+        if (b instanceof Closeable) {
+          ((Closeable) b).close();
+        }
+      }
+
+      @Override
+      public Iterator<A> iterator() {
+        return new Iterator<A>() {
           final Iterator<A> nextB = b.iterator();
           Iterator<A> current = a.iterator();
           final Iterator<A> first = current;
@@ -127,12 +164,23 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
+      }
+    };
   }
 
-  public static <A, B> Iterable<Iterable<B>> multiply(
+  public static <A, B> CloseableIterable<Iterable<B>> multiply(
       final Iterable<A> sources, final From<A, Iterable<B>> multiplier) {
-    return () ->
-        new Iterator<Iterable<B>>() {
+    return new CloseableIterable<Iterable<B>>() {
+      @Override
+      public void close() throws IOException {
+        if (sources instanceof Closeable) {
+          ((Closeable) sources).close();
+        }
+      }
+
+      @Override
+      public Iterator<Iterable<B>> iterator() {
+        return new Iterator<Iterable<B>>() {
           final Iterator<A> sourceA = sources.iterator();
           Iterable<B> next = null;
 
@@ -155,26 +203,39 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
+      }
+    };
   }
 
-  public static <A, B> Iterable<B> convert(final Iterable<A> source, final From<A, B> from) {
+  public static <A, B> CloseableIterable<B> convert(
+      final Iterable<A> source, final From<A, B> from) {
 
-    return () -> {
-      final Iterator<A> sourceItems = source.iterator();
-      return new Iterator<B>() {
-        public boolean hasNext() {
-          return sourceItems.hasNext();
+    return new CloseableIterable<B>() {
+      @Override
+      public void close() throws IOException {
+        if (source instanceof Closeable) {
+          ((Closeable) source).close();
         }
+      }
 
-        public B next() {
-          return from.from(sourceItems.next());
-        }
+      @Override
+      public Iterator<B> iterator() {
+        final Iterator<A> sourceItems = source.iterator();
+        return new Iterator<B>() {
+          public boolean hasNext() {
+            return sourceItems.hasNext();
+          }
 
-        @Override
-        public void remove() {
-          throw new IllegalStateException();
-        }
-      };
+          public B next() {
+            return from.from(sourceItems.next());
+          }
+
+          @Override
+          public void remove() {
+            throw new IllegalStateException();
+          }
+        };
+      }
     };
   }
 
@@ -188,9 +249,18 @@ public class Iterables {
     return (Iterable<B>) where(source, (Where<A>) Wheres.is(cls));
   }
 
-  public static <A> Iterable<A> where(final Iterable<A> source, final Where<A> where) {
-    return () ->
-        new Iterator<A>() {
+  public static <A> CloseableIterable<A> where(final Iterable<A> source, final Where<A> where) {
+    return new CloseableIterable<A>() {
+      @Override
+      public void close() throws IOException {
+        if (source instanceof Closeable) {
+          ((Closeable) source).close();
+        }
+      }
+
+      @Override
+      public Iterator<A> iterator() {
+        return new Iterator<A>() {
           final Iterator<A> parent = source.iterator();
           A current;
 
@@ -215,6 +285,8 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
+      }
+    };
   }
 
   public static <A> void consume(Iterable<A> as) {
@@ -313,9 +385,22 @@ public class Iterables {
     return Arrays.asList(source);
   }
 
-  public static <A, B> Iterable<Pair<A, B>> parallel(final Iterable<A> as, final Iterable<B> bs) {
-    return () ->
-        new Iterator<Pair<A, B>>() {
+  public static <A, B> CloseableIterable<Pair<A, B>> parallel(
+      final Iterable<A> as, final Iterable<B> bs) {
+    return new CloseableIterable<Pair<A, B>>() {
+      @Override
+      public void close() throws IOException {
+        if (as instanceof Closeable) {
+          ((Closeable) as).close();
+        }
+        if (bs instanceof Closeable) {
+          ((Closeable) bs).close();
+        }
+      }
+
+      @Override
+      public Iterator<Pair<A, B>> iterator() {
+        return new Iterator<Pair<A, B>>() {
           final Iterator<A> sourceA = as.iterator();
           final Iterator<B> sourceB = bs.iterator();
 
@@ -334,6 +419,8 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
+      }
+    };
   }
 
   public static <A> Iterable<A> repeat(final A a, final int times) {
@@ -358,9 +445,22 @@ public class Iterables {
         };
   }
 
-  public static <A, B> Iterable<Pair<A, B>> cartesian(final Iterable<A> as, final Iterable<B> bs) {
-    return () ->
-        new Iterator<Pair<A, B>>() {
+  public static <A, B> CloseableIterable<Pair<A, B>> cartesian(
+      final Iterable<A> as, final Iterable<B> bs) {
+    return new CloseableIterable<Pair<A, B>>() {
+      @Override
+      public void close() throws IOException {
+        if (as instanceof Closeable) {
+          ((Closeable) as).close();
+        }
+        if (bs instanceof Closeable) {
+          ((Closeable) bs).close();
+        }
+      }
+
+      @Override
+      public Iterator<Pair<A, B>> iterator() {
+        return new Iterator<Pair<A, B>>() {
           final Iterator<A> sourceA = as.iterator();
           boolean isInitial = true;
           A nextA = null;
@@ -411,11 +511,15 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
+      }
+    };
   }
 
-  public static <A> Iterable<A> loop(final Iterable<A> as, final int times) {
-    return () ->
-        new Iterator<A>() {
+  public static <A> CloseableIterable<A> loop(final Iterable<A> as, final int times) {
+    return new CloseableIterable<A>() {
+      @Override
+      public Iterator<A> iterator() {
+        return new Iterator<A>() {
           int count = 0;
           Iterator<A> source = as.iterator();
 
@@ -440,6 +544,15 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
+      }
+
+      @Override
+      public void close() throws IOException {
+        if (as instanceof Closeable) {
+          ((Closeable) as).close();
+        }
+      }
+    };
   }
 
   @SuppressWarnings("unchecked")
@@ -470,10 +583,13 @@ public class Iterables {
     return Option.of(last);
   }
 
-  public static <A> Iterable<Iterable<A>> split(
+  public static <A> CloseableIterable<Iterable<A>> split(
       final Iterable<A> contents, final Where<A> splitter) {
-    return () ->
-        new Iterator<Iterable<A>>() {
+    return new CloseableIterable<Iterable<A>>() {
+
+      @Override
+      public Iterator<Iterable<A>> iterator() {
+        return new Iterator<Iterable<A>>() {
           final Iterator<A> source = contents.iterator();
           List<A> segment;
           boolean isTrailingEnd;
@@ -517,10 +633,20 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
+      }
+
+      @Override
+      public void close() throws IOException {
+        if (contents instanceof Closeable) {
+          ((Closeable) contents).close();
+        }
+      }
+    };
   }
 
-  public static <A, B extends Iterable<A>> Iterable<A> flatten(Iterable<B> contents) {
-    return new Iterable<A>() {
+  public static <A, B extends Iterable<A>> CloseableIterable<A> flatten(Iterable<B> contents) {
+    return new CloseableIterable<A>() {
+
       @Override
       public Iterator<A> iterator() {
         return new Iterator<A>() {
@@ -549,6 +675,13 @@ public class Iterables {
           }
         };
       }
+
+      @Override
+      public void close() throws IOException {
+        if (contents instanceof Closeable) {
+          ((Closeable) contents).close();
+        }
+      }
     };
   }
 
@@ -561,8 +694,11 @@ public class Iterables {
   }
 
   public static <A> Iterable<A> takeWhile(final Iterable<A> contents, final Where<A> where) {
-    return () ->
-        new Iterator<A>() {
+    return new CloseableIterable<A>() {
+
+      @Override
+      public Iterator<A> iterator() {
+        return new Iterator<A>() {
           final Iterator<A> source = contents.iterator();
           A nextA = null;
 
@@ -585,43 +721,62 @@ public class Iterables {
             throw new IllegalStateException();
           }
         };
+      }
+
+      @Override
+      public void close() throws IOException {
+        if (contents instanceof Closeable) {
+          ((Closeable) contents).close();
+        }
+      }
+    };
   }
 
-  public static <A> Iterable<A> dropWhile(final Iterable<A> contents, final Where<A> where) {
-    return () -> {
-      final Iterator<A> source = contents.iterator();
+  public static <A> CloseableIterable<A> dropWhile(
+      final Iterable<A> contents, final Where<A> where) {
+    return new CloseableIterable<A>() {
+      @Override
+      public Iterator<A> iterator() {
+        final Iterator<A> source = contents.iterator();
+        return new Iterator<A>() {
+          A first = null;
+          boolean yieldedFirst = false;
 
-      return new Iterator<A>() {
-        A first = null;
-        boolean yieldedFirst = false;
-
-        @Override
-        public boolean hasNext() {
-          if (first == null) {
-            while (source.hasNext()) {
-              first = source.next();
-              if (!where.is(first)) {
-                return true;
+          @Override
+          public boolean hasNext() {
+            if (first == null) {
+              while (source.hasNext()) {
+                first = source.next();
+                if (!where.is(first)) {
+                  return true;
+                }
               }
             }
+            return source.hasNext();
           }
-          return source.hasNext();
-        }
 
-        @Override
-        public A next() {
-          if (!yieldedFirst) {
-            yieldedFirst = true;
-            return first;
+          @Override
+          public A next() {
+            if (!yieldedFirst) {
+              yieldedFirst = true;
+              return first;
+            }
+            return source.next();
           }
-          return source.next();
-        }
 
-        @Override
-        public void remove() {
-          throw new IllegalStateException();
+          @Override
+          public void remove() {
+            throw new IllegalStateException();
+          }
+        };
+      }
+
+      @Override
+      public void close() throws IOException {
+        if (contents instanceof Closeable) {
+          ((Closeable) contents).close();
         }
-      };
+      }
     };
   }
 
@@ -636,10 +791,17 @@ public class Iterables {
     return set;
   }
 
-  public static <A> Iterable<A> loop(final Iterable<A> contents) {
-    return new Iterable<A>() {
+  public static <A> CloseableIterable<A> loop(final Iterable<A> contents) {
+    return new CloseableIterable<A>() {
       Iterator<A> iterator = contents.iterator();
       boolean first = true;
+
+      @Override
+      public void close() throws IOException {
+        if (contents instanceof Closeable) {
+          ((Closeable) contents).close();
+        }
+      }
 
       @Override
       public Iterator<A> iterator() {
@@ -677,10 +839,19 @@ public class Iterables {
     return preallocated;
   }
 
-  public static <A> Iterable<A> withNext(
+  public static <A> CloseableIterable<A> withNext(
       final Iterable<A> contents, final From<A, A> nextFromCurrent) {
-    return () ->
-        new Iterator<A>() {
+    return new CloseableIterable<A>() {
+      @Override
+      public void close() throws IOException {
+        if (contents instanceof Closeable) {
+          ((Closeable) contents).close();
+        }
+      }
+
+      @Override
+      public Iterator<A> iterator() {
+        return new Iterator<A>() {
           final Iterator<A> original = contents.iterator();
           A current = null;
 
@@ -704,11 +875,23 @@ public class Iterables {
             }
           }
         };
+      }
+    };
   }
 
-  public static <A> Iterable<A> each(final Iterable<A> contents, final Handler<A> handler) {
-    return () ->
-        new Iterator<A>() {
+  public static <A> CloseableIterable<A> each(
+      final Iterable<A> contents, final Handler<A> handler) {
+    return new CloseableIterable<A>() {
+      @Override
+      public void close() throws IOException {
+        if (contents instanceof Closeable) {
+          ((Closeable) contents).close();
+        }
+      }
+
+      @Override
+      public Iterator<A> iterator() {
+        return new Iterator<A>() {
           final Iterator<A> parent = contents.iterator();
 
           @Override
@@ -723,5 +906,27 @@ public class Iterables {
             return next;
           }
         };
+      }
+    };
+  }
+
+  private <T> CloseableIterable<T> closable(final Iterable<T> a) {
+    if (a instanceof CloseableIterable) {
+      return (CloseableIterable<T>) a;
+    } else {
+      return new CloseableIterable<T>() {
+        @Override
+        public void close() throws IOException {
+          if (a instanceof Closeable) {
+            ((Closeable) a).close();
+          }
+        }
+
+        @Override
+        public Iterator<T> iterator() {
+          return a.iterator();
+        }
+      };
+    }
   }
 }

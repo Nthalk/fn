@@ -1,5 +1,6 @@
 package com.iodesystems.fn.aspects;
 
+import com.iodesystems.fn.data.CloseableIterable;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -25,11 +26,18 @@ public class Strings {
     }
   }
 
-  public static Iterable<String> lines(InputStream ios) throws IOException {
+  public static CloseableIterable<String> lines(InputStream ios) throws IOException {
     final BufferedReader reader = new BufferedReader(new InputStreamReader(ios));
     final String first = reader.readLine();
-    return () ->
-        new Iterator<String>() {
+    return new CloseableIterable<String>() {
+      @Override
+      public void close() throws IOException {
+        ios.close();
+      }
+
+      @Override
+      public Iterator<String> iterator() {
+        return new Iterator<String>() {
           String next = first;
 
           @Override
@@ -51,6 +59,8 @@ public class Strings {
             return tmp;
           }
         };
+      }
+    };
   }
 
   public static String readFully(InputStream ios) throws IOException {
@@ -61,6 +71,7 @@ public class Strings {
     while ((len = reader.read(buffer)) != -1) {
       result.append(buffer, 0, len);
     }
+    ios.close();
     return result.toString();
   }
 
