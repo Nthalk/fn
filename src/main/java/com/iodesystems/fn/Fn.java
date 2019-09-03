@@ -577,6 +577,15 @@ public class Fn<A> extends Option<A> implements Closeable {
     return Groups.group(contents, keyExtractor);
   }
 
+  public <K, V> Map<K, V> condense(From<A, K> keyExtractor, Combine<A, V> combine, V initial) {
+    return Groups.condense(contents, keyExtractor, combine, initial);
+  }
+
+  public <K, V> Map<K, V> condense(
+      From<A, K> keyExtractor, Combine<A, V> combine, Generator<V> initial) {
+    return Groups.condense(contents, keyExtractor, combine, initial);
+  }
+
   public <K, V> Map<K, List<V>> group(From<A, K> keyExtractor, From<A, V> valueExtractor) {
     return Groups.group(contents, keyExtractor, valueExtractor);
   }

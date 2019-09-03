@@ -1,13 +1,35 @@
 package com.iodesystems.fn.aspects;
 
+import com.iodesystems.fn.data.Combine;
 import com.iodesystems.fn.data.From;
+import com.iodesystems.fn.data.Generator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class Groups {
+
+  public static <A, K, V> Map<K, V> condense(
+      Iterable<A> source, From<A, K> keyExtractor, Combine<A, V> combine, V initial) {
+    return condense(source, keyExtractor, combine, (Generator<V>) () -> initial);
+  }
+
+  public static <A, K, V> Map<K, V> condense(
+      Iterable<A> source, From<A, K> keyExtractor, Combine<A, V> combine, Generator<V> initial) {
+    Map<K, V> groups = new HashMap<>();
+    for (Entry<K, List<A>> entry : group(source, keyExtractor).entrySet()) {
+      V value = initial.next();
+      for (A a : entry.getValue()) {
+        value = combine.from(a, value);
+      }
+      groups.put(entry.getKey(), value);
+    }
+
+    return groups;
+  }
 
   public static <V> Iterable<Iterable<V>> group(Iterable<V> source, Integer groupSize) {
     return () -> {

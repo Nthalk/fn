@@ -18,6 +18,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import org.junit.Test;
@@ -28,6 +29,14 @@ public class FnTest {
   A2 a2 = new A2();
   Ai aia = new A();
   Ai aia2 = new A2();
+
+  @Test
+  public void testCondense() {
+    Map<Boolean, Integer> sumEvenOdd =
+        Fn.range(0, 100).condense(i -> i % 2 == 1, (a, b) -> b + 1, 0);
+    assertEquals((Integer) 50, sumEvenOdd.get(true));
+    assertEquals((Integer) 51, sumEvenOdd.get(false));
+  }
 
   @Test
   public void testPair() {
@@ -408,7 +417,7 @@ public class FnTest {
 
   @Test
   public void testNotClass() {
-    assertEquals(Fn.list(null), Fn.of(a, aia, null).not(A.class).toList());
+    assertEquals(Fn.list((Object) null), Fn.of(a, aia, null).not(A.class).toList());
   }
 
   @Test

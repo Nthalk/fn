@@ -43,7 +43,7 @@ public class AsyncTest {
    * on the calling thread.
    */
   @Test
-  public void testSimpleAsyncResult() throws TimeoutException {
+  public void testSimpleAsyncResult() throws TimeoutException, InterruptedException {
     final int[] result = new int[] {0};
     final Waiter waiter = new Waiter();
 
@@ -70,7 +70,7 @@ public class AsyncTest {
 
   /** Asyncs can convert and branch, even on separate Executors */
   @Test
-  public void testBranchingAndConvertingAsync() throws TimeoutException {
+  public void testBranchingAndConvertingAsync() throws TimeoutException, InterruptedException {
     final Waiter waiter = new Waiter();
     Async<Integer> source = Fn.async(() -> 1);
 
@@ -138,7 +138,7 @@ public class AsyncTest {
    * as many times as necessary.
    */
   @Test
-  public void testReusableDeferred() throws TimeoutException {
+  public void testReusableDeferred() throws TimeoutException, InterruptedException {
     final Waiter waiter = new Waiter();
     Deferred<Object> defer = Fn.defer();
     defer.result(1);
@@ -158,7 +158,7 @@ public class AsyncTest {
    * exception is passed down to the child async objects.
    */
   @Test
-  public void testAsyncExceptionRecovery() throws TimeoutException {
+  public void testAsyncExceptionRecovery() throws TimeoutException, InterruptedException {
     final Waiter waiter = new Waiter();
 
     Fn.async(
@@ -271,7 +271,7 @@ public class AsyncTest {
   }
 
   @Test
-  public void testAsync() throws TimeoutException {
+  public void testAsync() throws TimeoutException, InterruptedException {
     final Waiter waiter = new Waiter();
 
     Async<String> async = Async.async(executor, () -> "5");
@@ -334,7 +334,7 @@ public class AsyncTest {
   }
 
   @Test
-  public void testAwaitDeferred() throws TimeoutException {
+  public void testAwaitDeferred() throws TimeoutException, InterruptedException {
     final Waiter waiter = new Waiter();
     Deferred<Integer> defer = Fn.defer(executor);
     defer
