@@ -215,6 +215,11 @@ public class Fn<A> extends Option<A> implements Closeable {
     return Groups.group(contents, keyExtractor);
   }
 
+  public static <A, K, V> Map<K, List<V>> group(Iterable<A> contents, From<A, K> keyExtractor,
+      From<A, V> valueExtractor) {
+    return Groups.group(contents, keyExtractor, valueExtractor);
+  }
+
   public static <A, B extends Iterable<A>> Fn<A> flatten(Iterable<B> contents) {
     return of(Iterables.flatten(contents));
   }
