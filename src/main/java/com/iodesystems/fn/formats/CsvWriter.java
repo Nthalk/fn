@@ -36,6 +36,7 @@ public class CsvWriter implements Closeable {
         if (value == null) {
           // ignore
         } else if (value.indexOf('\n') != -1
+            || value.indexOf('\r') != -1
             || value.indexOf(separator) != -1
             || value.indexOf(quote) != -1) {
           buffer.setLength(0);
@@ -72,6 +73,7 @@ public class CsvWriter implements Closeable {
         if (value == null) {
           // ignore
         } else if (value.indexOf('\n') != -1
+            || value.indexOf('\r') != -1
             || value.indexOf(separator) != -1
             || value.indexOf(quote) != -1) {
           buffer.setLength(0);
