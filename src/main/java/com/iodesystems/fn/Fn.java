@@ -1,27 +1,8 @@
 package com.iodesystems.fn;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.iodesystems.fn.aspects.Exceptions;
-import com.iodesystems.fn.aspects.Generators;
-import com.iodesystems.fn.aspects.Groups;
-import com.iodesystems.fn.aspects.Indexes;
-import com.iodesystems.fn.aspects.Iterables;
-import com.iodesystems.fn.aspects.Joins;
-import com.iodesystems.fn.aspects.Maps;
-import com.iodesystems.fn.aspects.Pairs;
-import com.iodesystems.fn.aspects.Ranges;
-import com.iodesystems.fn.aspects.Sets;
-import com.iodesystems.fn.aspects.SizedIterables;
-import com.iodesystems.fn.aspects.Strings;
-import com.iodesystems.fn.aspects.Trees;
-import com.iodesystems.fn.aspects.Values;
-import com.iodesystems.fn.aspects.Wheres;
-import com.iodesystems.fn.data.Combine;
-import com.iodesystems.fn.data.From;
-import com.iodesystems.fn.data.From2;
-import com.iodesystems.fn.data.Generator;
-import com.iodesystems.fn.data.Option;
-import com.iodesystems.fn.data.Pair;
+import com.iodesystems.fn.aspects.*;
+import com.iodesystems.fn.data.*;
 import com.iodesystems.fn.formats.CsvReader;
 import com.iodesystems.fn.formats.CsvWriter;
 import com.iodesystems.fn.logic.Condition;
@@ -29,21 +10,8 @@ import com.iodesystems.fn.logic.Handler;
 import com.iodesystems.fn.logic.Where;
 import com.iodesystems.fn.thread.Async;
 import com.iodesystems.fn.thread.Deferred;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 
@@ -68,6 +36,10 @@ public class Fn<A> extends Option<A> implements Closeable {
 
   public static <A, B> Fn<B> of(A source, From<A, Integer> getSize, From2<A, Integer, B> getItem) {
     return of(SizedIterables.of(source, getSize, getItem));
+  }
+
+  public static <A> Fn<A> of(Iterator<A> source) {
+    return of(Generators.of(source));
   }
 
   public static <B> Fn<B> of(Iterable<B> contents) {
@@ -215,8 +187,8 @@ public class Fn<A> extends Option<A> implements Closeable {
     return Groups.group(contents, keyExtractor);
   }
 
-  public static <A, K, V> Map<K, List<V>> group(Iterable<A> contents, From<A, K> keyExtractor,
-      From<A, V> valueExtractor) {
+  public static <A, K, V> Map<K, List<V>> group(
+      Iterable<A> contents, From<A, K> keyExtractor, From<A, V> valueExtractor) {
     return Groups.group(contents, keyExtractor, valueExtractor);
   }
 
@@ -699,6 +671,7 @@ public class Fn<A> extends Option<A> implements Closeable {
   }
 
   public Fn<A> cache() {
+    // Todo: make caching lazy?
     return of(list());
   }
 
